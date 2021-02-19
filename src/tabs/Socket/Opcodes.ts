@@ -1,0 +1,21 @@
+export default new class Opcodes {
+  public readonly SOCKET_CONNECTING: number = 0;
+  public readonly SOCKET_OPENED: number = 1;
+  public readonly SOCKET_CLOSING: number = 2;
+  public readonly SOCKET_CLOSED: number = 3;
+  public readonly VIEWPORT_UPDATE: number = 17;
+  public readonly FLUSH: number = 18;
+  public readonly ADD_OWN_CELL: number = 32;
+  public readonly LEADERBOARD: number = 53;
+  public readonly LEADERBOARD2: number = 54;
+  public readonly GHOST_CELLS: number = 69;
+  public readonly RECAPTCHA_V2: number = 85;
+  public readonly FREE_COINS: number = 103;
+  public readonly SERVER_DEATH: number = 113;
+  public readonly SPECTATE_MODE_IS_FULL: number = 114;
+  public readonly OUTDATED_CLIENT_ERROR: number = 128;
+  public readonly PING_PONG: number = 226;
+  public readonly GENERATE_KEYS: number = 241;
+  public readonly SEND_LOGIN: number = 242;
+  public readonly COMPRESSED_MESSAGE: number = 255;
+}

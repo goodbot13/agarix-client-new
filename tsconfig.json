@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "outDir": "./built",
+    "target": "es5",
+    "downlevelIteration": true
+  },
+  "include": ["./src/"],
+  "exclude": [
+    "node_modules"
+  ],
+}
