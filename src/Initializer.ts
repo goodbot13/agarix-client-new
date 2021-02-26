@@ -1,7 +1,7 @@
-// @ts-nocheck
 import Game from './index';
 import TestCase from './TestCase';
 import UICommunicationService from './communication/FrontAPI';
+import Master from './Master';
 
 class Initializer {
   private game: Game;
@@ -12,22 +12,17 @@ class Initializer {
     if (window.location.hostname.includes('localhost')) {
       this.game = new Game();
       await this.game.init();
-      
-      this.game.world.view.mouse.zoomValue = 0.1;// @ts-ignore
-      window.Game = this.game;
+      this.game.world.view.mouse.zoomValue = 0.1;
       const testCase = new TestCase(this.game);
-      
       setTimeout(() => this.game.unblurGameScene(true), 100);
     } else {
       UICommunicationService.setGameVersion();
       this.game = new Game();
-      await this.game.master.init();
-
+      await Master.init();
       await this.game.init();
-      
-      window.Game = this.game;
     }
-    
+
+    (window as any).Game = this.game;
   }
 }
 

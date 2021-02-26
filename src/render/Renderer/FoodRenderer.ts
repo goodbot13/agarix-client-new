@@ -1,6 +1,8 @@
+import Master from '../../Master';
 import Food from '../../objects/Food';
 import GameSettings from '../../Settings/Settings';
 import World from '../World';
+
 export default class FoodRenderer {
   
   constructor(private world: World) { }
@@ -16,28 +18,25 @@ export default class FoodRenderer {
 
     const fullMapViewEnabled = GameSettings.all.settings.game.gameplay.spectatorMode === 'Full map';
 
-    if (fullMapViewEnabled && this.world.scene.master.gameMode.get() === ':party') {
+    if (fullMapViewEnabled && Master.gameMode.get() === ':party') {
       food.subtype === 'SPEC_TABS' ? food.show() : food.hide();
       return;
     }
 
-    const topOneTabFood = true;
-    const firstTabFood = true;
-    const secondTabFood = true;
-
+    const { firstTabEnabled, secondTabEnabled, topOneTabEnabled } = GameSettings.all.settings.theming.food;
     const { firstTab, secondTab, topOneTab } = this.world.view;
     const { x, y, subtype } = food;
     let visible = false;
 
     // always render first tab
-    if (subtype === 'FIRST_TAB' && firstTabFood) {
+    if (subtype === 'FIRST_TAB' && firstTabEnabled) {
 
       // if first tabs food has collision with second tab, instantly animate it
-      const secondTabHas = secondTab.hasInViewBounds(x, y) && secondTabFood;
+      const secondTabHas = secondTab.hasInViewBounds(x, y) && secondTabEnabled;
       secondTabHas && food.show(true);
 
       // if second tabs food has collision with top one tab, instantly animate it
-      const topOneTabHas = topOneTab.hasInViewBounds(x, y) && topOneTabFood;
+      const topOneTabHas = topOneTab.hasInViewBounds(x, y) && topOneTabEnabled;
       topOneTabHas && food.show(true);
 
       visible = true;
@@ -45,15 +44,15 @@ export default class FoodRenderer {
     }
 
     // check second tab for collision with first tab
-    if (subtype === 'SECOND_TAB' && secondTabFood) {
-      const firstTabHas = firstTab.hasInViewBounds(x, y) && firstTabFood;
+    if (subtype === 'SECOND_TAB' && secondTabEnabled) {
+      const firstTabHas = firstTab.hasInViewBounds(x, y) && firstTabEnabled;
       visible = !firstTabHas;
     }
 
     // check top one tab for collision with first and second tab
-    if (subtype === 'TOP_ONE_TAB' && topOneTabFood) {
-      const firstTabHas = firstTab.hasInViewBounds(x, y) && firstTabFood;
-      const secondTabHas = secondTab.hasInViewBounds(x, y) && secondTabFood;
+    if (subtype === 'TOP_ONE_TAB' && topOneTabEnabled) {
+      const firstTabHas = firstTab.hasInViewBounds(x, y) && firstTabEnabled;
+      const secondTabHas = secondTab.hasInViewBounds(x, y) && secondTabEnabled;
 
       // visible if none of tabs has
       visible = !firstTabHas && !secondTabHas;

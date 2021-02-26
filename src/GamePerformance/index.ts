@@ -1,5 +1,3 @@
-import UICommunicationService from "../communication/FrontAPI";
-
 class FPSCounter {
   private readonly decimalPlaces = 2;
   private readonly updateEachSecond = 1;
@@ -19,9 +17,8 @@ class FPSCounter {
   }
 }
 
-export default class GamePerformance {
+export default new class GamePerformance {
   private readonly DEFAULT_SERVER_RENDER_TIME: number = 25;
-  private readonly LOSS_TICKER_REFRESH_INTERVAL = 1000;
   private loss: number = 0;
   public FPSCounter: FPSCounter;
 
@@ -39,7 +36,7 @@ export default class GamePerformance {
     value = value > 100 ? 100 : value;
     
     this.loss = 0;
-    return value;
+    return +value.toFixed(0);
   }
 
   private update(): void {

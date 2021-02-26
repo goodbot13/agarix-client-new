@@ -1,6 +1,6 @@
 import { Container } from "pixi.js";
 import Globals from "../../Globals";
-import TextureGenerator from "../../Textures";
+import TextureGenerator from "../../Textures/TexturesGenerator";
 import View from "../../View";
 import ViewBox from "../ViewBox";
 import * as PIXI from 'pixi.js';
@@ -12,17 +12,9 @@ export default class ViewportVisualizer extends Container implements IMapObject 
   public secondTab: ViewBox;
   public topOneTab: ViewBox;
 
-  constructor(private view: View, private textureGenerator: TextureGenerator) {
+  constructor(private view: View) {
     super();
     this.create();
-
-
-
-
-
-
-
-
 
 
 
@@ -31,12 +23,8 @@ export default class ViewportVisualizer extends Container implements IMapObject 
 
 
 
-
-
-
-
-
     
+
   }
 
   private checkSettings(): void {
@@ -60,13 +48,13 @@ export default class ViewportVisualizer extends Container implements IMapObject 
   }
 
   private create(): void {
-    this.firstTab = new ViewBox(this.textureGenerator); 
+    this.firstTab = new ViewBox(); 
     this.firstTab.zIndex = 101;
 
-    this.secondTab = new ViewBox(this.textureGenerator);
+    this.secondTab = new ViewBox();
     this.secondTab.zIndex = 102;
 
-    this.topOneTab = new ViewBox(this.textureGenerator);
+    this.topOneTab = new ViewBox();
     this.topOneTab.zIndex = 103;
 
     this.addChild(this.firstTab, this.secondTab, this.topOneTab);

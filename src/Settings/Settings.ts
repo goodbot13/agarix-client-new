@@ -4,7 +4,7 @@ import Stage from '../index';
 import Food from "../objects/Food";
 import Virus from "../objects/Virus/Virus";
 import Cell from "../objects/Cell";
-import Globals from "../Globals";
+import TextureGenerator from '../Textures/TexturesGenerator'
 
 export default new class Settings {
   public all: IState = Storage.init();
@@ -15,7 +15,20 @@ export default new class Settings {
   init(stage: Stage) {
     this.stage = stage;
 
+    this.transformProfilesState();
+
     return this;
+  }
+
+  private transformProfilesState(): void {
+    const { profiles } = this.all;
+
+    profiles.leftProfileNick = profiles.leftProfiles[profiles.leftSelectedIndex].nick;
+    profiles.leftProfileSkinUrl = profiles.leftProfiles[profiles.leftSelectedIndex].skinUrl;
+    profiles.tag = profiles.leftProfiles[profiles.leftSelectedIndex].tag;
+
+    profiles.rightProfileNick = profiles.rightProfiles[profiles.rightSelectedIndex].nick;
+    profiles.rightProfileSkinUrl = profiles.rightProfiles[profiles.rightSelectedIndex].skinUrl;
   }
 
 
@@ -26,9 +39,23 @@ export default new class Settings {
   updateThemingCells(type: TThemingCells): void {
     switch (type) {
       case 'Shadow':
-        this.stage.world.textureGenerator.generateCellShadow();
+        TextureGenerator.generateCellShadow();
         
         this.stage.world.cells.children.filter((cell: any) => cell.type === 'CELL').forEach((cell: Cell) => {
+          cell.changeShadowTexture();
+        });
+
+        this.stage.world.minimap.changeCellShadowTexture();
+        break;
+
+      case 'MyShadow':
+        TextureGenerator.generateMyCellShadow();
+
+        this.stage.world.playerCells.firstTab.forEach((cell) => {
+          cell.changeShadowTexture();
+        });
+
+        this.stage.world.playerCells.secondTab.forEach((cell) => {
           cell.changeShadowTexture();
         });
 
@@ -38,9 +65,9 @@ export default new class Settings {
   }
 
   updateThemingFood(): void {
-    this.stage.textureGenerator.generateFood();
+    TextureGenerator.generateFood();
 
-    const foodTexture = this.stage.textureGenerator.food;
+    const foodTexture = TextureGenerator.food;
 
     this.stage.world.food.children.forEach((food: Food) => {
       food.texture = foodTexture;
@@ -95,7 +122,7 @@ export default new class Settings {
   updateThemingMultibox(type: TThemingMultibox): void {
     switch (type) {
       case 'LinedRing':
-        this.stage.world.textureGenerator.generateMultiboxLinedRing();
+        TextureGenerator.generateMultiboxLinedRing();
         break;
     }
   }
@@ -105,9 +132,9 @@ export default new class Settings {
   }
 
   updateThemingViruses(): void {
-    this.stage.textureGenerator.generateVirus();
+    TextureGenerator.generateVirus();
 
-    const virusTexture = this.stage.textureGenerator.virus;
+    const virusTexture = TextureGenerator.virus;
 
     this.stage.world.minimap.changeVirusTexture();
 
@@ -148,6 +175,6 @@ export default new class Settings {
 }
 
 export type TThemingMap = 'Border' | 'BgTint' | 'BgImgUrl' | 'GlobalBgImgUrl' | 'GlobalBgImgTint';
-export type TThemingCells = 'Shadow';
+export type TThemingCells = 'Shadow' | 'MyShadow';
 export type TThemingMultibox = 'LinedRing';
 export type TThemingMinimap = 'BgColor' | 'ViewportColors' | 'PlayerColor' | 'GhostCellsColor';

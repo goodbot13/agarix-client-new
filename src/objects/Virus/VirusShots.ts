@@ -1,13 +1,13 @@
 import { Sprite } from "pixi.js";
-import TextureGenerator from "../../Textures";
+import TextureGenerator from "../../Textures/TexturesGenerator";
 import * as PIXI from 'pixi.js';
 
 export default class VirusShots extends Sprite {
   private mass: number;
   private SPEED: number = 0.045;
 
-  constructor(textureGenerator: TextureGenerator) {
-    super(textureGenerator.virusShots);
+  constructor() {
+    super(TextureGenerator.virusShots);
 
     this.mass = 100;
     this.anchor.set(0.5);

@@ -1,14 +1,17 @@
 import * as PIXI from 'pixi.js';
 import { Container, Texture } from 'pixi.js';
-import Globals from '../../Globals';
 import { Subtype, RGB, RemoveType, Location, CellType, IMainGameObject } from '../types';
 import Stats from './Stats';
 import World from '../../render/World';
 import Rings from './Rings';
 import Shadow from './Shadow';
 import CellSprite from './CellSprite';
-
 import GameSettings from '../../Settings/Settings';
+import { getColor, getColorLighten, rgbToStringHex } from '../../utils/helpers';
+import WorldState from '../../states/WorldState';
+import SkinsLoader from '../../utils/SkinsLoader';
+import Master from '../../Master';
+import TextureGenerator from '../../Textures/TexturesGenerator';
 
 export default class Cell extends Container implements IMainGameObject {
   public readonly subtype: Subtype;
@@ -63,12 +66,12 @@ export default class Cell extends Container implements IMainGameObject {
     this.isVisible = false;
 
     this.nick = nick && nick.trim();
-    this.usesSkinByAgarName = this.nick ? this.world.scene.master.skins.reservedSkinsByName.has(this.nick.toLowerCase()) : false;
+    this.usesSkinByAgarName = this.nick ? Master.skins.reservedSkinsByName.has(this.nick.toLowerCase()) : false;
     this.getSkin();
 
     // add cell to main container
-    this.cell = new CellSprite(world, doubleR, this);
-    this.shadow = new Shadow(world, this.cell, this, doubleR);
+    this.cell = new CellSprite(doubleR, this);
+    this.shadow = new Shadow(this.cell, this, doubleR);
     this.stats = new Stats(this);
     this.rings = new Rings(this);
 
@@ -89,15 +92,15 @@ export default class Cell extends Container implements IMainGameObject {
     }
 
     if (this.usesSkinByAgarName || this.agarSkinName) {
-      this.agarSkinTexture = this.world.scene.skinsLoader.getTextureByAgarSkinName(this.agarSkinName, this.nick); 
+      this.agarSkinTexture = SkinsLoader.getTextureByAgarSkinName(this.agarSkinName, this.nick); 
     }
   }
 
   private addColorInformation(color: RGB): void {
     const { red, green, blue } = color;
 
-    const originalColor = Globals.rgbToStringHex({ red, green, blue });
-    const modifiedColor = Globals.rgbToStringHex({ 
+    const originalColor = rgbToStringHex({ red, green, blue });
+    const modifiedColor = rgbToStringHex({ 
       red: ~~(red * 0.9), 
       green: ~~(green * 0.9), 
       blue: ~~(blue * 0.9) 
@@ -165,14 +168,13 @@ export default class Cell extends Container implements IMainGameObject {
     this.nick = nick && nick.trim();
     this.stats.updateNick(nick);
     this.customSkinTexture = skinTexture;
+    this.shadow.applyPlayerShadow();
   }
 
   private applyTint(): void {
   
-    const { shadowColor, myShadowColor, oneColoredStatsColor, oneColoredColor, colorLighten } = GameSettings.all.settings.theming.cells;
+    const { shadowColor, myShadowColor, oneColoredStatsColor, oneColoredColor, colorLighten, adaptiveShadow } = GameSettings.all.settings.theming.cells;
     const { oneColored } = GameSettings.all.settings.game.cells;
-
-    const adaptiveShadow = true;
 
     if (this.isPlayerCell) {
       const { initialStaticCellColor, focusedStaticCellColor } = GameSettings.all.settings.theming.multibox;
@@ -180,25 +182,36 @@ export default class Cell extends Container implements IMainGameObject {
 
       if (GameSettings.all.settings.game.multibox.enabled) {
         if (staticColor) {
-          this.cell.tint = Globals.getColor(initialStaticCellColor);
+          this.cell.tint = getColor(initialStaticCellColor);
+          this.shadow.sprite.tint = this.cell.tint;
+        } else {
+          this.cell.tint = getColorLighten(colorLighten, this.color);
           this.shadow.sprite.tint = this.cell.tint;
         }
   
-        if (this.multiboxFocuesTab && changeCellColor) {
-          this.cell.tint = Globals.getColor(focusedStaticCellColor);
+        if (changeCellColor) {
+          if (this.multiboxFocuesTab) {
+            this.cell.tint = getColor(focusedStaticCellColor);
+            this.shadow.sprite.tint = this.cell.tint;
+          }
+        } else if (staticColor) {
+          this.cell.tint = getColor(initialStaticCellColor);
+          this.shadow.sprite.tint = this.cell.tint;
+        } else {
+          this.cell.tint = getColorLighten(colorLighten, this.color);
           this.shadow.sprite.tint = this.cell.tint;
         }
       } else {
         if (this.usingSkin) {
           this.cell.tint = 0xFFFFFF;
         } else {
-          this.cell.tint = Globals.getTintColor(colorLighten, this.color);
+          this.cell.tint = getColorLighten(colorLighten, this.color);
         }
 
         if (adaptiveShadow) {
-          this.shadow.sprite.tint = Globals.getTintColor(colorLighten, this.color);
+          this.shadow.sprite.tint = getColorLighten(colorLighten, this.color);
         } else {
-          this.shadow.sprite.tint = Globals.getColor(myShadowColor);
+          this.shadow.sprite.tint = getColor(myShadowColor);
         }
       }
 
@@ -210,23 +223,23 @@ export default class Cell extends Container implements IMainGameObject {
       this.stats.updateTint(0xFFFFFF);
 
       if (adaptiveShadow) {
-        this.shadow.sprite.tint = Globals.getTintColor(colorLighten, this.color);
+        this.shadow.sprite.tint = getColorLighten(colorLighten, this.color);
       } else {
-        this.shadow.sprite.tint = Globals.getColor(shadowColor);
+        this.shadow.sprite.tint = getColor(shadowColor);
       }
     } else {
       if (oneColored) {
-        this.cell.tint = Globals.getColor(oneColoredColor);
-        this.stats.updateTint(Globals.getColor(oneColoredStatsColor));
-        this.shadow.sprite.tint = Globals.getColor(shadowColor);
+        this.cell.tint = getColor(oneColoredColor);
+        this.stats.updateTint(getColor(oneColoredStatsColor));
+        this.shadow.sprite.tint = getColor(shadowColor);
       } else {
-        this.cell.tint = Globals.getTintColor(colorLighten, this.color);
+        this.cell.tint = getColorLighten(colorLighten, this.color);
         this.stats.updateTint(0xFFFFFF);
 
         if (adaptiveShadow) {
           this.shadow.sprite.tint = this.cell.tint;
         } else {
-          this.shadow.sprite.tint = Globals.getColor(shadowColor);
+          this.shadow.sprite.tint = getColor(shadowColor);
         }
       }
     }
@@ -235,9 +248,9 @@ export default class Cell extends Container implements IMainGameObject {
 
   private calcMass(): void {
     const { deltaTime } = PIXI.Ticker.shared;
-    const { ticks } = Globals;
+    const { ticks } = WorldState;
 
-    if (~~(ticks % (3 * deltaTime)) === 0) {
+    if (~~(ticks % (5 * deltaTime)) === 0) {
       this.originalMass = ~~(this.originalSize * this.originalSize / 100);
       this.shortMass = Math.round(this.originalMass / 100) / 10 + 'k';
 
@@ -252,12 +265,16 @@ export default class Cell extends Container implements IMainGameObject {
     if (allowSkins) {
 
       if (GameSettings.all.settings.game.multibox.enabled && GameSettings.all.settings.game.multibox.hideOwnSkins && this.isPlayerCell) {
-        this.cell.texture = this.world.textureGenerator.cell;
+        this.cell.texture = TextureGenerator.cell;
         this.usingSkin = false;
         return;
       }
 
-      if (this.isTeam && this.customSkinTexture && (skinsType === 'Custom' || skinsType === 'All')) {
+      const teamAndCustomSkin = this.isTeam && this.customSkinTexture;
+      const playerAndCustomSkin = this.isPlayerCell && this.customSkinTexture;
+      const allowCustomSkins = skinsType === 'Custom' || skinsType === 'All';
+
+      if ((teamAndCustomSkin || playerAndCustomSkin) && allowCustomSkins) {
         this.cell.texture = this.customSkinTexture;
         this.usingSkin = true;
       } else {
@@ -265,13 +282,13 @@ export default class Cell extends Container implements IMainGameObject {
           this.cell.texture = this.agarSkinTexture;
           this.usingSkin = true;
         } else {
-          this.cell.texture = this.world.textureGenerator.cell;
+          this.cell.texture = TextureGenerator.cell;
           this.usingSkin = false;
         }
       }
 
     } else {
-      this.cell.texture = this.world.textureGenerator.cell;
+      this.cell.texture = TextureGenerator.cell;
       this.usingSkin = false;
     }
   }
@@ -292,7 +309,7 @@ export default class Cell extends Container implements IMainGameObject {
       this.customSkinTexture = skinTexture;
       this.isTeam = true;
     } else if (this.isTeam) {
-      this.cell.texture = this.world.textureGenerator.cell;
+      this.cell.texture = TextureGenerator.cell;
       this.isTeam = false;
     }
   }
@@ -325,7 +342,7 @@ export default class Cell extends Container implements IMainGameObject {
       return 0;
     }
 
-    return 0.01 + (0.015 * (6 - +GameSettings.all.settings.game.cells.fadeSpeed)) * PIXI.Ticker.shared.deltaTime;
+    return 0.01 + (0.025 * (6 - +GameSettings.all.settings.game.cells.fadeSpeed)) * PIXI.Ticker.shared.deltaTime;
   }
 
   private getSoakSpeed(): number {
@@ -333,7 +350,7 @@ export default class Cell extends Container implements IMainGameObject {
       return 0;
     }
 
-    return (6 - +GameSettings.all.settings.game.cells.soakSpeed) / 25 * PIXI.Ticker.shared.deltaTime;
+    return (6 - +GameSettings.all.settings.game.cells.soakSpeed) / 15 * PIXI.Ticker.shared.deltaTime;
   }
 
   private animateOutOfView(): void {

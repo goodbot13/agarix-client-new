@@ -5,7 +5,6 @@ import World from '../../render/World';
 import Borders from './Borders';
 import Background from './Background';
 import GlobalBackground from './GlobalBackground';
-import Settings from '../../Settings';
 
 class Map extends Container {
   public borders: Borders;

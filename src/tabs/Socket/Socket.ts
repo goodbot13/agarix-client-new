@@ -1,10 +1,31 @@
-import { shiftKey, shiftMessage } from '../../utils/GameSocketHelper';
+import { shiftKey, shiftMessage } from '../../utils/helpers';
 import Receiver from './Receiver';
 import Emitter from './Emitter';
-import Opcodes from './Opcodes';
 import World from '../../render/World';
-import Captcha from '../Captcha';
 import UICommunicationService from '../../communication/FrontAPI';
+import WorldState from '../../states/WorldState';
+import PlayerState from '../../states/PlayerState';
+import FacebookLogin from '../Login/FacebookLogin';
+import GoogleLogin from '../Login/GoogleLogin';
+import { 
+  ADD_OWN_CELL, 
+  COMPRESSED_MESSAGE, 
+  FLUSH, 
+  FREE_COINS, 
+  GENERATE_KEYS,
+  GHOST_CELLS, 
+  LEADERBOARD, 
+  LEADERBOARD2, 
+  OUTDATED_CLIENT_ERROR, 
+  PING_PONG, 
+  RECAPTCHA_V2, 
+  SEND_LOGIN, 
+  SERVER_DEATH, 
+  SOCKET_CONNECTING, 
+  SOCKET_OPENED, 
+  SPECTATE_MODE_IS_FULL, 
+  VIEWPORT_UPDATE 
+} from './Opcodes';
 
 export default class Socket {
   public readonly socketData: ISocketData;
@@ -13,7 +34,6 @@ export default class Socket {
   public clientKey: number;
   public mapOffsetFixed: boolean;
   public isPlaying: boolean;
-  public isFocused: boolean;
   public spectateAtX: number;
   public spectateAtY: number;
   public connectionOpened: boolean;
@@ -41,13 +61,11 @@ export default class Socket {
   public index: number;
 
   public world: World;
-  public captcha: Captcha;
   public id: number;
 
-  constructor(socketData: ISocketData, tabType: TabType, world: World, captcha: Captcha, mainTabOffsets?: IMapOffsets) {
+  constructor(socketData: ISocketData, tabType: TabType, world: World) {
     this.socketData = socketData;
     this.tabType = tabType;
-    this.mainTabOffsets = mainTabOffsets;
     this.protocolKey = null;
     this.specialKey = null;
     this.clientKey = null;
@@ -55,36 +73,40 @@ export default class Socket {
     this.loggedIn = false;
     this.mapOffsets = { minX: 0, minY: 0, maxX: 0, maxY: 0 };
     this.playerSpawned = false;
-    this.isFocused = false;
     this.shiftOffsets = { x: 0, y: 0 };
     this.world = world;
-    this.captcha = captcha;
     this.receiver = new Receiver(this);
     this.emitter = new Emitter(this);
   }
 
   public disconnect(): void {
-    this.world.clearCellsByType(this.tabType);
-    this.stopSendingPosition();
-
-    typeof this.onDisconnect === 'function' && this.onDisconnect();
-
     switch (this.tabType) {
       case 'FIRST_TAB':
-        this.world.view.firstTab.isPlaying = false;
-        this.world.hotkeys.firstTabSpawning = false;
+        PlayerState.first.playing = false;
+        PlayerState.first.spawning = false;
+        PlayerState.first.loggedIn = false;
+        PlayerState.first.connected = false;
         this.world.view.firstTab.bounds = { left: 0, right: 0, top: 0, bottom: 0, width: 0, height: 0 };
         break;
 
       case 'SECOND_TAB':
-        this.world.view.secondTab.isPlaying = false;
-        this.world.hotkeys.secondTabSpawning = false;
+        PlayerState.second.playing = false;
+        PlayerState.second.spawning = false;
+        PlayerState.second.loggedIn = false;
+        PlayerState.second.connected = false;
         this.world.view.secondTab.bounds = { left: 0, right: 0, top: 0, bottom: 0, width: 0, height: 0 };
         break;
 
       case 'TOP_ONE_TAB':
         this.world.view.topOneTab.bounds = { left: 0, right: 0, top: 0, bottom: 0, width: 0, height: 0 };
         this.world.view.topOneTab.viewport = { x: 0, y: 0, scale: 1 };
+    }
+
+    this.world.clearCellsByType(this.tabType);
+    this.stopSendingPosition();
+
+    if (typeof this.onDisconnect === 'function') {
+      this.onDisconnect();
     }
   }
 
@@ -111,8 +133,8 @@ export default class Socket {
   }
 
   public calcOffsetShift(): void {
-    this.shiftOffsets.x = (this.mainTabOffsets.minX - this.mapOffsets.minX);
-    this.shiftOffsets.y = (this.mainTabOffsets.minY - this.mapOffsets.minY);
+    this.shiftOffsets.x = (WorldState.mapOffsets.minX - this.mapOffsets.minX);
+    this.shiftOffsets.y = (WorldState.mapOffsets.minY - this.mapOffsets.minY);
   }
 
   public sendLogin(token: string, type: 2 | 4 = 2) {
@@ -141,7 +163,7 @@ export default class Socket {
       case 161: break;
       case 5: break;
 
-      case Opcodes.VIEWPORT_UPDATE: 
+      case VIEWPORT_UPDATE: 
         const viewport = this.receiver.handleViewportUpdate();
 
         switch (this.tabType) {
@@ -175,34 +197,34 @@ export default class Socket {
 
         }
 
-      case Opcodes.FLUSH: 
+      case FLUSH: 
         /* console.log('flush', new Date().toLocaleTimeString()); */
         break;
 
-      case Opcodes.ADD_OWN_CELL: 
+      case ADD_OWN_CELL: 
         this.receiver.handleAddOwnCell();
         break;
       
-      case Opcodes.LEADERBOARD:
-      case Opcodes.LEADERBOARD2: 
+      case LEADERBOARD:
+      case LEADERBOARD2: 
         if (this.tabType === 'FIRST_TAB') {
           opcode === 54 && this.receiver.reader.shiftOffset(2);
           UICommunicationService.updateLeaderboard(this.receiver.handleLeaderboardUpdate());
         }
         break;     
 
-      case Opcodes.GHOST_CELLS: 
+      case GHOST_CELLS: 
         if (this.tabType === 'FIRST_TAB') {
           this.world.minimap.updateGhostCells(this.receiver.handleGhostCells());
         }
         break;
 
-      case Opcodes.RECAPTCHA_V2: 
+      case RECAPTCHA_V2: 
         this.receiver.handleRecaptchaV2();
         break;
 
-      case Opcodes.SERVER_DEATH:
-        if (typeof this.onServerDeath === 'function' && this.tabType === 'FIRST_TAB') {
+      case SERVER_DEATH:
+        if (typeof this.onServerDeath === 'function') {
           this.onServerDeath();
         }
 
@@ -210,44 +232,47 @@ export default class Socket {
         
         break;
 
-      case Opcodes.FREE_COINS: 
+      case FREE_COINS: 
         break;
 
-      case Opcodes.PING_PONG: 
+      case PING_PONG: 
         this.receiver.handlePingUpdate();
         break;
 
-      case Opcodes.OUTDATED_CLIENT_ERROR:
+      case OUTDATED_CLIENT_ERROR:
         if (this.tabType === 'FIRST_TAB') {
-          UICommunicationService.sendChatMessage('Client is outdated. An update is required.');
+          UICommunicationService.sendChatGameMessage('Client is outdated. An update is required.');
         }
         break;
 
-      case Opcodes.SPECTATE_MODE_IS_FULL:
-        UICommunicationService.sendChatMessage('Spectate error: slots are full.');
+      case SPECTATE_MODE_IS_FULL:
+        UICommunicationService.sendChatGameMessage('Spectate error: slots are full.');
         break;
 
-      case Opcodes.GENERATE_KEYS: 
+      case GENERATE_KEYS: 
         this.receiver.generateKeys();
         break;
 
-      case Opcodes.SEND_LOGIN:
-        this.world.controller.login.onLoginRequest(this);
+      case SEND_LOGIN:
+        if (this.tabType === 'FIRST_TAB' || this.tabType === 'SECOND_TAB') {
+          FacebookLogin.logIn(this);
+          GoogleLogin.logIn(this);
+        }
         break;
 
-      case Opcodes.COMPRESSED_MESSAGE: 
+      case COMPRESSED_MESSAGE: 
         this.receiver.handleCompressedMessage();
         break;
     }
   }
 
   public sendMessage(message: DataView): void {
-    if (this.socket.readyState === Opcodes.SOCKET_OPENED) {
+    if (this.socket.readyState === SOCKET_OPENED) {
       message = shiftMessage(message, this.clientKey, false);
       this.clientKey = shiftKey(this.clientKey);
       this.socket.send(message.buffer);
     } else {
-      if (this.socket.readyState !== Opcodes.SOCKET_CONNECTING) {
+      if (this.socket.readyState !== SOCKET_CONNECTING) {
         this.destroy();
       }
     }
@@ -258,16 +283,19 @@ export default class Socket {
   }
 
   public setMapOffset(offsets: IMapOffsets): void {
-    const { minX, minY, maxX, maxY } = offsets;
-
     if (this.mapOffsetFixed) {
       return;
     }
 
+    const { minX, minY, maxX, maxY } = offsets;
+
     this.mapOffsetFixed = true;
     this.mapOffsets = { minX, minY, maxX, maxY };
-
-    if (this.tabType === 'TOP_ONE_TAB' || this.tabType === 'SPEC_TABS' || this.tabType === 'SECOND_TAB') {
+  
+    // world is not created. set global offsets 
+    if (WorldState.mapOffsets.maxX === 0 && WorldState.mapOffsets.maxY === 0) {
+      WorldState.mapOffsets = { minX, minY, maxX, maxY };
+    } else {
       this.calcOffsetShift();
     }
 
@@ -279,7 +307,7 @@ export default class Socket {
 
     if (this.tabType === 'FIRST_TAB') {
       this.world.view.firstTab.viewportUpdate(viewport);
-      this.world.view.firstTab.setMapOffsets(this.mapOffsets);
+      this.world.view.firstTab.setMapOffsets(this.mapOffsets, this.shiftOffsets);
     }
 
     if (this.tabType === 'SECOND_TAB') {
@@ -355,9 +383,9 @@ export interface ISocketData {
   protocolVersion: number,
   clientVersionInt: number,
   clientVersionString: string,
-  token: string,
+  token?: string,
   serverToken: string,
-  https: string
+  https?: string
 }
 
 export interface IMapOffsets {

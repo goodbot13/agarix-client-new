@@ -1,8 +1,7 @@
 import FrontAPI, { ITopTeamPlayer } from "../communication/FrontAPI";
 import Reader from "../utils/Reader";
+import SkinsLoader from "../utils/SkinsLoader";
 import Socket from "./Socket";
-
-export type MessageType = 'COMMON_MESSAGE' | 'COMMANDER_MESSAGE' | 'SERVER_MESSAGE';
 
 export default class Receiver {
 	private socket: Socket;
@@ -25,27 +24,7 @@ export default class Receiver {
     let author = arr[0];
 		let message = arr[1];
 
-		let _type: MessageType = 'COMMON_MESSAGE';
-		
-		switch (messageType) {
-			case 102:
-				_type = 'COMMANDER_MESSAGE';
-				break;
-
-			case 101:
-				_type = 'COMMON_MESSAGE';
-				break;
-
-			default:
-				_type = 'SERVER_MESSAGE';
-				break;
-		}
-
-		(<any>window).addChatMessage && (<any>window).addChatMessage({ 
-			nick: author, 
-			text: message,
-			type: _type
-		});
+		FrontAPI.sendChatMessage(author, message, messageType == 102 ? 'COMMAND' : 'PLAYER');
 	}
 
 	public updateTeamPlayer(reader: Reader) {
@@ -63,13 +42,14 @@ export default class Receiver {
 			cell: reader.readUTF16string(),
 		};
 
-		this.socket.skinsLoader.load(player.skin);
+		SkinsLoader.load(player.skin);
 
 		FrontAPI.updateTopTeam([...this.socket.team.values()].map((player) => {
 			return {
 				nick: player.nick,
 				mass: player.mass,
-				isAlive: player.alive
+				isAlive: player.alive,
+				id: player.id
 			} as ITopTeamPlayer;
 		}));
 	}
@@ -95,7 +75,8 @@ export default class Receiver {
 			return {
 				nick: player.nick,
 				mass: player.mass,
-				isAlive: player.alive
+				isAlive: player.alive,
+				id: player.id
 			} as ITopTeamPlayer;
 		}));
 	}

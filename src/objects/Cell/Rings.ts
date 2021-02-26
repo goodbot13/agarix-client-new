@@ -1,8 +1,9 @@
 import { Sprite } from "pixi.js";
 import GameSettings from "../../Settings/Settings";
-import Cell from "./index";
-import Globals from "../../Globals";
+import Cell from "./index";;
 import * as PIXI from 'pixi.js';
+import { getColor } from "../../utils/helpers";
+import TextureGenerator from '../../Textures/TexturesGenerator';
 
 export default class Rings {
   public innerRing: Sprite;
@@ -28,60 +29,70 @@ export default class Rings {
 
     if (isPlayerCell) {
       if (multiboxFocuesTab && changeRingColor) {
-        this.innerRing.tint = this.outerRing.tint = Globals.getColor(focusedRingColor);
+        this.innerRing.tint = this.outerRing.tint = getColor(focusedRingColor);
       } else {
-        this.innerRing.tint = this.outerRing.tint = Globals.getColor(initialRingColor);
+        this.innerRing.tint = this.outerRing.tint = getColor(initialRingColor);
       }
     }
   }
 
+  private spin(): void {
+    if (GameSettings.all.settings.game.cells.ringsSpinning) {
+      const { deltaTime } = PIXI.Ticker.shared;
+      this.outerRing.rotation += this.OUTER_RING_SPEED * deltaTime;
+      this.innerRing.rotation -= this.INNER_RING_SPEED * deltaTime;
+    }
+  }
+
+  private setAuthorRing(): void {
+    const { ringsType } = GameSettings.all.settings.game.cells;
+
+    if (ringsType === 'Acimazis') {
+      this.innerRing.texture = TextureGenerator.innerRing;
+      this.outerRing.texture = TextureGenerator.outerRing;
+      this.outerRing.scale.set(1);
+      this.innerRing.visible = this.outerRing.visible = true;
+    } else if (ringsType === '2CL') {
+      this.outerRing.texture = TextureGenerator.hsloRing;
+      this.outerRing.scale.set(1.149);
+      this.innerRing.visible = false;
+      this.outerRing.visible = true;
+    } else if (ringsType === 'Yue') {
+      this.outerRing.texture = TextureGenerator.removeAnimationYue[2];
+      this.outerRing.scale.set(1.149);
+      this.innerRing.visible = false;
+      this.outerRing.visible = true;
+    }
+  }
+
   public update(): void {
-
-    const { ringsType, ringsSpinning } = GameSettings.all.settings.game.cells;
-
-    const { deltaTime } = PIXI.Ticker.shared;
-    const { textureGenerator } = this.cell.world;
+    const { ringsType } = GameSettings.all.settings.game.cells;
     const { isPlayerCell, isTeam } = this.cell;
 
     const enabledAndPlayer = ringsType !== 'Disabled' && isPlayerCell;
-    const enabledForTeam = /* ringsEnabled && !onlyMyCellRings && isTeam; */ true;
+    const enabledForTeam = ringsType !== 'Disabled' && isTeam;
     const multiboxEnabled = GameSettings.all.settings.game.multibox.enabled;
-    const isMultiboxRingLine = GameSettings.all.settings.theming.multibox.ringStyle === 'Line';
 
-    if (enabledAndPlayer || enabledForTeam) {
-
-      if (isPlayerCell && multiboxEnabled && isMultiboxRingLine) {
-        this.outerRing.texture = textureGenerator.multiboxLinedRing;
-        this.outerRing.scale.set(1);
-        this.outerRing.visible = true;
-        this.innerRing.visible = false;
-      } else if (ringsType === 'Acimazis') {
-        this.innerRing.texture = textureGenerator.innerRing;
-        this.outerRing.texture = textureGenerator.outerRing;
-        this.outerRing.scale.set(1);
-        this.innerRing.visible = this.outerRing.visible = true;
-      } else if (ringsType === '2CL') {
-        this.outerRing.texture = textureGenerator.hsloRing;
-        this.outerRing.scale.set(1.15);
-        this.innerRing.visible = false;
-        this.outerRing.visible = true;
-      } else if (ringsType === 'Yue') {
-        this.outerRing.texture = textureGenerator.removeAnimationYue[2];
-        this.outerRing.scale.set(1.15);
-        this.innerRing.visible = false;
-        this.outerRing.visible = true;
+    if (isPlayerCell && multiboxEnabled) {
+      if (GameSettings.all.settings.game.multibox.ring) {
+        if (GameSettings.all.settings.theming.multibox.ringStyle === 'Line') {
+          this.outerRing.scale.set(1);
+          this.outerRing.texture = TextureGenerator.multiboxLinedRing;
+          this.innerRing.visible = false;
+          this.outerRing.visible = true;
+        } else {
+          this.setAuthorRing();
+          this.spin();
+        }
+      } else {
+        this.outerRing.visible = this.innerRing.visible = false;
       }
-      
-      if (ringsSpinning) {
-        this.outerRing.rotation += this.OUTER_RING_SPEED * deltaTime;
-        this.innerRing.rotation -= this.INNER_RING_SPEED * deltaTime;
-      }
-
       this.updateTint();
-      
+    } else if (enabledAndPlayer || enabledForTeam) {
+      this.setAuthorRing();
+      this.spin();
     } else {
       this.outerRing.visible = this.innerRing.visible = false;
     }
-
   }
 } 

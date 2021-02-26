@@ -1,6 +1,6 @@
 import { Container, Sprite } from "pixi.js";
 import GameSettings from "../Settings/Settings";
-import TextureGenerator from "../Textures";
+import TextureGenerator from "../Textures/TexturesGenerator";
 import { CellType, Location } from "./types";
 import * as PIXI from 'pixi.js';
 
@@ -11,22 +11,22 @@ class SpawnAnimation extends Container {
   private spriteBuffer: Array<Sprite> = [];
   private deltaStepMultiplier: number = 0.00425;
 
-  constructor(location: Location, textureGenerator: TextureGenerator, tint?: number) {
+  constructor(location: Location, tint?: number) {
     super();
 
     const { spawnAnimation } = GameSettings.all.settings.game.effects;
 
     if (spawnAnimation === 'Default') {
-      this.spriteBuffer.push(new Sprite(textureGenerator.removeEffect));
+      this.spriteBuffer.push(new Sprite(TextureGenerator.removeEffect));
     } else if (spawnAnimation === 'Acimazis') {
-      for (let i = 0; i < textureGenerator.removeAnimationsAcim.length; i++) {
-        this.spriteBuffer.push(new Sprite(textureGenerator.removeAnimationsAcim[i]));
+      for (let i = 0; i < TextureGenerator.removeAnimationsAcim.length; i++) {
+        this.spriteBuffer.push(new Sprite(TextureGenerator.removeAnimationsAcim[i]));
       }
     } else if (spawnAnimation === '2CL') {
-      this.spriteBuffer.push(new Sprite(textureGenerator.removeAnimationHSLO3D));
+      this.spriteBuffer.push(new Sprite(TextureGenerator.removeAnimationHSLO3D));
     } else if (spawnAnimation === 'Yue') {
-      for (let i = 0; i < textureGenerator.removeAnimationYue.length; i++) {
-        this.spriteBuffer.push(new Sprite(textureGenerator.removeAnimationYue[i]));
+      for (let i = 0; i < TextureGenerator.removeAnimationYue.length; i++) {
+        this.spriteBuffer.push(new Sprite(TextureGenerator.removeAnimationYue[i]));
       }
     }
 

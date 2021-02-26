@@ -1,7 +1,8 @@
 import GameSettings from '../Settings/Settings';
-import Globals from '../Globals';
 import { MIPMAP_MODES, SCALE_MODES, Texture, Sprite, Container } from 'pixi.js';
 import { GlowFilter } from '@pixi/filter-glow';
+import { getColor, rgbToStringHex } from '../utils/helpers';
+import Globals from '../Globals';
 
 const generateVirus = () => {
   const {
@@ -21,7 +22,7 @@ const generateVirus = () => {
   const cellCanvas = document.createElement('canvas');
   const ctx = cellCanvas.getContext('2d');
   cellCanvas.width = cellCanvas.height = size;
-  ctx.fillStyle = Globals.rgbToStringHex(color);
+  ctx.fillStyle = rgbToStringHex(color);
   ctx.globalAlpha = transparency;
   ctx.arc(size / 2, size / 2, size / 4, 0, Math.PI * 2);
   ctx.fill();
@@ -29,7 +30,7 @@ const generateVirus = () => {
   const canv = document.createElement('canvas');
   const ct = canv.getContext('2d');
   canv.width = canv.height = size;
-  ct.strokeStyle = Globals.rgbToStringHex(borderColor);
+  ct.strokeStyle = rgbToStringHex(borderColor);
   ct.lineWidth = borderWidth;
   ct.arc(size / 2, size / 2, size / 4, 0, Math.PI * 2);
   ct.stroke();
@@ -47,18 +48,18 @@ const generateVirus = () => {
       cont = new Container();
 
       border.filters = [new GlowFilter({
-        color: Globals.getColor(glowColor),
+        color: getColor(glowColor),
         distance: glowDistance,
         outerStrength: glowStrength,
         quality: glowQuality
       })];
 
     } else if (GameSettings.all.settings.game.performance.glowFilterShaderType === 'Canvas') {
-      ctx.strokeStyle = Globals.rgbToStringHex(borderColor);
+      ctx.strokeStyle = rgbToStringHex(borderColor);
       ctx.lineWidth = borderWidth;
       ctx.arc(size / 2, size / 2, size / 4, 0, Math.PI * 2);
       ctx.shadowBlur = glowDistance / 1.25;
-      ctx.shadowColor = Globals.rgbToStringHex(glowColor);
+      ctx.shadowColor = rgbToStringHex(glowColor);
       
       for (let i = 0; i < glowStrength / 1.75; i++) {
         ctx.stroke();

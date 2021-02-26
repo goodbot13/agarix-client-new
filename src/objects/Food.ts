@@ -1,8 +1,9 @@
 import { Sprite } from 'pixi.js';
 import GameSettings from '../Settings/Settings';
 import { Subtype, Location, CellType } from './types';
-import World from '../render/World';
+import TextureGenerator from '../Textures/TexturesGenerator';
 import * as PIXI from 'pixi.js';
+import PlayerState from '../states/PlayerState';
 
 class Food extends Sprite {
   public readonly subtype: Subtype;
@@ -11,14 +12,12 @@ class Food extends Sprite {
   public removing: boolean = false;
   public isDestroyed: boolean = false;
   public type: CellType;
-  private world: World;
   private SIZE: number = 512;
   private SPEED: number = 0.0225;
   private realAlpha: number = 0;
 
-  constructor(location: Location, subtype: Subtype, world: World) {
-    super(world.textureGenerator.food);
-    this.world = world;
+  constructor(location: Location, subtype: Subtype,) {
+    super(TextureGenerator.food);
     this.type = 'FOOD';
 
     const { x, y, r } = location;
@@ -57,8 +56,8 @@ class Food extends Sprite {
   }
 
   public animate(): void {
-    const dependency = this.world.view.firstTab.isPlaying && 
-                       this.world.view.secondTab.isPlaying && 
+    const dependency = PlayerState.first.playing && 
+                       PlayerState.second.playing && 
                        GameSettings.all.settings.game.gameplay.spectatorMode === 'Full map';
 
     const instantAnimation = GameSettings.all.settings.game.performance.foodPerformanceMode || dependency;

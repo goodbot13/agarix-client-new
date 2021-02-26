@@ -1,29 +1,16 @@
 import UICommunicationService from "../communication/FrontAPI";
 import Socket from "./Socket/Socket";
-import { createView } from '../utils/GameSocketHelper';
+import { createView } from '../utils/helpers';
 
-interface IGrecaptcha {
-  reset(id?: number): void,
-  execute(key: any, props: Object): Promise<string>,
-  render(DOMElementId: string | number, params: Object): number;
-}
-
-declare global {
-  interface Window {
-    grecaptcha: IGrecaptcha
-  }
-}
-
-class Captcha {
+export default new class Captcha {
   private readonly V2_KEY: string = '6LfjUBcUAAAAAF6y2yIZHgHIOO5Y3cU5osS2gbMl';
   private readonly V3_KEY: string = '6LcEt74UAAAAAIc_T6dWpsRufGCvvau5Fd7_G1tY';
-
   private v2_id: number = null;
   private v3_id: number = null;
 
   constructor() {
     if (!window.grecaptcha) {
-      UICommunicationService.sendChatMessage('ReCaptcha load failed');
+      UICommunicationService.sendChatGameMessage('ReCaptcha load failed');
     }
   }
 
@@ -58,16 +45,21 @@ class Captcha {
         sitekey: this.V2_KEY,
         theme: "dark",
         callback: (token: string) => {
+
           let view = createView(2 + token.length);
+
           view.setUint8(0, 86);
+
           for (let length = 0; length < token.length; length++) {
             view.setUint8(1 + length, token.charCodeAt(length));
           }
+
           view.setUint8(token.length + 1, 0);
           socket.sendMessage(view);
 
           this.setVidgetVisibility(false, document.querySelector('#ReCaptchaV2'));
           window.grecaptcha.reset(this.v2_id);
+
         }
       });
     }
@@ -97,4 +89,14 @@ class Captcha {
   }
 }
 
-export default Captcha;
+interface IGrecaptcha {
+  reset(id?: number): void,
+  execute(key: any, props: Object): Promise<string>,
+  render(DOMElementId: string | number, params: Object): number;
+}
+
+declare global {
+  interface Window {
+    grecaptcha: IGrecaptcha
+  }
+}

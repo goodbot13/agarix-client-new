@@ -56,16 +56,17 @@ export default class FullmapController {
         return;
       } 
 
-      UICommunicationService.sendChatMessage('Full map view is establishing.');
+      UICommunicationService.sendChatGameMessage('Full map view is establishing.');
 
       this.establishBegin = Date.now();
+      this.enabling = true;
 
       i = 0;
     }
 
-    const { socketData, world, captcha, firstTabSocket } = this.tabsController;
+    const { socketData, world } = this.tabsController;
 
-    this.sockets[i] = new Socket(socketData, 'SPEC_TABS', world, captcha, firstTabSocket.mapOffsets);
+    this.sockets[i] = new Socket(socketData, 'SPEC_TABS', world);
 
     this.sockets[i].init().then(() => {
       this.sockets[i].spectate(this.coordinates[i].x, this.coordinates[i].y);
@@ -80,7 +81,7 @@ export default class FullmapController {
 
           this.enabling = false;
 
-          UICommunicationService.sendChatMessage(`Full map view is established. (${time}s)`);
+          UICommunicationService.sendChatGameMessage(`Full map view is established. (${time}s)`);
 
         };
       }

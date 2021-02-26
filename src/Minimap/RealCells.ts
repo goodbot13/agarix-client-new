@@ -4,6 +4,7 @@ import { CellType, Location, RemoveType, RGB, Subtype } from "../objects/types";
 import Virus from "../objects/Virus/Virus";
 import World from "../render/World";
 import GameSettings from "../Settings/Settings";
+import TextureGenerator from '../Textures/TexturesGenerator';
 
 export default class RealPlayersCells extends Container {
   private buffer: Map<number, Cell | Virus>;
@@ -51,7 +52,7 @@ export default class RealPlayersCells extends Container {
 
     buffer
       .filter((obj: any) => obj.type === 'VIRUS')
-      .forEach((virus) => (virus as Virus).virus.texture = this.world.textureGenerator.virus);
+      .forEach((virus) => (virus as Virus).virus.texture = TextureGenerator.virus);
   }
 
   public changeCellShadowTexture(): void {
@@ -83,7 +84,7 @@ export default class RealPlayersCells extends Container {
 
         location = this.transformLocation(location);
 
-        const virus = new Virus(location, subtype, this.world);
+        const virus = new Virus(location, subtype);
 
         virus.setIsMinimap(true, location.r);
 

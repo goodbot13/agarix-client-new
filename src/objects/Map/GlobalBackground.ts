@@ -1,16 +1,16 @@
 import { Container, filters, Sprite } from "pixi.js";
-import TextureGenerator from "../../Textures";
+import TextureGenerator from "../../Textures/TexturesGenerator";
 import * as PIXI from 'pixi.js';
 import GameSettings from "../../Settings/Settings";
-import Globals from "../../Globals";
 import IMapObject from "./interfaces";
+import { getColor } from "../../utils/helpers";
 
 export default class GlobalBackground extends Container implements IMapObject {
   private sprite: Sprite;
   private displacementSprite: Sprite;
   private spriteContainer: Container;
 
-  constructor(private textureGenerator: TextureGenerator) {
+  constructor() {
     super();
 
     this.spriteContainer = new Container();
@@ -22,7 +22,7 @@ export default class GlobalBackground extends Container implements IMapObject {
   }
 
   public async updateTexture(): Promise<any> {
-    const texture = await this.textureGenerator.updateGlobalBackground();
+    const texture = await TextureGenerator.updateGlobalBackground();
     this.sprite.cacheAsBitmap = false;
     this.sprite.texture = texture;
     this.sprite.cacheAsBitmap = true;
@@ -30,12 +30,12 @@ export default class GlobalBackground extends Container implements IMapObject {
 
   public updateTint(): void {
     this.sprite.cacheAsBitmap = false;
-    this.sprite.tint = Globals.getColor(GameSettings.all.settings.theming.map.globalBackgroundImageTint);
+    this.sprite.tint = getColor(GameSettings.all.settings.theming.map.globalBackgroundImageTint);
     this.sprite.cacheAsBitmap = true;
   }
   
   public create(): void {
-    const backgroundData = this.textureGenerator.secondBackgroundImage.baseTexture;
+    const backgroundData = TextureGenerator.secondBackgroundImage.baseTexture;
     const ratio = backgroundData.width / backgroundData.height;
     const width = ratio === 1 ? 50000 : 40000;
     const height = width / ratio + (ratio === 1 ? 0 : 5000);
@@ -45,7 +45,7 @@ export default class GlobalBackground extends Container implements IMapObject {
       this.sprite.destroy();
     }
 
-    this.sprite = new Sprite(this.textureGenerator.secondBackgroundImage);
+    this.sprite = new Sprite(TextureGenerator.secondBackgroundImage);
     this.sprite.width = 14142;
     this.sprite.height = 14142;
     this.sprite.width = width;
@@ -53,7 +53,7 @@ export default class GlobalBackground extends Container implements IMapObject {
     this.sprite.position.set(-width / 2 + 7171, -height / 2 + 7171);
 
     if (!this.displacementSprite) {
-      this.displacementSprite = new Sprite(this.textureGenerator.globalDisplacement);
+      this.displacementSprite = new Sprite(TextureGenerator.globalDisplacement);
       this.displacementSprite.width = width;
       this.displacementSprite.height = height;  
       this.displacementSprite.position.set(0, 0);

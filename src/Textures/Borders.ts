@@ -1,7 +1,8 @@
 import GameSettings from '../Settings/Settings';
-import Globals from '../Globals';
 import { MIPMAP_MODES, SCALE_MODES, Graphics, Container, Rectangle, Texture } from 'pixi.js';
 import { GlowFilter } from '@pixi/filter-glow';
+import { getColor, rgbToStringHex } from '../utils/helpers';
+import Globals from '../Globals';
 
 const generateBorders = () => {
   const {
@@ -22,7 +23,7 @@ const generateBorders = () => {
     const offset = borderGlow ? borderWidth : 0;
     const g = new Graphics();
 
-    g.lineStyle(borderWidth, Globals.getColor(borderColor));
+    g.lineStyle(borderWidth, getColor(borderColor));
     
     if (rounded) {
       g.drawRoundedRect(offset, offset, bordersRenderSize * 1.5 - offset, bordersRenderSize * 1.5 - offset, borderRoundness);
@@ -38,7 +39,7 @@ const generateBorders = () => {
         quality: glowQuality, 
         outerStrength: borderGlowStrength,
         distance: borderGlowDistance, 
-        color: Globals.getColor(borderGlowColor)
+        color: getColor(borderGlowColor)
       })];
       g.y = g.x = borderWidth + borderGlowDistance;
     } else {
@@ -64,11 +65,11 @@ const generateBorders = () => {
 
     canvas.width = canvas.height = renderSize;
 
-    const ratio = Globals.MAP_RATIO;
+    const ratio = 14142 / 2048;
     const _borderGlowDistance = borderGlow ? borderGlowDistance : 1;
     const offset = ((_borderGlowDistance / ratio) + (borderWidth / 2 / ratio)) * 2;
 
-    ctx.strokeStyle = Globals.rgbToStringHex(borderColor);
+    ctx.strokeStyle = rgbToStringHex(borderColor);
     ctx.lineWidth = borderWidth / ratio;
 
     ctx.beginPath();
@@ -80,7 +81,7 @@ const generateBorders = () => {
 
     if (borderGlow) {
       ctx.shadowBlur = _borderGlowDistance / ratio / 1.5;
-      ctx.shadowColor = Globals.rgbToStringHex(borderGlowColor);
+      ctx.shadowColor = rgbToStringHex(borderGlowColor);
           
       for (let i = 0; i < borderGlowStrength; i++) {
         ctx.stroke();

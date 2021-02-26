@@ -1,3 +1,64 @@
+import { utils } from "pixi.js";
+import { RGB } from "../objects/types";
+
+export const createTokens = (party: string, server: string): string => {
+  if (party) {
+    return `${party}%${server}`;
+  } else {
+    return `%${server}`;
+  }
+}
+
+export const getColorLighten = (lighten: number, { red, green, blue }: RGB): number => {
+  const darkenR = lighten / red;
+  const darkenG = lighten / green;
+  const darkenB = lighten / blue;
+
+  const r = darkenR > 1 ? 1 : darkenR;
+  const g = darkenG > 1 ? 1 : darkenG;
+  const b = darkenB > 1 ? 1 : darkenB;
+
+  return utils.rgb2hex([r, g, b]);
+}
+
+export const getColor = ({ red, green, blue }: RGB): number => {
+  const r = red / 255;
+  const g = green / 255;
+  const b = blue / 255;
+
+  return utils.rgb2hex([r, g, b]);
+}
+
+const componentToHex = (c: number): string => {
+  const hex = c ? c.toString(16) : '';
+  return hex.length == 1 ? "0" + hex : hex;
+}
+
+export const rgbToStringHex = ({ red, green, blue }: RGB): string => {
+  return "#" + componentToHex(red) + componentToHex(green) + componentToHex(blue);
+}
+
+export const roundRect = (ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, r: number): void => {
+  const radius = {
+    tl: r, 
+    tr: r, 
+    br: r, 
+    bl: r
+  };
+
+  ctx.beginPath();
+  ctx.moveTo(x + radius.tl, y);
+  ctx.lineTo(x + width - radius.tr, y);
+  ctx.quadraticCurveTo(x + width, y, x + width, y + radius.tr);
+  ctx.lineTo(x + width, y + height - radius.br);
+  ctx.quadraticCurveTo(x + width, y + height, x + width - radius.br, y + height);
+  ctx.lineTo(x + radius.bl, y + height);
+  ctx.quadraticCurveTo(x, y + height, x, y + height - radius.bl);
+  ctx.lineTo(x, y + radius.tl);
+  ctx.quadraticCurveTo(x, y, x + radius.tl, y);
+  ctx.closePath();
+}
+
 /* eslint-disable */
 export const generateClientKey = (option, _relatedTarget) => {
   if (!option.length || !_relatedTarget.byteLength) {

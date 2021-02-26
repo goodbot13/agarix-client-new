@@ -1,3 +1,2 @@
-export default new class Versions {
-  public readonly GAME: string = 'Loading v2.0...';
-}
+export const GAME_VERSION = 'v2.0.3 [test]';
+export const LAODER_TEXT = `Loading ${GAME_VERSION}...`; 

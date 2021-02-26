@@ -1,13 +1,11 @@
-import { createView } from '../../utils/GameSocketHelper';
+import PlayerState from '../../states/PlayerState';
+import { createView } from '../../utils/helpers';
 import Writer from '../../utils/Writer';
+import Captcha from '../Captcha';
 import Socket from './Socket';
 
 export default class Emitter {
-  private socket: Socket;
-
-  constructor(socket: Socket) {
-    this.socket = socket;
-  }
+  constructor(private socket: Socket) { }
 
   public sendSpectate(): void {
     this.sendAction(1);
@@ -25,13 +23,13 @@ export default class Emitter {
     this.sendAction(17);
   }
 
-  public sendAction(action): void {
+  public sendAction(action: 1 | 17 | 18 | 21): void {
     const view = createView(1);
     view.setUint8(0, action);
     this.socket.sendMessage(view);
   }
 
-  public sendPlayerState(state): void {
+  public sendPlayerState(state: number): void {
     var view = createView(1);
     view.setUint8(0, state);
     this.socket.send(view);
@@ -60,12 +58,14 @@ export default class Emitter {
   }
 
   public handleSpawnV3(nick: string): void {
-    this.socket.captcha.handleV3().then((token: string) => this.sendSpawn(nick, token));
+    Captcha.handleV3().then((token: string) => this.sendSpawn(nick, token));
   }
   
   public sendMousePosition(dirty?: boolean, x?: number, y?: number): void { 
+    const focused = (this.socket.tabType === 'FIRST_TAB' && PlayerState.first.focused) ||
+                    (this.socket.tabType === 'SECOND_TAB' && PlayerState.second.focused);
 
-    if (!dirty && !this.socket.isFocused && this.socket.tabType !== 'SPEC_TABS') {
+    if (!dirty && !focused && this.socket.tabType !== 'SPEC_TABS') {
       return;
     } 
 
@@ -94,6 +94,7 @@ export default class Emitter {
     view.setInt32(1, posX, true);
     view.setInt32(5, posY, true);
     view.setUint32(9, this.socket.protocolKey, true);
+
     this.socket.sendMessage(view); 
   }
 

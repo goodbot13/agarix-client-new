@@ -1,15 +1,20 @@
 import * as PIXI from 'pixi.js';
 import { Application, Container, filters, utils } from 'pixi.js';
 import Globals from './Globals';
-import TextureGenerator from './Textures';
+import TextureGenerator from './Textures/TexturesGenerator';
 import World from './render/World';
 import { KawaseBlurFilter } from '@pixi/filter-kawase-blur';
 import Master from './Master';
 import { IMapOffsets } from './tabs/Socket/Socket';
 import Hotkeys from './tabs/Hotkeys';
-import SkinsLoader from './utils/SkinsLoader';
 import GameAPI from './communication/GameAPI';
 import GameSettings from './Settings/Settings';
+import FrontAPI from './communication/FrontAPI';
+import WorldState from './states/WorldState';
+import { createTokens, getColor } from './utils/helpers';
+import PlayerState from './states/PlayerState';
+import GamePerformance from './GamePerformance';
+import { GAME_VERSION } from './Versions';
 
 class Stage {
   public app: Application;
@@ -18,41 +23,32 @@ class Stage {
   public world: World;
   public hue: number;
   public root: Container;
-  public textureGenerator: TextureGenerator;
   public mainContainer: Container;
   public foodVirusCellContainer: Container;
-  public master: Master;
   public unblurStage: () => any;
   public blurStage: () => any;
-  public mainGameTicker: () => void;
   public showStageTicker: () => void;
   public hideTicker: () => void;
   public hotkeys: Hotkeys;
-  public skinsLoader: SkinsLoader;
 
   constructor() {
-    utils.skipHello();
+    utils.sayHello(GAME_VERSION);
     (window as any).GameAPI = new GameAPI(this);
     (window as any).GameSettings = GameSettings.init(this);
 
     this.app = new Application({
-      width: (window as any).width,
-      height: (window as any).height,
       resizeTo: window,
       autoDensity: true,
       sharedLoader: true,
       sharedTicker: true,
       resolution: 1,
-      backgroundColor: Globals.getColor(GameSettings.all.settings.theming.map.backgroundTint),
+      backgroundColor: getColor(GameSettings.all.settings.theming.map.backgroundTint),
       antialias: GameSettings.all.settings.game.performance.antialiasing,
       powerPreference: 'high-performance'
     });
 
     this.stageFilter = new KawaseBlurFilter(0, 8, false);
     this.colorFilter = new filters.ColorMatrixFilter();
-    this.textureGenerator = new TextureGenerator();
-    this.master = new Master();
-    this.skinsLoader = new SkinsLoader(this.master);
 
     PIXI.settings.ANISOTROPIC_LEVEL = 16;
     PIXI.settings.MIPMAP_TEXTURES = PIXI.MIPMAP_MODES.POW2;
@@ -60,14 +56,14 @@ class Stage {
   }
 
   public updateRendererBackgroundColor(): void {
-    this.app.renderer.backgroundColor = Globals.getColor(GameSettings.all.settings.theming.map.backgroundTint);
+    this.app.renderer.backgroundColor = getColor(GameSettings.all.settings.theming.map.backgroundTint);
   }
 
   async init() {
     document.body.appendChild(this.app.view);
     Globals.init(this.app);
 
-    await this.textureGenerator.init();
+    await TextureGenerator.init();
 
     this.world = new World(this);
     this.createMainScene();
@@ -77,55 +73,60 @@ class Stage {
   }
 
   public async play(): Promise<string> {
-    return new Promise(async (res) => {
+    return new Promise(async (resolve: any, reject: any) => {
+      if (PlayerState.first.connected) {
 
-      const existingToken = this.world.controller.firstTabSocket.socketData.token + 
-                            '%' + 
-                            this.world.controller.firstTabSocket.socketData.serverToken;
+        const tokens = createTokens(
+          this.world.controller.firstTabSocket.socketData.token,
+          this.world.controller.firstTabSocket.socketData.serverToken
+        );
 
-      if (!this.world.view.firstTab.isPlaying) {
+        if (PlayerState.first.playing || PlayerState.first.spawning) {
 
-        if (!Globals.gameJoined) {
-          const tokens = await this.connect();
-          
-          this.world.controller.spawnFirstTab()
-            .then(() => {
-              this.unblurGameScene(true);
-              res(tokens);
-            });
+          this.unblurGameScene(true);
+          resolve(tokens);
+
         } else {
-          this.world.controller.spawnFirstTab()
-            .then(() => this.unblurGameScene(true))
-            .then(() => res(existingToken));
+
+          await this.world.controller.spawnFirstTab().then(() => {
+            this.unblurGameScene(true);
+            PlayerState.first.focused = true;
+            resolve(tokens);
+          })
+          .catch(() => reject());
+
         }
 
       } else {
-        res(existingToken);
-        this.unblurGameScene(true);
+        reject();
       }
-
     });
   }
 
-  public async connect(token?: string): Promise<string> {
-    if (Globals.gameJoined) {
+  public async connect(token?: string, serverToken?: boolean): Promise<string> {
+    if (WorldState.gameJoined) {
       await this.disconnect();
+
+      this.world.view.center();
+
+      WorldState.mapOffsets = { minY: 0, minX: 0, maxX: 0, maxY: 0 };
     }
 
-    const socketData = await this.master.connect(token);
+    const socketData = await Master.connect(token, serverToken);
 
-    return this.world.controller
-      .init(socketData)
+    return this.world.controller.init(socketData)
       .then((mapOffsets) => {
         this.join(mapOffsets);
-        return this.world.controller.firstTabSocket.socketData.token + 
-               '%' + 
-               this.world.controller.firstTabSocket.socketData.serverToken;
+      
+        return createTokens(
+          this.world.controller.firstTabSocket.socketData.token, 
+          this.world.controller.firstTabSocket.socketData.serverToken
+        );
       });
   }
 
   public async disconnect(): Promise<boolean> {
-    Globals.gameJoined = false;
+    WorldState.gameJoined = false;
 
     await this.hideGameScene();
 
@@ -136,7 +137,7 @@ class Stage {
   }
 
   public join(mapOffsets: IMapOffsets): void {
-    Globals.gameJoined = true;
+    WorldState.gameJoined = true;
     this.createGameScene(mapOffsets);
     this.showGameScene();
   }
@@ -152,18 +153,24 @@ class Stage {
     this.foodVirusCellContainer.addChild(this.world.food, this.world.cells);
     this.mainContainer.addChild(this.world.map, this.foodVirusCellContainer);
 
-    this.mainGameTicker = () => {
+    let frameStart = performance.now(); 
+
+    this.app.ticker.add(() => {
+      FrontAPI.setEllapsedFrametime(performance.now() - frameStart);
+      frameStart = performance.now();
+
+      GamePerformance.FPSCounter.tick();
+      WorldState.ticks++;
+
       const { x, y, scale } = this.world.view.renderTick();
+
       this.root.position.set(this.app.renderer.width / 2, this.app.renderer.height / 2);
       this.mainContainer.pivot.set(x, y);
       this.mainContainer.scale.set(scale);
       this.world.renderer.renderFrame();
-      Globals.renderTick();
-      this.world.performance.FPSCounter.tick();
-    }
-
-    this.app.ticker.add(() => this.mainGameTicker());
-    this.blurGameScene(true);
+    });
+    
+    this.blurGameScene();
     this.world.map.setPosition(-7071, -7071);
     this.world.view.mouse.zoomValue = 0.25;
   }
@@ -177,7 +184,7 @@ class Stage {
     this.foodVirusCellContainer.alpha = 0;
   }
 
-  public blurGameScene(fast?: boolean) {
+  public blurGameScene() {
     this.world.view.setScrollAvailable(false);
 
     if (GameSettings.all.settings.game.effects.wtfRgbMode) {
@@ -211,9 +218,7 @@ class Stage {
   }
 
   public unblurGameScene(enableScroll: boolean) {
-    if (enableScroll) {
-      this.world.view.setScrollAvailable(true);
-    }
+    this.world.view.setScrollAvailable(enableScroll);
 
     if (GameSettings.all.settings.game.effects.wtfRgbMode) {
       return;
@@ -273,7 +278,7 @@ class Stage {
       }
 
       this.hideTicker = () => {
-        this.foodVirusCellContainer.alpha -= 0.033 * PIXI.Ticker.shared.deltaTime;
+        this.foodVirusCellContainer.alpha -= 0.03 * PIXI.Ticker.shared.deltaTime;
 
         if (this.foodVirusCellContainer.alpha <= 0) {
           this.app.ticker.remove(this.hideTicker);

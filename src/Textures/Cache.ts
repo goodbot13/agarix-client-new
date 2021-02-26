@@ -1,4 +1,5 @@
 import { Texture } from "pixi.js";
+import Logger from "../utils/Logger";
 
 class CachedTexture {
   private lastUsedTime: number;
@@ -23,10 +24,12 @@ class CachedTexture {
 class Cache {
   private massTextures: Map<string, Texture>;
   private nameTextures: Map<string, CachedTexture>;
+  private logger: Logger;
 
   constructor() {
     this.massTextures = new Map();
     this.nameTextures = new Map();
+    this.logger = new Logger('TextureCache');
     /* setInterval(() => this.clearNames(), Settings.globals.textureCheckInterval); */
   }
 
@@ -69,7 +72,7 @@ class Cache {
       }, index * 5); // delay the destroy helps to avoid freezes
     });
 
-    console.info(`[Texture Cache]: textures cleanup due to world change (buffer size: ${this.nameTextures.size}).`,);
+    this.logger.info(`Textures cleanup due to world change (buffer size: ${this.nameTextures.size}).`,);
 
     this.nameTextures.clear();
   }

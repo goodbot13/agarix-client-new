@@ -5,7 +5,6 @@ import Virus from "../objects/Virus/Virus";
 import Food from "../objects/Food";
 
 class Subview {
-  public isPlaying: boolean = false;
   public playerCells: Map<number, Cell>;
   public socketCells: Map<number, Cell | Virus | Food>;
   public viewport: IViewport = { x: 0, y: 0, scale: 0 };
@@ -14,6 +13,7 @@ class Subview {
   public bounds: View.IBounds = { left: 0, right: 0, top: 0, bottom: 0, width: 0, height: 0 };
   public mapOffsets: IMapOffsets = { minX: 0, minY: 0, maxY: 0, maxX: 0 };
   public mapOffsetsShift: IMapOffsetsShift = { x: 0, y: 0 };
+  public sortRequired: boolean = false;
 
   constructor(socketCells?: Map<number, Cell | Virus | Food>, playerCells?: Map<number, Cell>) {
     this.socketCells = socketCells;
@@ -67,6 +67,10 @@ class Subview {
   }
 
   public getShiftedViewport(): IViewport {
+    if (this.mapOffsetsShift.x === 0 && this.mapOffsetsShift.y === 0) {
+      return this.viewport;
+    }
+    
     return {
       x: this.viewport.x + this.mapOffsetsShift.x,
       y: this.viewport.y + this.mapOffsetsShift.y,

@@ -1,9 +1,10 @@
 import { ParticleContainer } from "pixi.js";
-import Globals from "../Globals";
 import { Location } from "../objects/types";
 import ViewBox from "../objects/ViewBox";
 import World from "../render/World";
 import GameSettings from "../Settings/Settings";
+import PlayerState from "../states/PlayerState";
+import { getColor } from "../utils/helpers";
 
 export default class Viewports extends ParticleContainer {
   private firstTab: ViewBox;
@@ -32,11 +33,11 @@ export default class Viewports extends ParticleContainer {
   }
 
   private create(): void {
-    this.topOneTab = new ViewBox(this.world.textureGenerator);
+    this.topOneTab = new ViewBox();
     this.topOneTab.width = 0;
     this.topOneTab.height = 0;
 
-    this.firstTab = new ViewBox(this.world.textureGenerator);
+    this.firstTab = new ViewBox();
     this.firstTab.width = 0;
     this.firstTab.height = 0;
 
@@ -50,7 +51,7 @@ export default class Viewports extends ParticleContainer {
     const { viewport } = GameSettings.all.settings.game.minimap;
 
     if (viewport === 'All' || viewport === 'Main tab') {
-      this.firstTab.visible = this.world.view.firstTab.isPlaying;
+      this.firstTab.visible = PlayerState.first.playing;
 
       const bounds = this.world.view.firstTab.bounds;
       const { x, y } = this.transformLocation({ x: bounds.left, y: bounds.top, r: 0 });
@@ -87,10 +88,10 @@ export default class Viewports extends ParticleContainer {
   public updateColors(): void {
     const { topOneViewportColor, myViewportColor } = GameSettings.all.settings.theming.minimap;
 
-    this.topOneTab.tint = Globals.getColor(topOneViewportColor);
+    this.topOneTab.tint = getColor(topOneViewportColor);
     this.topOneTab.alpha = topOneViewportColor.alpha;
 
-    this.firstTab.tint = Globals.getColor(myViewportColor);
+    this.firstTab.tint = getColor(myViewportColor);
     this.firstTab.alpha = myViewportColor.alpha;
   }
 

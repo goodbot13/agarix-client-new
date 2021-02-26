@@ -1,6 +1,7 @@
 import { Container, utils } from "pixi.js";
 import Cell from '../objects/Cell/index';
 import { Location } from "../objects/types";
+import Ogar from "../Ogar";
 import World from "../render/World";
 import GameSettings from "../Settings/Settings";
 
@@ -45,7 +46,7 @@ export default class TeamPlayers extends Container {
   public renderTick(): void {
     const { playerSize } = GameSettings.all.settings.theming.minimap;
 
-    this.world.ogar.firstTab.team.forEach((player) => {
+    Ogar.firstTab.team.forEach((player) => {
       if (this.buffer.has(player.id)) {
 
         const cell = this.buffer.get(player.id);
@@ -82,7 +83,7 @@ export default class TeamPlayers extends Container {
     });
 
     this.buffer.forEach((cell, key) => {
-      if (!this.world.ogar.firstTab.team.has(key)) {
+      if (!Ogar.firstTab.team.has(key)) {
         cell.destroy({ children: true });
         this.removeChild(cell);
         this.buffer.delete(key);

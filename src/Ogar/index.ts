@@ -1,15 +1,12 @@
-import SkinsLoader from "../utils/SkinsLoader";
 import Socket from "./Socket";
 
-class Ogar {
+export default new class Ogar {
   public firstTab: Socket;
   public secondTab: Socket;
-  public connected: boolean = false;
+  public connected = false;
 
-  constructor(skinsLoader: SkinsLoader) {
-    this.firstTab = new Socket(skinsLoader, false);
-    this.secondTab = new Socket(skinsLoader, true);
+  constructor() {
+    this.firstTab = new Socket(false);
+    this.secondTab = new Socket(true);
   }
 }
-
-export default Ogar;

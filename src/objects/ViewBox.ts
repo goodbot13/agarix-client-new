@@ -1,11 +1,10 @@
 import { Sprite } from "pixi.js";
-import TextureGenerator from "../Textures";
+import TextureGenerator from "../Textures/TexturesGenerator";
 import * as PIXI from 'pixi.js';
-import GameSettings from "../Settings/Settings";
 
 class ViewBox extends Sprite {
-  constructor(textureGenerator: TextureGenerator) {
-    super(textureGenerator.viewBox);
+  constructor() {
+    super(TextureGenerator.viewBox);
     this.x = 0;
     this.y = 0;
   }

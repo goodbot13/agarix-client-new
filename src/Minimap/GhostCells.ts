@@ -1,10 +1,10 @@
 import { Container } from "pixi.js";
-import Globals from '../Globals';
 import Cell from '../objects/Cell/index';
 import { Location } from "../objects/types";
 import World from "../render/World";
 import GameSettings from "../Settings/Settings";
 import { IGhostCell } from "../tabs/Socket/Receiver";
+import { getColor } from "../utils/helpers";
 
 export default class GhostCells extends Container {
   private buffer: Array<Cell>;
@@ -26,7 +26,8 @@ export default class GhostCells extends Container {
       .map(() => {
         const cell = new Cell('TOP_ONE_TAB', { x: 0, y: 0, r: 0 }, ghostCellsColor, '', '', this.world);
         cell.setIsMinimapCell(true);
-        cell.cell.tint = Globals.getColor(ghostCellsColor);
+        cell.cell.tint = getColor(ghostCellsColor);
+        cell.shadow.sprite.visible = false;
 
         return cell;
     });
@@ -85,7 +86,7 @@ export default class GhostCells extends Container {
   }
 
   public updateColor(): void {
-    this.buffer.forEach((cell) => cell.cell.tint = Globals.getColor(GameSettings.all.settings.theming.minimap.ghostCellsColor));
+    this.buffer.forEach((cell) => cell.cell.tint = getColor(GameSettings.all.settings.theming.minimap.ghostCellsColor));
   }
 
   public reset(): void {

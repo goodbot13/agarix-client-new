@@ -4,6 +4,8 @@ import RemoveAnimation from '../../objects/RemoveAnimation';
 import Virus from '../../objects/Virus/Virus';
 import World from '../World';
 import GameSettings from '../../Settings/Settings';
+import PlayerState from '../../states/PlayerState';
+import Master from '../../Master';
 
 export default class CellsRenderer {
 
@@ -15,20 +17,20 @@ export default class CellsRenderer {
     const { type, x, y } = cell;
     let isPlayerCell = false;
 
-    if (firstTab.isPlaying && firstTab.hasInViewBounds(x, y)) {
+    if (PlayerState.first.playing && firstTab.hasInViewBounds(x, y)) {
       visible = false;
     } 
     
-    if (secondTab.isPlaying && secondTab.hasInViewBounds(x, y)) {
+    if (PlayerState.second.playing && secondTab.hasInViewBounds(x, y)) {
       visible = false;
     }
 
-    if (firstTab.isPlaying && type === 'CELL' && this.world.playerCells.isFirstTab(cell as Cell)) {
+    if (PlayerState.first.playing && type === 'CELL' && this.world.playerCells.isFirstTab(cell as Cell)) {
       visible = false;
       isPlayerCell = true;
     }
     
-    if (secondTab.isPlaying && type === 'CELL' && this.world.playerCells.isSecondTab(cell as Cell)) {
+    if (PlayerState.second.playing && type === 'CELL' && this.world.playerCells.isSecondTab(cell as Cell)) {
       visible = false;
       isPlayerCell = true;
     }
@@ -52,6 +54,8 @@ export default class CellsRenderer {
 
     const fullMapViewEnabled = GameSettings.all.settings.game.gameplay.spectatorMode === 'Full map';
     const topOneViewEnabled = GameSettings.all.settings.game.gameplay.spectatorMode === 'Top one';
+    const isPartyMode = Master.gameMode.get() === ':party';
+
     const { subtype, type, x, y } = cell;
     const { firstTab, secondTab, topOneTab } = this.world.view;
 
@@ -92,7 +96,7 @@ export default class CellsRenderer {
       if (subtype === 'FIRST_TAB' && type === 'CELL') {
         if (this.world.playerCells.isSecondTab(cell as Cell)) {
           visible = false;
-        } /* else if (!firstTab.isPlaying) {
+        } /* else if (!PlayerState.first.playing) {
           visible = false;
         } */
       }
@@ -101,16 +105,21 @@ export default class CellsRenderer {
       if (subtype === 'SECOND_TAB' && type === 'CELL') {
         if (this.world.playerCells.isFirstTab(cell as Cell)) {
           visible = false;
-        } /* else if (!secondTab.isPlaying) {
+        } /* else if (!PlayerState.second.playing) {
           visible = false;
         } */
       }
 
       if (type === 'VIRUS') {
         if (fullMapViewEnabled) {
-          visible = false;
+
+          // tmp
+          if (isPartyMode) {
+            visible = false;
+          }
+
         } else if (GameSettings.all.settings.game.multibox.enabled) {
-          if (firstTab.isPlaying && secondTab.isPlaying) {
+          if (PlayerState.first.playing && PlayerState.second.playing) {
             if (subtype === 'SECOND_TAB') {
               visible = !firstTab.hasInViewBounds(x, y);
             }
@@ -120,11 +129,11 @@ export default class CellsRenderer {
             }
           } else {
             if (subtype === 'FIRST_TAB') {
-              visible = firstTab.isPlaying;
+              visible = PlayerState.first.playing;
             }
   
             if (subtype === 'SECOND_TAB') {
-              visible = secondTab.isPlaying;
+              visible = PlayerState.second.playing;
             }
           }
         } else if (topOneViewEnabled) {
@@ -134,8 +143,8 @@ export default class CellsRenderer {
         }
       }
 
-      if (type === 'REMOVE_ANIMATION') {
-        if (fullMapViewEnabled) {
+      if (type === 'REMOVE_ANIMATION' && fullMapViewEnabled) {
+        if (isPartyMode) {
           visible = false;
         }
       }

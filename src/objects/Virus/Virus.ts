@@ -4,6 +4,8 @@ import { Location, Subtype, RemoveType, CellType, IMainGameObject } from "../typ
 import VirusShots from "./VirusShots";
 import World from "../../render/World";
 import * as PIXI from 'pixi.js';
+import PlayerState from "../../states/PlayerState";
+import TextureGenerator from '../../Textures/TexturesGenerator';
 
 class Virus extends Container implements IMainGameObject {
   public readonly subtype: Subtype;
@@ -19,21 +21,18 @@ class Virus extends Container implements IMainGameObject {
   public type: CellType;
 
   private shots: VirusShots;
-  private world: World;
   private sizeOffset: number;
   private SPEED: number = 0.065;
 
-  constructor(location: Location, subtype: Subtype, world: World) {
+  constructor(location: Location, subtype: Subtype) {
     super();
 
-    this.world = world;
-
     this.type = 'VIRUS';
-    this.virus = new Sprite(world.textureGenerator.virus);
+    this.virus = new Sprite(TextureGenerator.virus);
     this.virus.anchor.set(0.5);
     this.addChild(this.virus);
 
-    this.shots = new VirusShots(world.textureGenerator);
+    this.shots = new VirusShots();
     this.addChild(this.shots);
 
     const { x, y, r } = location;
@@ -85,7 +84,7 @@ class Virus extends Container implements IMainGameObject {
   }
 
   private animateOutOfView() {
-    if (GameSettings.all.settings.game.multibox.enabled && this.world.view.firstTab.isPlaying && this.world.view.secondTab.isPlaying) {
+    if (GameSettings.all.settings.game.multibox.enabled && PlayerState.first.playing && PlayerState.second.playing) {
       this.destroy({ children: true });
       this.isDestroyed = true;
     } else if (this.alpha <= 0) {
@@ -116,8 +115,8 @@ class Virus extends Container implements IMainGameObject {
   private animateMove(): void  {
     const { deltaTime } = PIXI.Ticker.shared;
     const instantAnimation = GameSettings.all.settings.game.multibox.enabled && 
-                             this.world.view.firstTab.isPlaying && 
-                             this.world.view.secondTab.isPlaying && 
+                             PlayerState.first.playing && 
+                             PlayerState.second.playing && 
                              GameSettings.all.settings.game.gameplay.spectatorMode === 'Full map';
 
     let x = (this.newLocation.x - this.x) * this.getAnimationSpeed();

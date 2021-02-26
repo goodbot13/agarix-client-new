@@ -1,24 +1,18 @@
 import Globals from "../Globals";
-import Ogar from "../Ogar";
 import GameSettings from "../Settings/Settings";
 import UICommunicationService from "../communication/FrontAPI";
-import View from "../View";
 import Controller from "./Contollers/TabsController";
 import Emitter from "./Socket/Emitter";
+import PlayerState from "../states/PlayerState";
+import Ogar from "../Ogar";
 
-class Hotkeys {
+class Hotkeys implements IGameAPIHotkeys {
   private macroFeedInterval: any;
   private controller: Controller;
-  private view: View;
-  private ogar: Ogar;
-
-  public firstTabSpawning: boolean = false;
-  public secondTabSpawning: boolean = false;
   
-  constructor(controller: Controller, view: View, ogar: Ogar) {
+  constructor(controller: Controller) {
     this.controller = controller;
-    this.view = view;
-    this.ogar = ogar;
+    (window as any).GameAPI.hotkeys = this;
   }
 
   private splitTimes(times: number, emitter: Emitter) {
@@ -43,37 +37,28 @@ class Hotkeys {
   }
 
   public macroFeed(): void {
-
     const { firstTabSocket, secondTabSocket, currentFocusedTab } = this.controller;
 
     if (!this.macroFeedInterval) {
-
       if (currentFocusedTab === 'FIRST_TAB') {
-
-        // feed once without delay
         firstTabSocket.emitter.sendMousePosition();
         firstTabSocket.emitter.sendFeed();
 
-        this.macroFeedInterval = setInterval(() => {
-          firstTabSocket.emitter.sendMousePosition();
-          firstTabSocket.emitter.sendFeed();
-        }, 80);
-
       } else {
-
-        // feed once without delay
         secondTabSocket.emitter.sendMousePosition();
         secondTabSocket.emitter.sendFeed();
-
-        this.macroFeedInterval = setInterval(() => {
-          secondTabSocket.emitter.sendMousePosition();
-          secondTabSocket.emitter.sendFeed();
-        }, 80);
-
       } 
 
+      this.macroFeedInterval = setInterval(() => {
+        if (currentFocusedTab === 'FIRST_TAB') {
+          firstTabSocket.emitter.sendMousePosition();
+          firstTabSocket.emitter.sendFeed();
+        } else {
+          secondTabSocket.emitter.sendMousePosition();
+          secondTabSocket.emitter.sendFeed();
+        }
+      }, 80);
     }
-
   }
 
   public stopFeed(): void {
@@ -115,23 +100,25 @@ class Hotkeys {
 
   public async quickRespawn(): Promise<any> {
     if (this.controller.currentFocusedTab === 'FIRST_TAB') {
-      UICommunicationService.sendChatMessage('Could not disconnect main player tab.');
+      this.controller.disconnectFirstTab();
+
+      await this.controller.connectFirstPlayerTab();
+      await this.controller.spawnFirstTab();
+      this.controller.setFirstTabActive();
     } else {
       this.controller.disconnectSecondTab();
 
       await this.controller.connectSecondPlayerTab();
       await this.controller.spawnSecondTab();
       this.controller.setSecondTabActive();
-
     }
   }
 
   // toggle
   public pauseCell(): void {
     const { firstTabSocket, secondTabSocket, currentFocusedTab } = this.controller;
-    const { firstTab, secondTab } = this.view;
 
-    if (firstTab.isPlaying && currentFocusedTab === 'FIRST_TAB') {
+    if (PlayerState.first.playing && currentFocusedTab === 'FIRST_TAB') {
       if (firstTabSocket.isPaused()) {
         firstTabSocket.resumeCell();
       } else {
@@ -139,7 +126,7 @@ class Hotkeys {
       }
     }
 
-    if (secondTab.isPlaying && currentFocusedTab === 'SECOND_TAB') {
+    if (PlayerState.second.playing && currentFocusedTab === 'SECOND_TAB') {
       if (secondTabSocket.isPaused()) {
         secondTabSocket.resumeCell();
       } else {
@@ -152,7 +139,7 @@ class Hotkeys {
     
   }
 
-  public toggleCellsSkins(): void {
+  public toggleCellSkins(): void {
     /* Settings.cells.allowSkins = !Settings.cells.allowSkins; */
   }
 
@@ -162,72 +149,113 @@ class Hotkeys {
   }
 
   public toggleCellRings(): void {
-    /* Settings.cells.ringsEnabled = !Settings.cells.ringsEnabled; */
+    /* if (GameSettings.all.settings.game.cells.ringsType) */
   }
 
   public switchTabs(): void {
-    if (GameSettings.all.settings.game.multibox.enabled) {
-
-      if (this.view.firstTab.isPlaying && this.view.secondTab.isPlaying) {
-
-        // fix for inactive tab feeding
-        clearInterval(this.macroFeedInterval);
-
-        if (this.controller.currentFocusedTab === 'FIRST_TAB') {
-          this.controller.setSecondTabActive();
-        } else {
-          this.controller.setFirstTabActive();
-        }
-
-        return;
-      }
-
-      if (this.view.firstTab.isPlaying) {
-
-        if (!this.secondTabSpawning) {
-
-          this.secondTabSpawning = true;
-
-          UICommunicationService.sendChatMessage('Attempting to spawn second tab.');
-
-          this.controller.spawnSecondTab().then(() => {
-            this.controller.setSecondTabActive();
-            this.secondTabSpawning = false;
-          }).catch(() => {
-            UICommunicationService.sendChatMessage('Second tab spawn failed.');
-            this.secondTabSpawning = false;
-          });
-
-        }
-
-        return;
-      } 
-
-      if (this.view.secondTab.isPlaying) {
-
-        if (!this.firstTabSpawning) {
-
-          this.firstTabSpawning = true;
-
-          UICommunicationService.sendChatMessage('Attempting to spawn first tab.');
-        
-          this.controller.spawnFirstTab().then(() => {
-            this.controller.setFirstTabActive();
-            this.firstTabSpawning = false;
-          }).catch(() => {
-            UICommunicationService.sendChatMessage('First tab spawn failed.');
-            this.firstTabSpawning = false;
-          });
-
-        }
-
-        return;
-      }
+    if (!GameSettings.all.settings.game.multibox.enabled) {
+      return;
     }
-  }
 
-  public toggleFoodRender(): void {
-    /* Settings.food.enabled = !Settings.food.enabled; */
+
+    if (PlayerState.first.playing && PlayerState.second.playing) {
+
+      if (this.controller.currentFocusedTab === 'FIRST_TAB') {
+        this.controller.setSecondTabActive();
+
+        if (this.macroFeedInterval) {
+          this.stopFeed();
+          this.macroFeed();
+        }
+      } else {
+        this.controller.setFirstTabActive();
+
+        if (this.macroFeedInterval) {
+          this.stopFeed();
+          this.macroFeed();
+        }
+      }
+
+      return;
+    }
+
+    if (PlayerState.first.playing) {
+
+      if (!PlayerState.second.spawning) {
+        PlayerState.second.spawning = true;
+        UICommunicationService.sendChatGameMessage('Attempting to spawn second tab.');
+      
+        this.controller.spawnSecondTab().then(() => {
+          this.controller.setSecondTabActive();
+          PlayerState.second.spawning = false;
+          PlayerState.second.shouldBeReconnected = false;
+        }).catch(() => {
+          UICommunicationService.sendChatGameMessage('Second tab spawn failed.');
+          PlayerState.second.spawning = false;
+          PlayerState.second.shouldBeReconnected = false;
+        });
+      } else {
+        if (PlayerState.second.shouldBeReconnected) {
+          UICommunicationService.sendChatGameMessage('Reconnecting second tab.');
+          PlayerState.second.shouldBeReconnected = false;
+
+          this.controller.disconnectSecondTab();
+          this.controller.connectSecondPlayerTab().then(() => {
+            PlayerState.second.spawning = true;
+            UICommunicationService.sendChatGameMessage('Attempting to spawn second tab.');
+
+            this.controller.spawnSecondTab().then(() => {
+              this.controller.setSecondTabActive();
+              PlayerState.second.spawning = false;
+            });
+          });
+        } else {
+          UICommunicationService.sendChatGameMessage('Second tab is already attempting to spawn. Press again to reconnect.');
+          PlayerState.second.shouldBeReconnected = true;
+        }
+      }
+
+    } 
+
+    if (PlayerState.second.playing) {
+
+      if (!PlayerState.first.spawning) {
+        PlayerState.first.spawning = true;
+        UICommunicationService.sendChatGameMessage('Attempting to spawn first tab.');
+      
+        this.controller.spawnFirstTab().then(() => {
+          this.controller.setFirstTabActive();
+          PlayerState.first.spawning = false;
+          PlayerState.first.shouldBeReconnected = false;
+        }).catch(() => {
+          UICommunicationService.sendChatGameMessage('First tab spawn failed.');
+          PlayerState.first.spawning = false;
+          PlayerState.first.shouldBeReconnected = false;
+        });
+      } else {
+        if (PlayerState.first.shouldBeReconnected) {
+          UICommunicationService.sendChatGameMessage('Reconnecting first tab.');
+          PlayerState.first.shouldBeReconnected = false;
+
+          this.controller.disconnectFirstTab();
+          this.controller.connectFirstPlayerTab().then(() => {
+            PlayerState.first.spawning = true;
+            UICommunicationService.sendChatGameMessage('Attempting to spawn first tab.');
+
+            this.controller.spawnFirstTab().then(() => {
+              this.controller.setFirstTabActive();
+              PlayerState.first.spawning = false;
+            });
+          });
+        } else {
+          UICommunicationService.sendChatGameMessage('First tab is already attempting to spawn. Press again to reconnect.');
+          PlayerState.first.shouldBeReconnected = true;
+        }
+        
+      }
+
+      return;
+    }
   }
 
   public toggleFullmapViewRender(): void {
@@ -235,8 +263,27 @@ class Hotkeys {
   }
 
   public sendCommand(text: string): void { 
-    this.ogar.firstTab.sendChatCommander(text);
+    Ogar.firstTab.sendChatCommander(text);
   }
 }
 
 export default Hotkeys;
+
+interface IGameAPIHotkeys {
+  sendCommand(text: string): void,
+  toggleFullmapViewRender(): void,
+  switchTabs(): void,
+  toggleCellRings(): void,
+  toggleMyCellStats(): void,
+  toggleCellSkins(): void,
+  toggleCellHelpers(): void,
+  pauseCell(): void,
+  quickRespawn(): Promise<any>,
+  split16(): void,
+  tripleSplit(): void,
+  doubleSplit(): void,
+  split(): void,
+  stopFeed(): void,
+  macroFeed(): void,
+  feed(): void,
+}

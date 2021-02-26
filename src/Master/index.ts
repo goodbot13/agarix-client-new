@@ -4,8 +4,10 @@ import EnvConfig from './EnvConfig';
 import GameMode from './GameMode';
 import AgarSkinsList from "./Skins";
 import GameSettings from '../Settings/Settings';
+import FacebookLogin from "../tabs/Login/FacebookLogin";
+import GoogleLogin from "../tabs/Login/GoogleLogin";
 
-class Master {
+export default new class Master {
   private readonly AGAR_CORE: string = "https://agar.io/agario.core.js";
   private readonly MC_CORE: string = "https://agar.io/mc/agario.js";
 
@@ -116,6 +118,10 @@ class Master {
       // receive environment & parse it
       await this.envConfig.init();
 
+      // set login app ids
+      FacebookLogin.FB_APP_ID = this.envConfig.FB_APP_ID;
+      GoogleLogin.GOOGLE_CLIENT_ID = this.envConfig.GOOGLE_CLIENT_ID;
+
       await this.setClientAndsupportProtocolVersion();
       await this.setProtocolVersion();
       await this.getRegionsInfo();
@@ -125,7 +131,22 @@ class Master {
     });
   }
 
-  public async connect(token?: string): Promise<ISocketData> {
+  private connectByServerToken(token: string): ISocketData {
+    return {
+      address: `wss://live-arena-${token}.agar.io:443`,
+      https: `wss://live-arena-${token}.agar.io:443`,
+      protocolVersion: this.protocolVersion,
+      clientVersionInt: this.clientVersionInt,
+      clientVersionString: this.clientVersionString,
+      serverToken: token
+    }
+  }
+
+  public async connect(token?: string, serverToken?: boolean): Promise<ISocketData> {
+    if (serverToken) {
+      return Promise.resolve(this.connectByServerToken(token));
+    }
+
     if (this.gameMode.get() === ':party') {
       return this.joinParty(token);
     } else {
@@ -210,7 +231,7 @@ class Master {
     });
   }
 
-  private assembleSocketData(data: any): ISocketData {
+  private assembleSocketData(data: IResponseSocketData): ISocketData {
     const address = data.token ? `wss://${data.endpoints.https}?party_id=${data.token}` : `wss://${data.endpoints.https}`;
     const serverToken = data.endpoints.https.split('-')[2].split('.')[0]; // 'live-arena-1jkvvq9.agar.io:443' -> 1jkvvq9
   
@@ -226,4 +247,11 @@ class Master {
   }
 }
 
-export default Master;
+interface IResponseSocketData {
+  token?: string,
+  status: string,
+  endpoints: {
+    https: string,
+    http: string
+  },
+}

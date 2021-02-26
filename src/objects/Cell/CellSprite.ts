@@ -1,11 +1,10 @@
 import { Sprite } from "pixi.js";
 import Cell from ".";
-import Globals from "../../Globals";
-import World from '../../render/World';
+import TextureGenerator from '../../Textures/TexturesGenerator';
 
 export default class CellSprite extends Sprite {
-  constructor(world: World, size: number, private cell: Cell) {
-    super(world.textureGenerator.cell);
+  constructor(size: number, private cell: Cell) {
+    super(TextureGenerator.cell);
     this.sortableChildren = true;
     this.width = size;
     this.height = size;

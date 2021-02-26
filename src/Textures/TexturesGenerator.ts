@@ -12,8 +12,10 @@ import generateMultiboxLinedRing from './MultiboxRing';
 import Cache from './Cache';
 import FrontAPI from '../communication/FrontAPI';
 import GameSettings from '../Settings/Settings';
+import generateMyCellShadow from './MyCellShadow';
+import Logger from '../utils/Logger';
 
-class TextureGenerator {
+export default new class TextureGenerator {
   public mapBackgroundImage: Texture;
   public secondBackgroundImage: Texture;
   public backgroundDisplacement: Texture;
@@ -27,6 +29,7 @@ class TextureGenerator {
   public mapBordersRgbLine: Texture;
   public cell: Texture;
   public cellShadow: Texture;
+  public myCellShadow: Texture;
   public food: Texture;
   public removeEffect: Texture;
   public virus: Texture;
@@ -37,8 +40,11 @@ class TextureGenerator {
   public removeAnimationHSLO3D: Texture;
   public removeAnimationYue: Array<Texture> = [];
 
+  private logger: Logger;
+
   constructor() {
     this.cache = new Cache();
+    this.logger = new Logger('TextureGenerator');
   }
 
   private async loadImg(url: string): Promise<HTMLImageElement> {
@@ -48,7 +54,7 @@ class TextureGenerator {
       img.src = url;
       img.onload = () => resolve(img);
       img.onerror = () => {
-        console.log('[GameLoader]: Reosurce not found:', url, '(skipped)');
+        this.logger.error(`[GameLoader]: Reosurce not found: ${!url ? '[EMPTY_URL]' : url} (skipped)`);
         resolve(new Image());
       }
     });
@@ -157,7 +163,7 @@ class TextureGenerator {
   public async init(): Promise<any> {
     await this.load();
 
-    const delay = () => new Promise((resolve: any) => setTimeout(() => resolve(), 144));
+    const delay = () => new Promise((resolve: any) => setTimeout(() => resolve(), 50));
 
     await delay(); this.generateCell(); 
     await delay(); this.generateFood(); 
@@ -167,6 +173,7 @@ class TextureGenerator {
     await delay(); this.generateCellShadow(); 
     await delay(); this.generateRemoveEffect(); 
     await delay(); this.generateViewBox();
+    await delay(); this.generateMyCellShadow();
     await delay(); this.mapBordersRgbLine = generateRgbBorderLine();
     await delay(); this.virusShots = generateVirusShots();
 
@@ -224,6 +231,9 @@ class TextureGenerator {
     this.removeFromCache(this.cellShadow);
     this.cellShadow = generateCellShadow();
   }
-}
 
-export default TextureGenerator;
+  public generateMyCellShadow() {
+    this.removeFromCache(this.myCellShadow);
+    this.myCellShadow = generateMyCellShadow();
+  }
+}

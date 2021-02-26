@@ -1,12 +1,11 @@
 import { Sprite, Texture, MIPMAP_MODES, SCALE_MODES, utils } from "pixi.js";
 import Cell from ".";
 import GameSettings from "../../Settings/Settings";
+import TextureGenerator from '../../Textures/TexturesGenerator';
 
 export default class CellStats {
   public name: Sprite;
   public mass: Sprite;
-  private nameInserted: boolean;
-  private massInserted: boolean;
 
   constructor(private cell: Cell) {
     let nick = cell.nick === undefined ? '__undefined__' : cell.nick;
@@ -50,7 +49,7 @@ export default class CellStats {
         this.mass.visible = false;
         this.name.visible = false;
       } else {
-        const visible = autoHideMassAndNicks ? this.cell.originalSize > (22 / this.cell.world.view.camera.scale) : true;
+        const visible = autoHideMassAndNicks ? this.cell.originalSize > (20 / this.cell.world.view.camera.scale) : true;
         this.mass.visible = visible && mass;
         this.name.visible = visible && nicks;
       }
@@ -63,27 +62,25 @@ export default class CellStats {
   }
 
   public updateNick(_nick: string): void {
-    const { cache } = this.cell.world.textureGenerator;
-    const nameTexture = cache.getNameTexture(_nick);
+    const nameTexture = TextureGenerator.cache.getNameTexture(_nick);
 
     if (nameTexture) {
       this.name.texture = nameTexture;
     } else {
       const texture = this.createText(_nick);
-      cache.addNameTexture(_nick, texture);
+      TextureGenerator.cache.addNameTexture(_nick, texture);
       this.name.texture = texture;
     }
   }
 
   public updateMass(_mass: string): void {
-    const { cache } = this.cell.world.textureGenerator;
-    const massTexture = cache.getMassTexture(_mass);
+    const massTexture = TextureGenerator.cache.getMassTexture(_mass);
 
     if (massTexture) {
       this.mass.texture = massTexture;
     } else {
       const texture = this.createText(_mass, false);
-      cache.addMassTexture(_mass, texture);
+      TextureGenerator.cache.addMassTexture(_mass, texture);
       this.mass.texture = texture;
     }
   }

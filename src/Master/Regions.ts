@@ -1,4 +1,3 @@
-import Settings from "../Settings";
 import UICommunicationService from "../communication/FrontAPI";
 
 export default class Regions {

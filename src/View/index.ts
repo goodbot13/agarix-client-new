@@ -3,7 +3,10 @@ import { IViewport } from "../tabs/Socket/Socket";
 import GameSettings from "../Settings/Settings";
 import SocketCells from "../render/SocketCells";
 import PlayerCells from "../render/PlayerCells";
+import PlayerState from "../states/PlayerState";
+import WorldState from "../states/WorldState";
 import Ogar from "../Ogar";
+import * as PIXI from 'pixi.js';
 
 class View {
   public mouse: View.IWindowMouse = { x: 0,  y: 0, zoomValue: 0.0375};
@@ -11,20 +14,14 @@ class View {
   public firstTab: Subview;
   public secondTab: Subview;
   public topOneTab: Subview;
-  public centered: boolean = false;
-  public topOneSpectating: boolean = false;
-  public freeSpectating: boolean = false;
 
   private scrollAvailable: boolean = false;
   private globalWindowBounds: View.IGlobaWindowBounds = { width: 0, height: 0, scale: 0 }
 
-  constructor(data: View.ITabs, private canvas: HTMLCanvasElement, private ogar: Ogar) {
+  constructor(data: View.ITabs, private canvas: HTMLCanvasElement) {
     this.firstTab = new Subview(data.socketCells.firstTab.data, data.playerCells.firstTab);
     this.secondTab = new Subview(data.socketCells.secondTab.data, data.playerCells.secondTab);
     this.topOneTab = new Subview(data.socketCells.topOneTab.data);
-
-    this.canvas = canvas;
-    this.ogar = ogar;
 
     window.addEventListener('mousemove', (e) => {
       this.mouse.x = e.clientX;
@@ -36,7 +33,7 @@ class View {
         return;
       }
 
-      this.mouse.zoomValue *= Math.pow((0.835 + (GameSettings.all.settings.game.gameplay.zoomSpeed / 100)), (e.deltaY / 140 || e.detail || 0))
+      this.mouse.zoomValue *= Math.pow((0.8 + (GameSettings.all.settings.game.gameplay.zoomSpeed / 100)), (e.deltaY / 140 || e.detail || 0))
 
       if (this.mouse.zoomValue <= 0.0228) {
         this.mouse.zoomValue = 0.02281;
@@ -62,37 +59,20 @@ class View {
     this.scrollAvailable = value;
   }
 
-  public center(): void {
-    this.freeSpectating = false;
-    this.topOneSpectating = false;
-    this.centered = true;
-  }
-
-  public spectateTopOne(): void {
-    this.freeSpectating = false;
-    this.centered = false;
-    this.topOneSpectating = true;
-  }
-
-  public freeSpectate(): void {
-    this.centered = false;
-    this.topOneSpectating = false;
-    this.freeSpectating = true;
-  }
-
-
   private calcScale(): void {
     const zoom = Math.max(this.canvas.width / 1080, this.canvas.height / 1920) * this.mouse.zoomValue;
     this.camera.scale = (9 * this.camera.scale + zoom) / 10;
   }
 
   private calcCam(valueX: number, valueY: number, isPlaying?: boolean): void {
-    if (isPlaying) {
+    if (isPlaying && GameSettings.all.settings.game.gameplay.cameraStyle === 'Default') {
       this.camera.x = (this.camera.x + valueX) / 2;
       this.camera.y = (this.camera.y + valueY) / 2;
     } else {
-      this.camera.x = ((29 * this.camera.x + valueX) / 30);
-      this.camera.y = ((29 * this.camera.y + valueY) / 30);
+      const speed = GameSettings.all.settings.game.gameplay.cameraSpeed * 6 * PIXI.Ticker.shared.deltaTime;
+
+      this.camera.x = ((speed - 1) * this.camera.x + valueX) / speed;
+      this.camera.y = ((speed - 1) * this.camera.y + valueY) / speed;
     }
 
     this.globalWindowBounds.width = this.canvas.width / 2 / this.camera.scale;
@@ -116,73 +96,109 @@ class View {
   }
 
   private updateOgar() {
-    if (!this.ogar.connected) {
+    if (!Ogar.connected) {
       return;
     }
 
-    this.ogar.firstTab.updatePosition(
+    Ogar.firstTab.updatePosition(
       this.firstTab.viewport.x - (this.firstTab.mapOffsets.minX + 7071),
       this.firstTab.viewport.y - (this.firstTab.mapOffsets.minY + 7071),
       this.firstTab.playerBox.mass
     );
     
-    this.ogar.secondTab.updatePosition(
+    Ogar.secondTab.updatePosition(
       this.secondTab.viewport.x - (this.secondTab.mapOffsets.minX + 7071),
       this.secondTab.viewport.y - (this.secondTab.mapOffsets.minY + 7071),
       this.secondTab.playerBox.mass
     );
   }
 
+  public center(): void {
+    WorldState.spectator.free = false;
+    WorldState.spectator.topOne = false;
+    WorldState.spectator.center = true;
+    WorldState.spectator.topOneWithFirst = false;
+  }
+
+  public spectateTopOne(firstTab: boolean): void {
+    WorldState.spectator.free = false;
+    WorldState.spectator.center = false;
+    WorldState.spectator.topOne = true;
+    WorldState.spectator.topOneWithFirst = firstTab;
+  }
+
+  public freeSpectate(): void {
+    WorldState.spectator.center = false;
+    WorldState.spectator.topOne = false;
+    WorldState.spectator.free = true;
+    WorldState.spectator.topOneWithFirst = false;
+  }
+
   private updateCamera(): void {
-    if (this.centered && !this.firstTab.isPlaying && !this.secondTab.isPlaying) {
+    const { firstTab, secondTab, topOneTab } = this;
 
-      const x = (this.firstTab.mapOffsets.minX + this.firstTab.mapOffsets.maxX) / 2;
-      const y = (this.firstTab.mapOffsets.minY + this.firstTab.mapOffsets.maxY) / 2;
+    const notPlaying = !PlayerState.first.playing && !PlayerState.second.playing;
 
+    // veis is centered and player is not playing
+    if (WorldState.spectator.center && notPlaying) {
+
+      const x = (WorldState.mapOffsets.minX + WorldState.mapOffsets.maxX) / 2;
+      const y = (WorldState.mapOffsets.minY + WorldState.mapOffsets.maxY) / 2;
       this.calcCam(x, y);
 
+    } else if (WorldState.spectator.topOne && !WorldState.spectator.topOneWithFirst && notPlaying) {
+
+      // spectating top one with top one tab
+      const { x, y } = topOneTab.getShiftedViewport();
+      this.calcCam(x, y, false);
+        
     } else {
 
-      const isSpectating = this.freeSpectating || this.topOneSpectating;
-      const isPlaying = this.firstTab.isPlaying || this.secondTab.isPlaying;
+      const isSpectating = WorldState.spectator.free || (WorldState.spectator.topOne && WorldState.spectator.topOneWithFirst);
 
-      if (isSpectating && !isPlaying) {
-        this.calcCam(this.firstTab.viewport.x, this.firstTab.viewport.y);
+      // spectating top one with first player tab.
+      // used when gameMode !== :party or when spectateType === 'Disabled'
+      if (isSpectating && notPlaying) {
+        const { x, y } = firstTab.getShiftedViewport();
+        this.calcCam(x, y);
       } else {
 
         // game is not centered, check if playing 
-        if (this.firstTab.isPlaying || this.secondTab.isPlaying) {
+        if (PlayerState.first.playing || PlayerState.second.playing) {
 
           // user is playing, check if multibox
           if (GameSettings.all.settings.game.multibox.enabled) {
 
             // calc centered cam between the tabs and correct cursor position
-            if (this.firstTab.isPlaying && this.secondTab.isPlaying) {
-              const { x, y } = this.secondTab.getShiftedViewport();
+            if (PlayerState.first.playing && PlayerState.second.playing) {
+              const { x, y } = secondTab.getShiftedViewport();
+              const ftv = firstTab.getShiftedViewport();
 
-              this.calcCam((this.firstTab.viewport.x + x) / 2, (this.firstTab.viewport.y + y) / 2, true);
+              this.calcCam((ftv.x + x) / 2, (ftv.y + y) / 2, true);
 
-              this.firstTab.cursor.x -= (this.firstTab.viewport.x - x) / 2;
-              this.firstTab.cursor.y -= (this.firstTab.viewport.y - y) / 2;
-              this.secondTab.cursor.x -= (this.secondTab.viewport.x - this.firstTab.viewport.x + this.secondTab.mapOffsetsShift.x) / 2;
-              this.secondTab.cursor.y -= (this.secondTab.viewport.y - this.firstTab.viewport.y + this.secondTab.mapOffsetsShift.y) / 2;
+              firstTab.cursor.x -= (ftv.x - x) / 2;
+              firstTab.cursor.y -= (ftv.y - y) / 2;
+              secondTab.cursor.x -= (secondTab.viewport.x - ftv.x + secondTab.mapOffsetsShift.x) / 2;
+              secondTab.cursor.y -= (secondTab.viewport.y - ftv.y + secondTab.mapOffsetsShift.y) / 2;
             } else {
 
               // only first tab is playing
-              if (this.firstTab.isPlaying) {
-                this.calcCam(this.firstTab.viewport.x, this.firstTab.viewport.y, true);
+              if (PlayerState.first.playing) {
+                const { x, y } = firstTab.getShiftedViewport();
+                this.calcCam(x, y, true);
               }
 
               // only second tab is playing
-              if (this.secondTab.isPlaying) {
-                const { x, y } = this.secondTab.getShiftedViewport();
+              if (PlayerState.second.playing) {
+                const { x, y } = secondTab.getShiftedViewport();
                 this.calcCam(x, y, true);
               }
             }
           } else {
 
             // multibox disabled so calc cam of the first tab
-            this.calcCam(this.firstTab.viewport.x, this.firstTab.viewport.y, true);
+            const { x, y } = firstTab.getShiftedViewport();
+            this.calcCam(x, y, true);
           }
         }
       }
@@ -191,9 +207,9 @@ class View {
 
   public renderTick(): View.ICamera {
     this.calcScale();
-    this.updateCamera();
     this.updateFirstTab();
     this.updateSecondTab();
+    this.updateCamera();
     this.updateOgar();
 
     return this.camera;

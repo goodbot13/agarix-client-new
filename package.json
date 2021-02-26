@@ -15,13 +15,11 @@
     "@pixi/filter-kawase-blur": "^3.1.1",
     "@pixi/filter-zoom-blur": "^3.1.1",
     "@types/stats": "^0.16.30",
-    "pixi.js": "^5.3.7",
-    "stats.js": "^0.17.0"
+    "pixi.js": "^5.3.7"
   },
   "devDependencies": {
     "@babel/core": "^7.12.3",
     "@babel/preset-env": "^7.12.1",
-    "@types/stats.js": "^0.17.0",
     "babel-loader": "^8.1.0",
     "file-loader": "^6.2.0",
     "javascript-obfuscator": "^2.7.1",

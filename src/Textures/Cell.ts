@@ -1,4 +1,4 @@
-import { MIPMAP_MODES, SCALE_MODES, Texture, utils} from 'pixi.js';
+import { MIPMAP_MODES, SCALE_MODES, Texture, utils } from 'pixi.js';
 
 const generateCell = () => {
   const size = 512;

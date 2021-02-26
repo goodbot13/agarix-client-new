@@ -1,9 +1,7 @@
 import { Container, Graphics } from 'pixi.js';
-import Globals from '../Globals';
 import { CellType, Location, RemoveType, RGB, Subtype } from '../objects/types';
 import World from '../render/World';
 import GameSettings from '../Settings/Settings';
-import * as PIXI from 'pixi.js';
 import { IGhostCell } from '../tabs/Socket/Receiver';
 
 import GhostCells from './GhostCells';
@@ -11,6 +9,7 @@ import RealPlayersCells from './RealCells';
 import StaticPlayerCells from './MyStaticCells';
 import Viewports from './Viewports';
 import TeamPlayers from './TeamPlayers';
+import { getColor } from '../utils/helpers';
 
 export default class MinimapWEBGL extends Container {
   
@@ -56,7 +55,7 @@ export default class MinimapWEBGL extends Container {
     const { backgroundColor, size } = GameSettings.all.settings.theming.minimap;
 
     this.graphics.clear();
-    this.graphics.beginFill(Globals.getColor(backgroundColor), backgroundColor.alpha);
+    this.graphics.beginFill(getColor(backgroundColor), backgroundColor.alpha);
     this.graphics.drawRect(0, 0, size, size);
   }
 
@@ -75,6 +74,7 @@ export default class MinimapWEBGL extends Container {
     this.visible = GameSettings.all.settings.game.minimap.enabled;
 
     this.updatePositionAndSize();
+    this.updateBackgroundColor();
 
     this.realPlayersCells.renderTick();
     this.staticPlayerCells.renderTick();

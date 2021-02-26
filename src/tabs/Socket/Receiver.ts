@@ -1,8 +1,12 @@
-import { createView, shiftKey, generateClientKey } from '../../utils/GameSocketHelper';
+import { createView, shiftKey, generateClientKey } from '../../utils/helpers';
 import Reader from '../../utils/Reader'
 import { Location, RGB, CellType } from '../../objects/types';
 import Socket, { IMapOffsets, IViewport } from './Socket';
+import Logger from '../../utils/Logger';
 import GameSettings from '../../Settings/Settings';
+import GamePerformance from '../../GamePerformance';
+import Captcha from '../Captcha';
+import PlayerState from '../../states/PlayerState';
 
 export interface ILeaderboardPlayer {
   position: number,
@@ -20,14 +24,26 @@ export interface IGhostCell {
 
 export default class Receiver {
   private socket: Socket;
+  private logger: Logger;
   public reader: Reader;
 
   constructor(socket: Socket) {
     this.socket = socket;
     this.reader = new Reader();
+    this.logger = new Logger('SocketReceiver');
   }
 
   public handleHandshake(): void {
+    switch (this.socket.tabType) {
+      case 'FIRST_TAB':
+        PlayerState.first.connected = true;
+        break;
+
+      case 'SECOND_TAB':
+        PlayerState.second.connected = true;
+        break;
+    }
+
     this.socket.connectionOpened = true;
     this.socket.connectionOpenedTime = Date.now();
 
@@ -98,7 +114,12 @@ export default class Receiver {
 
 			if (8 & flags) {
         isMe = true;
-        /* nick = Settings.tabs.first.nick; */
+        
+        if (this.socket.tabType === 'FIRST_TAB') {
+          nick = GameSettings.all.profiles.leftProfileNick;
+        } else if (this.socket.tabType === 'SECOND_TAB') {
+          nick = GameSettings.all.profiles.rightProfileNick;
+        }
       }
 
       if (16 & flags) {
@@ -130,7 +151,7 @@ export default class Receiver {
   }
 
   public handleRecaptchaV2() {
-    this.socket.captcha.handleV2(this.socket);
+    Captcha.handleV2(this.socket);
   }
 
   public handlePingUpdate() {
@@ -167,13 +188,13 @@ export default class Receiver {
         this.socket.setMapOffset(this.getMapOffset());
         break;
 
-      default: console.log('Unknown decompress opcode.');
+      default: this.logger.error('Unknown decompress opcode');
     }
   }
 
   private onWorldUpdate(): void {
     if (this.socket.tabType === 'FIRST_TAB') {
-      this.socket.world.performance.updateLoss();
+      GamePerformance.updateLoss();
     }
 
     const eatRecordsLen = this.reader.getUint16();
@@ -184,7 +205,9 @@ export default class Receiver {
       this.socket.world.removeEaten(victimId);
     }
 
+    let cellUpdate = false;
     let id: number;
+
     while ((id = this.reader.getUint32()) !== 0) { 
       let cellSkin: string;
       let name: string;
@@ -243,6 +266,10 @@ export default class Receiver {
       const location: Location = { x, y, r };
       const color: RGB = { red, green, blue };
 
+      if (type === 'CELL') {
+        cellUpdate = true;
+      }
+
       this.socket.world.add(id, location, color, name, type, this.socket.tabType, cellSkin);
     } 
 
@@ -251,16 +278,16 @@ export default class Receiver {
       this.socket.world.removeOutOfView(this.reader.getUint32());
     }
 
-    if (this.socket.tabType === 'FIRST_TAB') {
-      this.socket.world.view.firstTab.calcBounds();
+    if (this.socket.tabType === 'FIRST_TAB' && cellUpdate) {
+      this.socket.world.view.firstTab.sortRequired = true;
     }
 
-    if (this.socket.tabType === 'SECOND_TAB') {
-      this.socket.world.view.secondTab.calcBounds();
+    if (this.socket.tabType === 'SECOND_TAB' && cellUpdate) {
+      this.socket.world.view.secondTab.sortRequired = true;
     }
 
-    if (this.socket.tabType === 'TOP_ONE_TAB') {
-      this.socket.world.view.topOneTab.calcBounds();
+    if (this.socket.tabType === 'TOP_ONE_TAB' && cellUpdate) {
+      this.socket.world.view.topOneTab.sortRequired = true;
     }
   }
 

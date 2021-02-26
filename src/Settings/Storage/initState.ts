@@ -1,153 +1,5 @@
 import { RGB } from '../../objects/types';
 
-const initStorage: IState = {
-  settings: {
-    game: {
-      cells: {
-        mass: true,
-        nicks: true,
-        myMass: true,
-        myNick: true,
-        autoHideMassAndNicks: true,
-        skinsType: 'All',
-        ringsType: 'Disabled',
-        ringsSpinning: true,
-        soakSpeed: '1',
-        fadeSpeed: '2',
-        oneColored: false,
-        shadow: 'All'
-      },
-      effects: {
-        cellRemoveAnimation: 'Default',
-        cellRemoveAnimationForHiddenSpectator: false,
-        spawnAnimation: 'Acimazis',
-        wtfRgbMode: false
-      },
-      gameplay: {
-        animationSpeed: 3,
-        zoomSpeed: 5,
-        cameraSpeed: 5,
-        cameraStyle: 'Default',
-        spectatorMode: 'Disabled',
-        viewport: 'Disabled'
-      },
-      minimap: {
-        enabled: true,
-        viewport: 'Disabled',
-        ghostCells: true,
-        realPlayersCells: false,
-        mass: false,
-        nicks: true,
-        playerPosition: true
-      },
-      multibox: {
-        enabled: false,
-        ring: true,
-        changeRingColor: true,
-        changeCellColor: false,
-        hideOwnSkins: true,
-        staticColor: true
-      },
-      performance: {
-        renderMode: 'GPU (Pixi)',
-        antialiasing: false,
-        foodPerformanceMode: false,
-        glowFilterShaderType: 'GPU-1',
-        fpsLockType: 'Screen-hz',
-        culling: false
-      }
-    },
-    theming: {
-      cells: {
-        oneColoredColor: { red: 240, green: 240, blue: 240 },
-        oneColoredStatsColor: { red: 0, green: 0, blue: 0 },
-        shadowColor: { red: 0, green: 0, blue: 0 },
-        myShadowColor: { red: 0, green: 0, blue: 0 },
-        shadowDistance: 10,
-        shadowStrength: 2,
-        transparency: 0.98,
-        colorLighten: 110
-      }, 
-      food: {
-        size: 16,
-        color: { red: 255, green: 255, blue: 255 },
-        glow: true,
-        glowColor: { red: 0, green: 200, blue: 128 },
-        glowDistance: 90,
-        glowStrength: 9,
-        crisp: true
-      },
-      map: {
-        borderType: 'Common',
-        borderRoundness: 60,
-        borderWidth: 25,
-        borderColor: { red: 0, green: 0, blue: 0 },
-        borderGlow: true,
-        borderGlowColor: { red: 0, green: 0, blue: 0 },
-        borderGlowDistance: 220,
-        borderGlowStrength: 11,
-        backgroundTint: { red: 0, green: 0, blue: 0 },
-        backgroundImage: true,
-        backgroundImageUrl: '',
-        backgroundImageLiveEffectStrength: '4',
-        globalBackgroundImage: true,
-        globalBackgroundImageUrl: '',
-        globalBackgroundImageTint: { red: 0, green: 0, blue: 0 },
-        globalBackgroundImageLiveEffectStrength: '4'
-      },
-      minimap: {
-        backgroundColor: { red: 0, green: 0, blue: 0, alpha: 0.66 },
-        size: 250,
-        myViewportColor: { red: 0, green: 0, blue: 0, alpha: 0.66 },
-        topOneViewportColor: { red: 0, green: 0, blue: 0, alpha: 0.66 },
-        playerSize: 10,
-        playerColor: { red: 0, green: 0, blue: 0 },
-        ghostCellsColor: { red: 0, green: 0, blue: 0 }
-      },
-      multibox: {
-        ringStyle: 'Line',
-        linedRingSize: 80,
-        initialRingColor: { red: 0, green: 0, blue: 0 },
-        focusedRingColor: { red: 0, green: 0, blue: 0 },
-        initialStaticCellColor: { red: 0, green: 0, blue: 0 },
-        focusedStaticCellColor: { red: 0, green: 0, blue: 0 }
-      },
-      viruses: {
-        color: { red: 0, green: 0, blue: 0 },
-        borderWidth: 8,
-        borderColor: { red: 0, green: 0, blue: 0 },
-        glow: true,
-        glowColor: { red: 0, green: 0, blue: 0 },
-        glowDistance: 120,
-        glowStrength: 8,
-        transparency: 1,
-        massType: 'Fill circle',
-        fillCircleColor: { red: 0, green: 0, blue: 0 },
-      }
-    },
-  },
-  game: {
-    servers: [
-      { location: 'China', playersAmount: 0 },
-      { location: 'East Asia', playersAmount: 0 },
-      { location: 'Europe', playersAmount: 4891 },
-      { location: 'North America', playersAmount: 0 },
-      { location: 'Oceania', playersAmount: 0 },
-      { location: 'Russia', playersAmount: 0 },
-      { location: 'South America', playersAmount: 9724 },
-      { location: 'Turkey', playersAmount: 0 }
-    ],
-    currentServerIndex: 2,
-    mode: ':party',
-    tag: '',
-    token: '',
-    gameServerToken: '',
-    selectedGameTokenType: "PARTY"
-  },
-};
-
-export default initStorage;
-
 export interface IState {
   settings: {
     game: {
@@ -167,7 +19,8 @@ export interface IState {
       viruses: IThemingVirusesState
     }
   }, 
-  game: IGameState
+  game: IGameState,
+  profiles: IProfilesState & IProfilesStorageState
 }
 
 export type SkinsType = 'Disabled' | 'Custom' | 'Vanilla' | 'All';
@@ -263,19 +116,26 @@ export interface IThemingCellsState {
   shadowColor: RGB,
   myShadowColor: RGB,
   shadowDistance: number,
+  myShadowDistance: number,
   shadowStrength: number,
+  myShadowStrength: number,
   transparency: number,
-  colorLighten: number
+  colorLighten: number,
+  adaptiveShadow: boolean
 }
 
 export interface IThemingFoodState {
+  enabled: boolean,
+  firstTabEnabled: boolean,
+  secondTabEnabled: boolean,
+  topOneTabEnabled: boolean,
   size: number,
   color: RGB,
   glow: boolean,
   glowColor: RGB,
   glowDistance: number,
   glowStrength: number,
-  crisp: boolean
+  crisp: boolean,
 }
 
 export interface IThemingMapState {
@@ -342,4 +202,30 @@ export interface IGameState {
   token: string,
   gameServerToken: string,
   selectedGameTokenType: GameSelectedGameTokenTypes
+}
+
+export interface IProfilesState {
+  leftProfileNick: string,
+  leftProfileSkinUrl: string,
+  rightProfileNick: string,
+  rightProfileSkinUrl: string,
+  tag: string,
+  
+}
+
+export interface IProfile {
+  nick: string,
+  skinUrl: string,
+  tag: string
+}
+
+export type TLoginType = 'FACEBOOK' | 'GOOGLE';
+
+export interface IProfilesStorageState {
+  leftProfiles: Array<IProfile>,
+  rightProfiles: Array<IProfile>,
+  leftSelectedIndex: number,
+  rightSelectedIndex: number,
+  leftProfileLoginType: TLoginType,
+  rightProfileLoginType: TLoginType
 }

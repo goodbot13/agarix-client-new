@@ -2,10 +2,9 @@ import Reader from '../utils/Reader';
 import Emitter from './Emitter';
 import Player from './Player';
 import Receiver from './Receiver';
-import Opcodes from '../tabs/Socket/Opcodes';
-import OgarSkinsLoader from '../utils/SkinsLoader';
 import UICommunicationService from '../communication/FrontAPI';
 import { extend } from './DeltaSocketExtender';
+import { SOCKET_OPENED } from '../tabs/Socket/Opcodes';
 
 export default class Socket {
 	private readonly ip: string = 'wss://wss.ogario.eu:3443';
@@ -21,7 +20,7 @@ export default class Socket {
 	public team: Map<number, Player>;
 	public second: boolean;
 
-  constructor(public skinsLoader: OgarSkinsLoader, second = false) {
+  constructor(second: boolean) {
 		this.handshakeKey = 401;
     this.emitter = new Emitter(this);
 		this.receiver = new Receiver(this);
@@ -51,7 +50,7 @@ export default class Socket {
 			};
 			
 			this.ws.onmessage = (msg) => this.handleMessage(msg.data);
-			this.ws.onerror = () => UICommunicationService.sendChatMessage('Ogar server connection lost');
+			this.ws.onerror = () => UICommunicationService.sendChatGameMessage('Ogar server connection lost');
 			
 			this.connected = true;
 			this.interval = setInterval(() => this.updateInterval(), 1000);
@@ -65,7 +64,7 @@ export default class Socket {
 		this.team.clear();
 		this.connected = false;
 
-		UICommunicationService.sendChatMessage('Ogar server connection disconnected');
+		UICommunicationService.sendChatGameMessage('Ogar server connection disconnected');
 	}
 
   private handleMessage(arrayBuffer: ArrayBuffer): void {
@@ -107,7 +106,7 @@ export default class Socket {
 	}
 
   public send(arrayBuffer: ArrayBuffer): void {
-    if (this.ws && this.ws.readyState === Opcodes.SOCKET_OPENED) {
+    if (this.ws && this.ws.readyState === SOCKET_OPENED) {
 			this.ws.send(arrayBuffer);
 		}
   }
@@ -164,7 +163,7 @@ export default class Socket {
 
 	public sendPartyData(serverToken: string, partyToken: string): void {
 		this.emitter.sendPlayerTag();
-		this.emitter.sendPartyToken(partyToken);
+		this.emitter.sendPartyToken(partyToken ? partyToken : '');
 		this.emitter.sendServerToken(serverToken);
 		this.emitter.sendPlayerNick();
 	}

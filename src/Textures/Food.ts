@@ -1,7 +1,8 @@
 import GameSettings from '../Settings/Settings';
-import Globals from '../Globals';
 import { SCALE_MODES, Texture, Sprite, utils, MIPMAP_MODES } from 'pixi.js';
 import { GlowFilter } from '@pixi/filter-glow';
+import { getColor, rgbToStringHex } from '../utils/helpers';
+import Globals from '../Globals';
 
 const generateFood = () => {
   const canvas = document.createElement('canvas');
@@ -22,7 +23,7 @@ const generateFood = () => {
 
   canvas.width = canvas.height = canvasSize; // 512
 
-  ctx.fillStyle = Globals.rgbToStringHex(color);
+  ctx.fillStyle = rgbToStringHex(color);
   ctx.globalAlpha = color.alpha;
   ctx.arc(canvasSize / 2, canvasSize / 2, size / 2, 0, Math.PI * 2);
   ctx.fill();
@@ -37,7 +38,7 @@ const generateFood = () => {
       sprite = new Sprite(Texture.from(canvas));
 
       sprite.filters = [new GlowFilter({
-        color: Globals.getColor(glowColor),
+        color: getColor(glowColor),
         distance: glowDistance,
         outerStrength: glowStrength,
         quality: glowQuality
@@ -45,7 +46,7 @@ const generateFood = () => {
 
     } else {
 
-      ctx.shadowColor = Globals.rgbToStringHex(glowColor);
+      ctx.shadowColor = rgbToStringHex(glowColor);
       ctx.shadowBlur = glowDistance / 2.5;
   
       for (let i = 0; i < glowStrength / 1.5; i++) {

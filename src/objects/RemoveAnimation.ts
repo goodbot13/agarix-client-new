@@ -1,7 +1,7 @@
 import { Container, Sprite } from "pixi.js";
 import GameSettings from "../Settings/Settings";
 import { CellType, Location, Subtype } from "./types";
-import TextureGenerator from "../Textures";
+import TextureGenerator from "../Textures/TexturesGenerator";
 import * as PIXI from 'pixi.js';
 
 class RemoveAnimation extends Container {
@@ -13,7 +13,7 @@ class RemoveAnimation extends Container {
   private r: number;
   private spriteBuffer: Array<Sprite> = [];
 
-  constructor(location: Location, subtype: Subtype, tint: number, textureGenerator: TextureGenerator) {
+  constructor(location: Location, subtype: Subtype, tint: number) {
     super();
     this.type = 'REMOVE_ANIMATION';
 
@@ -21,16 +21,16 @@ class RemoveAnimation extends Container {
     const { cellRemoveAnimation } = GameSettings.all.settings.game.effects;
 
     if (cellRemoveAnimation === 'Default') {
-      this.spriteBuffer.push(new Sprite(textureGenerator.removeEffect));
+      this.spriteBuffer.push(new Sprite(TextureGenerator.removeEffect));
     } else if (cellRemoveAnimation === 'Acimazis') {
-      for (let i = 0; i < textureGenerator.removeAnimationsAcim.length; i++) {
-        this.spriteBuffer.push(new Sprite(textureGenerator.removeAnimationsAcim[i]));
+      for (let i = 0; i < TextureGenerator.removeAnimationsAcim.length; i++) {
+        this.spriteBuffer.push(new Sprite(TextureGenerator.removeAnimationsAcim[i]));
       }
     } else if (cellRemoveAnimation === '2CL') {
-      this.spriteBuffer.push(new Sprite(textureGenerator.removeAnimationHSLO3D));
+      this.spriteBuffer.push(new Sprite(TextureGenerator.removeAnimationHSLO3D));
     } else if (cellRemoveAnimation === 'Yue') {
-      for (let i = 0; i < textureGenerator.removeAnimationYue.length; i++) {
-        this.spriteBuffer.push(new Sprite(textureGenerator.removeAnimationYue[i]));
+      for (let i = 0; i < TextureGenerator.removeAnimationYue.length; i++) {
+        this.spriteBuffer.push(new Sprite(TextureGenerator.removeAnimationYue[i]));
       }
     }
 

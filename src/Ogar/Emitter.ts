@@ -1,6 +1,6 @@
-import Settings from '../Settings';
 import Writer from '../utils/Writer';
 import Socket from './Socket';
+import GameSettings from '../Settings/Settings';
 
 const JOIN_OPCODE                    = 1;
 const SPAWN_OPCODE                   = 2;
@@ -70,8 +70,11 @@ export default class Emitter {
 		this.sendString(NICK_OPCODE, this.socket.player.nick);
 	}
 
+	public sendPlayerSkin(): void {
+		this.sendString(SKIN_OPCODE, this.socket.player.skin);
+	}
+
 	public sendPlayerTag(): void  {
-		this.socket.player.tag = Settings.tag;
 		this.sendString(TAG_OPCODE, this.socket.player.tag);
 		this.socket.team.clear();
 	}

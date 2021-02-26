@@ -1,6 +1,6 @@
 import GameSettings from '../Settings/Settings';
-import Globals from '../Globals';
 import { MIPMAP_MODES, SCALE_MODES, Texture } from 'pixi.js';
+import { rgbToStringHex, roundRect } from '../utils/helpers';
 
 const generateRgbBorderLine = () => {
   const { borderRoundness, borderColor, borderWidth } = GameSettings.all.settings.theming.map;
@@ -11,14 +11,14 @@ const generateRgbBorderLine = () => {
 
   canvas.width = canvas.height = renderSize;
 
-  const ratio = Globals.MAP_RATIO;
+  const ratio = 14142 / 2048;
   const offset = (borderWidth * 2 / 2 / ratio);
 
-  ctx.strokeStyle = Globals.rgbToStringHex(borderColor);
+  ctx.strokeStyle = rgbToStringHex(borderColor);
   ctx.lineWidth = borderWidth * 2 / ratio;
 
   if (borderRoundness !== 0) {
-    Globals.roundRect(ctx, offset, offset, renderSize - offset, renderSize - offset, borderRoundness / 4);
+    roundRect(ctx, offset, offset, renderSize - offset, renderSize - offset, borderRoundness / 4);
     ctx.stroke();
   } else {
     ctx.beginPath();

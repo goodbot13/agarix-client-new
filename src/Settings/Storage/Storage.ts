@@ -1,4 +1,4 @@
-import initState, { IState } from "./initState";
+import { IState } from "./initState";
 
 export default new class Storage {
   private readonly name: string = 'AGARIX:DATA';
@@ -12,6 +12,11 @@ export default new class Storage {
 
   public init(): IState {
     const storage = localStorage.getItem(this.name) as string;
-    return JSON.parse(atob(this.swap(storage)));
+
+    try {
+      return JSON.parse(atob(this.swap(storage)));
+    } catch {
+      throw new Error('Could not load game settings from storage.');
+    }
   }
 }

@@ -1,7 +1,6 @@
 import { Container, filters, NineSlicePlane, Sprite } from "pixi.js";
-import Globals from "../../Globals";
 import GameSettings from "../../Settings/Settings";
-import TextureGenerator from "../../Textures";
+import TextureGenerator from "../../Textures/TexturesGenerator";
 import * as PIXI from 'pixi.js';
 import IMapObject from "./interfaces";
 
@@ -13,7 +12,7 @@ export default class Borders extends Container implements IMapObject {
   private colorMatrixFilter: filters.ColorMatrixFilter;
   private colorMatrixFilterHue: number = 0;
 
-  constructor(private textureGenerator: TextureGenerator) {
+  constructor() {
     super();
 
     this.zIndex = 10;
@@ -63,10 +62,10 @@ export default class Borders extends Container implements IMapObject {
   public create(): void {
     const { borderGlow, borderWidth, borderGlowDistance } = GameSettings.all.settings.theming.map;
     const { glowFilterShaderType } = GameSettings.all.settings.game.performance;
-    const { MAP_RATIO } = Globals;
+    const MAP_RATIO = 14142 / 2048;
     
     if (this.bordersSprite) {
-      this.textureGenerator.generateMapBorders();
+      TextureGenerator.generateMapBorders();
       this.removeChild(this.bordersSprite);
       this.bordersSprite.destroy();
     }
@@ -86,7 +85,7 @@ export default class Borders extends Container implements IMapObject {
       sideSize = borderGlow ? (borderWidth * 2 + borderGlowDistance * 2) / MAP_RATIO / 2 : borderWidth * 2 / MAP_RATIO / 2;
     }
 
-    this.bordersSprite = new NineSlicePlane(this.textureGenerator.mapBorders, sideSize, sideSize, sideSize, sideSize);
+    this.bordersSprite = new NineSlicePlane(TextureGenerator.mapBorders, sideSize, sideSize, sideSize, sideSize);
     this.bordersSprite.width = bordersSize;
     this.bordersSprite.height = bordersSize;
     this.bordersSprite.x = pos;
@@ -99,7 +98,7 @@ export default class Borders extends Container implements IMapObject {
     const size = 1100;
 
     if (this.rgbBorders || this.rgbBordersLine) {
-      this.textureGenerator.generateRgbLine();
+      TextureGenerator.generateRgbLine();
       this.removeChild(this.rgbBorders, this.rgbBordersLine);
       this.rgbBorders.destroy();
       this.rgbBordersLine.destroy();
@@ -108,13 +107,13 @@ export default class Borders extends Container implements IMapObject {
     // HARDCODED POSITION
     const borderWidth = 20;
 
-    this.rgbBorders = new Sprite(this.textureGenerator.rgbBorder);
+    this.rgbBorders = new Sprite(TextureGenerator.rgbBorder);
     this.rgbBorders.width = 14142 + size;
     this.rgbBorders.height = 14142 + size;
     this.rgbBorders.x = -size / 2;
     this.rgbBorders.y = -size / 2;
 
-    this.rgbBordersLine = new Sprite(this.textureGenerator.mapBordersRgbLine);
+    this.rgbBordersLine = new Sprite(TextureGenerator.mapBordersRgbLine);
     this.rgbBordersLine.width = 14142 + borderWidth * 2;
     this.rgbBordersLine.height = 14142 + borderWidth * 2;
     this.rgbBordersLine.x = -borderWidth;

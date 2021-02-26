@@ -2,15 +2,16 @@ import { Sprite } from "pixi.js";
 import World from "../../render/World";
 import GameSettings from "../../Settings/Settings";
 import Cell from './index';
+import TextureGenerator from '../../Textures/TexturesGenerator';
 
 export default class Shadow {
   public sprite: Sprite;
   public TEXTURE_OFFSET: number;
 
-  constructor(private world: World, private cellSprite: Sprite, private cell: Cell, size: number) {
-    this.TEXTURE_OFFSET = world.textureGenerator.cellShadow.width / world.textureGenerator.cell.width;
+  constructor(private cellSprite: Sprite, private cell: Cell, size: number) {
+    this.TEXTURE_OFFSET = TextureGenerator.cellShadow.width / TextureGenerator.cell.width;
 
-    this.sprite = new Sprite(world.textureGenerator.cellShadow);
+    this.sprite = new Sprite(TextureGenerator.cellShadow);
     this.sprite.anchor.set(0.5);
     this.sprite.width = size * this.TEXTURE_OFFSET;
     this.sprite.height = size * this.TEXTURE_OFFSET;
@@ -29,11 +30,15 @@ export default class Shadow {
     }
   }
 
-  public changeTexture(): void {
-    const { textureGenerator } = this.world;
+  public applyPlayerShadow(): void {
+    this.sprite.texture = TextureGenerator.myCellShadow;
+    this.TEXTURE_OFFSET = TextureGenerator.myCellShadow.width / TextureGenerator.cell.width;
+    this.sprite.width = this.sprite.height = this.cellSprite.width * this.TEXTURE_OFFSET;
+  }
 
-    this.sprite.texture = textureGenerator.cellShadow;
-    this.TEXTURE_OFFSET = textureGenerator.cellShadow.width / textureGenerator.cell.width;
+  public changeTexture(): void {
+    this.sprite.texture = TextureGenerator.cellShadow;
+    this.TEXTURE_OFFSET = TextureGenerator.cellShadow.width / TextureGenerator.cell.width;
     this.sprite.width = this.sprite.height = this.cellSprite.width * this.TEXTURE_OFFSET;
   }
 }
