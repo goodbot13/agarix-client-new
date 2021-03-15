@@ -1,6 +1,8 @@
 import { Sprite } from "pixi.js";
 import TextureGenerator from "../../Textures/TexturesGenerator";
 import * as PIXI from 'pixi.js';
+import { getColor } from "../../utils/helpers";
+import GameSettings from '../../Settings/Settings';
 
 export default class VirusShots extends Sprite {
   private mass: number;
@@ -21,7 +23,9 @@ export default class VirusShots extends Sprite {
 
   public animate() {
     const size = (this.mass - this.width) * this.SPEED * PIXI.Ticker.shared.deltaTime;
+
     this.width += size;
     this.height += size;
+    this.tint = getColor(GameSettings.all.settings.theming.viruses.fillCircleColor);
   }
 }

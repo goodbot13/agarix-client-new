@@ -1,30 +1,34 @@
-import Game from './index';
+import Stage from './Stage/Stage';
 import TestCase from './TestCase';
 import UICommunicationService from './communication/FrontAPI';
 import Master from './Master';
+import GameSettings from './Settings/Settings';
 
-class Initializer {
-  private game: Game;
+const initialize = async () => {
+  console.clear();
 
-  async start() {
-    console.clear();
+  let stage: Stage = new Stage();
 
-    if (window.location.hostname.includes('localhost')) {
-      this.game = new Game();
-      await this.game.init();
-      this.game.world.view.mouse.zoomValue = 0.1;
-      const testCase = new TestCase(this.game);
-      setTimeout(() => this.game.unblurGameScene(true), 100);
-    } else {
-      UICommunicationService.setGameVersion();
-      this.game = new Game();
-      await Master.init();
-      await this.game.init();
-    }
+  window.Game = stage;
+  window.Master = Master;
 
-    (window as any).Game = this.game;
+  if (window.location.hostname.includes('localhost')) {
+    await stage.init();
+    stage.world.view.mouse.zoomValue = 0.1;
+    const testCase = new TestCase(stage);
+    setTimeout(() => stage.unblurGameScene(true), 100);
+  } else {
+    UICommunicationService.setGameVersion();
+    await Master.init();
+    await stage.init();
   }
 }
 
-const initializer = new Initializer();
-initializer.start();
+initialize();
+
+declare global {
+  interface Window {
+    Game: Stage,
+    Master: typeof Master
+  }
+}

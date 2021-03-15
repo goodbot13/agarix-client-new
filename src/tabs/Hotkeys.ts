@@ -5,6 +5,7 @@ import Controller from "./Contollers/TabsController";
 import Emitter from "./Socket/Emitter";
 import PlayerState from "../states/PlayerState";
 import Ogar from "../Ogar";
+import SettingsState from "../states/SettingsState";
 
 class Hotkeys implements IGameAPIHotkeys {
   private macroFeedInterval: any;
@@ -25,14 +26,12 @@ class Hotkeys implements IGameAPIHotkeys {
   }
 
   public feed(): void {
-    const { firstTabSocket, currentFocusedTab } = this.controller;
+    const { firstTabSocket, secondTabSocket, currentFocusedTab } = this.controller;
 
     if (currentFocusedTab === 'FIRST_TAB') {
-      firstTabSocket.emitter.sendMousePosition();
       firstTabSocket.emitter.sendFeed();
     } else {
-      firstTabSocket.emitter.sendMousePosition();
-      firstTabSocket.emitter.sendFeed();
+      secondTabSocket.emitter.sendFeed();
     }
   }
 
@@ -41,23 +40,19 @@ class Hotkeys implements IGameAPIHotkeys {
 
     if (!this.macroFeedInterval) {
       if (currentFocusedTab === 'FIRST_TAB') {
-        firstTabSocket.emitter.sendMousePosition();
         firstTabSocket.emitter.sendFeed();
 
       } else {
-        secondTabSocket.emitter.sendMousePosition();
         secondTabSocket.emitter.sendFeed();
       } 
 
       this.macroFeedInterval = setInterval(() => {
         if (currentFocusedTab === 'FIRST_TAB') {
-          firstTabSocket.emitter.sendMousePosition();
           firstTabSocket.emitter.sendFeed();
         } else {
-          secondTabSocket.emitter.sendMousePosition();
           secondTabSocket.emitter.sendFeed();
         }
-      }, 80);
+      }, 40);
     }
   }
 
@@ -140,16 +135,16 @@ class Hotkeys implements IGameAPIHotkeys {
   }
 
   public toggleCellSkins(): void {
-    /* Settings.cells.allowSkins = !Settings.cells.allowSkins; */
+    SettingsState.allowSkins = !SettingsState.allowSkins;
   }
 
   public toggleMyCellStats(): void {
-    /* Settings.cells.showMassMyCell = !Settings.cells.showMassMyCell;
-    Settings.cells.showNickMyCell = !Settings.cells.showNickMyCell; */
+    SettingsState.showMassMyCell = !SettingsState.showMassMyCell;
+    SettingsState.showNickMyCell = !SettingsState.showNickMyCell;
   }
 
   public toggleCellRings(): void {
-    /* if (GameSettings.all.settings.game.cells.ringsType) */
+    SettingsState.rings = !SettingsState.rings;
   }
 
   public switchTabs(): void {
@@ -259,7 +254,7 @@ class Hotkeys implements IGameAPIHotkeys {
   }
 
   public toggleFullmapViewRender(): void {
-    Globals.fullMapViewRender = !Globals.fullMapViewRender;
+    SettingsState.fullMapViewRender = !SettingsState.fullMapViewRender;
   }
 
   public sendCommand(text: string): void { 

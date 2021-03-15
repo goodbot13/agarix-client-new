@@ -28,10 +28,18 @@ export default new class GoogleLogin {
       const { token, expiry } = data;
 
       if (expiry > Date.now()) {
+
+        const expiresIn = ~~((expiry - Date.now()) / 1000 / 60);
+
         this.token = token;
         this.loggedIn = true;
         
         UICommunicationService.setGoogleLogged(true);
+        UICommunicationService.sendChatGameMessage(`Google logged in. Re-login required in ${expiresIn} minutes.`);
+      } else {
+        UICommunicationService.setGoogleLogged(false);
+        UICommunicationService.sendChatGameMessage('Google token expired. Please, log in again.');
+        this.logOut();
       }
     }
 	}

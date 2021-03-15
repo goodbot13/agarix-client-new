@@ -38,12 +38,12 @@ export default class StaticPlayerCells extends Container {
     const { playerColor } = GameSettings.all.settings.theming.minimap;
 
     this.firstTab = new Cell('FIRST_TAB', { x: 0, y: 0, r: 0 }, playerColor, '', '', this.world);
-    this.firstTab.setIsMinimapCell(true);
+    this.firstTab.setIsMinimapCell();
     this.firstTab.cell.tint = getColor(playerColor);
     this.addChild(this.firstTab);
 
     this.secondTab = new Cell('SECOND_TAB', { x: 0, y: 0, r: 0 }, playerColor, '', '', this.world); 
-    this.secondTab.setIsMinimapCell(true);
+    this.secondTab.setIsMinimapCell();
     this.secondTab.cell.tint = getColor(playerColor);
     this.addChild(this.secondTab);
   }
@@ -51,13 +51,14 @@ export default class StaticPlayerCells extends Container {
   private animateFirstTab(): void {
     const { firstTab } = this.world.view;
     const { playerSize } = GameSettings.all.settings.theming.minimap;
+    const { playerPosition } = GameSettings.all.settings.game.minimap;
 
-    if (PlayerState.first.playing) {
+    if (PlayerState.first.playing && playerPosition) {
       const { x, y } = this.transformLocation({ x: firstTab.viewport.x, y: firstTab.viewport.y, r: 0 });
 
       if (!this.firstTab.visible && GameSettings.all.settings.game.effects.spawnAnimation) {
         const animation = new SpawnAnimation({ x, y, r: 0 }, this.firstTab.cell.tint);
-        animation.setIsMinimap(true);
+        animation.setIsMinimap();
         this.addChild(animation);
       }
 
@@ -85,14 +86,15 @@ export default class StaticPlayerCells extends Container {
   private animateSecondTab(): void {
     const { secondTab } = this.world.view;
     const { playerSize } = GameSettings.all.settings.theming.minimap;
+    const { playerPosition } = GameSettings.all.settings.game.minimap;
 
-    if (PlayerState.second.playing) {
+    if (PlayerState.second.playing && playerPosition) {
       const shift = secondTab.getShiftedViewport();
       const { x, y } = this.transformLocation({ x: shift.x, y: shift.y, r: 0 });
 
       if (!this.secondTab.visible && GameSettings.all.settings.game.effects.spawnAnimation) {
         const animation = new SpawnAnimation({ x, y, r: 0 }, this.secondTab.cell.tint);
-        animation.setIsMinimap(true);
+        animation.setIsMinimap();
         this.addChild(animation);
       }
 

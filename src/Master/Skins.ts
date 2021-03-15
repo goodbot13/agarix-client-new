@@ -1,18 +1,22 @@
 export default class AgarSkinsList {
   private list: Map<string, ISkin>;
-  public reservedSkinsByName: Set<string>;
+  private reservedSkinsByName: Set<string>;
 
   constructor() {
     this.list = new Map();
     this.reservedSkinsByName = new Set();
   }
 
-  public has(name: string): boolean {
-    return this.list.has(name);
+  public has(name: string = ''): boolean {
+    return this.list.has(name.toLowerCase());
   }
 
-  public get(name: string): ISkin {
-    return this.list.get(name);
+  public get(name: string = ''): ISkin {
+    return this.list.get(name.toLowerCase());
+  }
+
+  public skinsByNameHas(name: string): boolean {
+    return this.reservedSkinsByName.has(name.toLowerCase());
   }
 
   public parse(data: any, CFG_URL: string, latestId: number): void {

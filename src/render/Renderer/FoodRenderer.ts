@@ -1,4 +1,3 @@
-import Master from '../../Master';
 import Food from '../../objects/Food';
 import GameSettings from '../../Settings/Settings';
 import World from '../World';
@@ -16,9 +15,7 @@ export default class FoodRenderer {
       }
     }
 
-    const fullMapViewEnabled = GameSettings.all.settings.game.gameplay.spectatorMode === 'Full map';
-
-    if (fullMapViewEnabled && Master.gameMode.get() === ':party') {
+    if (GameSettings.all.settings.game.gameplay.spectatorMode === 'Full map') {
       food.subtype === 'SPEC_TABS' ? food.show() : food.hide();
       return;
     }

@@ -1,6 +1,7 @@
 import Writer from '../utils/Writer';
 import Socket from './Socket';
 import GameSettings from '../Settings/Settings';
+import FrontAPI from '../communication/FrontAPI';
 
 const JOIN_OPCODE                    = 1;
 const SPAWN_OPCODE                   = 2;
@@ -77,6 +78,8 @@ export default class Emitter {
 	public sendPlayerTag(): void  {
 		this.sendString(TAG_OPCODE, this.socket.player.tag);
 		this.socket.team.clear();
+		
+		FrontAPI.updateTopTeam([]);
 	}
 
 	public sendPartyToken(token: string): void  {

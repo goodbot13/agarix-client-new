@@ -85,14 +85,28 @@ export default new class SkinsLoader {
     }
   }
 
-  public getTextureByAgarSkinName(skinName: string = '', playerName: string = ''): Texture {
+  public getAgar(skinName: string = ''): Texture | null {
     if (skinName.includes('custom')) {
       return this.cache.get(`${Master.envConfig.CUSTOM_SKINS_URL}${skinName}.png`);
     } 
 
-    const skinData = Master.skins.get(skinName) || Master.skins.get(playerName);
+    const skinData = Master.skins.get(skinName);
 
-    return this.cache.get(skinData ? skinData.url : '');
+    if (skinData) {
+      return this.cache.get(skinData.url);
+    }
+
+    return null;
+  }
+
+  public getAgarByNick(nick: string = ''): Texture | null {
+    const data = Master.skins.get(nick);
+
+    if (data) {
+      return this.cache.get(data.url);
+    } 
+
+    return null;
   }
 
   public getTextureByUrl(url: string): Texture {

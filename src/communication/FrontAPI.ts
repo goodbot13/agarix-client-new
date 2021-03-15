@@ -1,6 +1,6 @@
 import { IGameServer } from '../Master/Regions';
 import { ILeaderboardPlayer } from '../tabs/Socket/Receiver';
-import { LAODER_TEXT } from '../Versions';
+import { LOADER_TEXT } from '../Versions';
 
 export default new class UICommunicationService {
   sendChatMessage(nick: string, message: string, type: TChatMessageType) {
@@ -14,7 +14,7 @@ export default new class UICommunicationService {
   setGameVersion() {
     const interval = setInterval(() => {
       if (window.FrontAPI?.setGameLoaderStatus) {
-        window.FrontAPI?.setGameLoaderStatus(LAODER_TEXT);
+        window.FrontAPI?.setGameLoaderStatus(LOADER_TEXT);
         clearInterval(interval);
       }
     }, 100);

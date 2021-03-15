@@ -108,7 +108,7 @@ export default class GlobalBackground extends Container implements IMapObject {
   public renderTick(): void {
     const { backgroundImage, globalBackgroundImage } = GameSettings.all.settings.theming.map;
 
-    this.renderable = backgroundImage && globalBackgroundImage;
+    this.visible = backgroundImage && globalBackgroundImage;
     
     this.animateDispacement();
   }

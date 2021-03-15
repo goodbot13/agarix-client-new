@@ -14,7 +14,13 @@ export default new class Storage {
     const storage = localStorage.getItem(this.name) as string;
 
     try {
-      return JSON.parse(atob(this.swap(storage)));
+      const swapped = this.swap(storage);
+
+      if (swapped[swapped.length - 1] === '=') {
+        return JSON.parse(atob(swapped));
+      } 
+
+      return JSON.parse(storage);
     } catch {
       throw new Error('Could not load game settings from storage.');
     }

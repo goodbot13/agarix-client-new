@@ -20,9 +20,8 @@ class Virus extends Container implements IMainGameObject {
   public isVisible: boolean;
   public type: CellType;
 
-  private shots: VirusShots;
+  public shots: VirusShots;
   private sizeOffset: number;
-  private SPEED: number = 0.065;
 
   constructor(location: Location, subtype: Subtype) {
     super();
@@ -57,7 +56,7 @@ class Virus extends Container implements IMainGameObject {
     this.alpha = 0;
   }
 
-  public setIsMinimap(value: boolean, size: number): void {
+  public setIsMinimap(size: number): void {
     size *= 2;
     this.virus.width = this.virus.height = size;
     this.shots.visible = false;
@@ -83,7 +82,7 @@ class Virus extends Container implements IMainGameObject {
     this.shots.update(0);
   }
 
-  private animateOutOfView() {
+  private animateOutOfView(speed: number) {
     if (GameSettings.all.settings.game.multibox.enabled && PlayerState.first.playing && PlayerState.second.playing) {
       this.destroy({ children: true });
       this.isDestroyed = true;
@@ -91,13 +90,13 @@ class Virus extends Container implements IMainGameObject {
       this.destroy({ children: true });
       this.isDestroyed = true;
     } else {
-      this.alpha -= (this.SPEED * PIXI.Ticker.shared.deltaTime);
+      this.alpha -= speed;
     }
   }
 
-  private animateEaten(): void  {
+  private animateEaten(speed: number): void  {
     if (this.width > 1) {
-      const step = this.newLocation.r * this.SPEED * PIXI.Ticker.shared.deltaTime;
+      const step = this.newLocation.r * speed;
 
       this.width -= step;
       this.height -= step;
@@ -109,18 +108,17 @@ class Virus extends Container implements IMainGameObject {
   }
 
   private getAnimationSpeed(): number {
-    return 0.11 + 0.002 * GameSettings.all.settings.game.gameplay.animationSpeed * PIXI.Ticker.shared.deltaTime;
+    return (GameSettings.all.settings.game.gameplay.animationSpeed / 1000) * PIXI.Ticker.shared.deltaTime;
   }
   
-  private animateMove(): void  {
-    const { deltaTime } = PIXI.Ticker.shared;
+  private animateMove(speed: number): void {
     const instantAnimation = GameSettings.all.settings.game.multibox.enabled && 
                              PlayerState.first.playing && 
                              PlayerState.second.playing && 
                              GameSettings.all.settings.game.gameplay.spectatorMode === 'Full map';
 
-    let x = (this.newLocation.x - this.x) * this.getAnimationSpeed();
-    let y = (this.newLocation.y - this.y) * this.getAnimationSpeed();
+    let x = (this.newLocation.x - this.x) * speed;
+    let y = (this.newLocation.y - this.y) * speed;
     
     this.x += x;
     this.y += y;
@@ -129,7 +127,7 @@ class Virus extends Container implements IMainGameObject {
     if (instantAnimation) {
       this.alpha = 1;
     } else if (this.alpha < 1) {
-      this.alpha += (this.SPEED * deltaTime);
+      this.alpha += speed;
     } else {
       this.alpha = 1;
     }
@@ -139,18 +137,19 @@ class Virus extends Container implements IMainGameObject {
 
   public animate(): void  {
     const { deltaTime } = PIXI.Ticker.shared;
+    const speed = this.getAnimationSpeed();
 
     this.virus.rotation += 0.005 * deltaTime;
-    this.originalSize += (this.newOriginalSize - this.originalSize) * this.getAnimationSpeed();
+    this.originalSize += (this.newOriginalSize - this.originalSize) * speed;
 
     if (this.removing) {
       if (this.removeType === 'REMOVE_CELL_OUT_OF_VIEW') {
-        this.animateOutOfView();
+        this.animateOutOfView(speed);
       } else if (this.removeType === 'REMOVE_EATEN_CELL') {
-        this.animateEaten();
+        this.animateEaten(speed);
       }
     } else {
-      this.animateMove();
+      this.animateMove(speed);
     }
   }
 

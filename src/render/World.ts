@@ -12,13 +12,14 @@ import { TabType } from '../tabs/Socket/Socket';
 import Controller from '../tabs/Contollers/TabsController';
 import View from '../View';
 import Hotkeys from '../tabs/Hotkeys';
-import Stage from '..';
+import Stage from '../Stage/Stage';
 import Minimap from '../Minimap/MinimapWEBGL'
 import GameSettings from '../Settings/Settings';
 import Logger from '../utils/Logger';
 import PlayerState from '../states/PlayerState';
 import SkinsLoader from '../utils/SkinsLoader';
 import TextureGenerator from '../Textures/TexturesGenerator';
+import Master from '../Master';
 
 export default class World {
   public cells: Container;
@@ -33,20 +34,17 @@ export default class World {
   public socketCells: SocketCells;
   public view: View;
   public controller: Controller;
-  public scene: Stage;
   public hotkeys: Hotkeys;
   public minimap: Minimap;
 
   private logger: Logger;
 
-  constructor(scene: Stage) {
-    this.scene = scene;
-    
+  constructor(public scene: Stage) {
     this.cells = new Container();
     this.cells.sortableChildren = true;
     
     if (GameSettings.all.settings.game.performance.foodPerformanceMode) {
-      this.food = new ParticleContainer(3072);
+      this.food = new ParticleContainer(4096);
     } else {
       this.food = new ParticleContainer(4096, {
         vertices: true
@@ -97,6 +95,19 @@ export default class World {
       let cell: Cell;
 
       if (!this.indexedCells.has(id)) {
+
+        name = name ? name.trim() : '';
+        
+        if (Master.skins.skinsByNameHas(name)) {
+          const url = Master.skins.get(name).url;
+
+          SkinsLoader.load(url);
+        }
+
+        if (skin) {
+          SkinsLoader.loadAgar(skin);
+        }
+
         cell = new Cell(subtype, location, color, name, skin, this);
 
         this.indexedCells.set(id, cell);
@@ -106,9 +117,6 @@ export default class World {
 
         this.renderer.checkIsTeam(cell);
 
-        if (skin) {
-          SkinsLoader.loadAgar(skin);
-        }
       } else {
         cell = this.indexedCells.get(id) as Cell;
         this.update(id, location, type);
@@ -180,11 +188,8 @@ export default class World {
         food.remove();
       }
 
-      /* if (Settings.globals.foodViewportInclude) { */
-        this.socketCells.remove(food.subtype, id);
-      /* } */
-
       this.indexedFood.delete(id);
+
       return;
     }
 
@@ -199,20 +204,25 @@ export default class World {
 
         // @ts-ignore
         const size = object.type === 'CELL' ? object.cell.width : object.type === 'VIRUS' ? 512 : 0;
+        const isEaten = removeType === 'REMOVE_EATEN_CELL';
+        const removeAnimation = GameSettings.all.settings.game.effects.cellRemoveAnimation !== 'Disabled';
 
-        if (removeType === 'REMOVE_EATEN_CELL') {
-          if (GameSettings.all.settings.game.effects.cellRemoveAnimation !== 'Disabled' && size > 100) {
-            
-            const location: Location = {
-              x: object.x,
-              y: object.y,
-              r: object.width
-            }
-  
-            /* const tint = object instanceof Cell ? object.cell.tint : object instanceof Virus ? object.virus.tint : 0xFFFFFF; */ // @ts-ignore
-            const tint = object.type === 'CELL' ? object.cell.tint : object.type === 'VIRUS' ? object.virus.tint : 0xFFFFFF;
-            this.cells.addChild(new RemoveAnimation(location, object.subtype, tint));
+        if (isEaten && removeAnimation && size > 100) {
+          const location: Location = {
+            x: object.x,
+            y: object.y,
+            r: object.width
           }
+
+          let tint = 0xFFFFFF;
+
+          if (object.type == 'CELL') {
+            tint = (object as Cell).cell.tint;
+          } else if (object.type === 'VIRUS') {
+            tint = (object as Virus).virus.tint;
+          }
+
+          this.cells.addChild(new RemoveAnimation(location, object.subtype, tint));
         }
       }
 
@@ -238,8 +248,7 @@ export default class World {
     }
 
     while (this.cells.children[0]) {
-      // @ts-ignore
-      this.cells.children[0].destroy({ children: true });
+      this.cells.children[0].destroy();
       this.cells.removeChild(this.cells.children[0]);
     }
 

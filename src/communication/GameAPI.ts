@@ -1,4 +1,4 @@
-import Stage from "..";
+import Stage from "../Stage/Stage";
 import Logger from "../utils/Logger";
 import UICommunicationService from "./FrontAPI";
 import { TGameMode } from '../Master/GameMode';

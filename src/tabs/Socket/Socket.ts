@@ -26,6 +26,8 @@ import {
   SPECTATE_MODE_IS_FULL, 
   VIEWPORT_UPDATE 
 } from './Opcodes';
+import Master from '../../Master';
+import Logger from '../../utils/Logger';
 
 export default class Socket {
   public readonly socketData: ISocketData;
@@ -42,7 +44,6 @@ export default class Socket {
   public serverTimeDiff: number;
   public socket: WebSocket;
   public readonly tabType: TabType;
-  public mainTabOffsets: IMapOffsets;
   public mapOffsets: IMapOffsets;
   public shiftOffsets: IMapOffsetsShift;
   public reachedSpectatingPosition: boolean;
@@ -54,6 +55,7 @@ export default class Socket {
   private onDisconnect: any;
   public loggedIn: boolean;
   public onServerDeath: any;
+  public offsetsPositionMultiplier: IMapOffsetsPositionMultiplier;
 
   public playerSpawned: boolean;
   public onFullMapViewEnabled: any;
@@ -62,6 +64,7 @@ export default class Socket {
 
   public world: World;
   public id: number;
+  private logger: Logger;
 
   constructor(socketData: ISocketData, tabType: TabType, world: World) {
     this.socketData = socketData;
@@ -72,11 +75,13 @@ export default class Socket {
     this.mapOffsetFixed = false;
     this.loggedIn = false;
     this.mapOffsets = { minX: 0, minY: 0, maxX: 0, maxY: 0 };
+    this.offsetsPositionMultiplier = { x: 1, y: 1 };
     this.playerSpawned = false;
     this.shiftOffsets = { x: 0, y: 0 };
     this.world = world;
     this.receiver = new Receiver(this);
     this.emitter = new Emitter(this);
+    this.logger = new Logger('AgarSocket');
   }
 
   public disconnect(): void {
@@ -180,9 +185,7 @@ export default class Socket {
             break;
 
           case 'SPEC_TABS':
-
             if (!this.reachedSpectatingPosition) {
-
               if (this.hasReachedSpectatingPosition(viewport)) {
                 this.reachedSpectatingPosition = true;
 
@@ -192,13 +195,15 @@ export default class Socket {
                   this.onFullMapViewEnabled();
                 }
               }
-
             }
-
         }
 
       case FLUSH: 
-        /* console.log('flush', new Date().toLocaleTimeString()); */
+        /* if (this.protocolKey) {
+          this.protocolKey = shiftKey(this.protocolKey);
+          this.disconnect();
+          this.logger.info(`${this.tabType} flush`);
+        } */
         break;
 
       case ADD_OWN_CELL: 
@@ -291,10 +296,20 @@ export default class Socket {
 
     this.mapOffsetFixed = true;
     this.mapOffsets = { minX, minY, maxX, maxY };
+
+    if (Master.gameMode.get() === ':ffa') {
+      const mapWidth = Math.abs(minX) + Math.abs(maxX);
+      const mapHeight = Math.abs(minY) + Math.abs(maxY);
+
+      this.offsetsPositionMultiplier.x = 14142 / mapWidth;
+      this.offsetsPositionMultiplier.y = 14142 / mapHeight;
+    }
   
     // world is not created. set global offsets 
-    if (WorldState.mapOffsets.maxX === 0 && WorldState.mapOffsets.maxY === 0) {
-      WorldState.mapOffsets = { minX, minY, maxX, maxY };
+    if (!WorldState.gameJoined) {
+      if (this.tabType === 'FIRST_TAB') {
+        WorldState.mapOffsets = { minX, minY, maxX, maxY };
+      }
     } else {
       this.calcOffsetShift();
     }
@@ -396,6 +411,11 @@ export interface IMapOffsets {
 }
 
 export interface IMapOffsetsShift {
+  x: number,
+  y: number,
+}
+
+export interface IMapOffsetsPositionMultiplier {
   x: number,
   y: number
 }

@@ -75,7 +75,7 @@ export default class RealPlayersCells extends Container {
         const cell = new Cell(subtype, this.transformLocation(location), color, name, skin, this.world);
 
         cell.setIsVisible(true);
-        cell.setIsMinimapCell(true);
+        cell.setIsMinimapCell();
 
         this.buffer.set(id, cell);
         this.addChild(cell);
@@ -86,7 +86,7 @@ export default class RealPlayersCells extends Container {
 
         const virus = new Virus(location, subtype);
 
-        virus.setIsMinimap(true, location.r);
+        virus.setIsMinimap(location.r);
 
         this.buffer.set(id, virus);
         this.addChild(virus);

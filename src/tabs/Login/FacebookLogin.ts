@@ -44,11 +44,20 @@ export default new class FacebookLogin {
   private checkStorageToken(): void {
     const tokenData: any = JSON.parse(localStorage.getItem(this.storage_key));
 
-    if (tokenData && tokenData.expiry > Date.now()) {
-      this.token = tokenData.token;
-      this.loggedIn = true;
+    if (tokenData) {
+      if (tokenData.expiry > Date.now()) {
 
-      UICommunicationService.setFacebookLogged(true);
+        const expiresIn = ~~((tokenData.expiry - Date.now()) / 1000 / 60);
+
+        this.token = tokenData.token;
+        this.loggedIn = true;
+        UICommunicationService.setFacebookLogged(true);
+        UICommunicationService.sendChatGameMessage(`Facebook logged in. Re-login required in ${expiresIn} minutes.`);
+      } else {
+        UICommunicationService.setFacebookLogged(false);
+        UICommunicationService.sendChatGameMessage('Facebook token expired. Please, log in again.');
+        this.logOut();
+      }
     }
   }
 

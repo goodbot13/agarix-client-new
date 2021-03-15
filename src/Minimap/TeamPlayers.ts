@@ -71,7 +71,7 @@ export default class TeamPlayers extends Container {
         const location = this.transformLocation({ x: player.position.x, y: player.position.y, r: 0 }, true);
         const cell = new Cell('FIRST_TAB', location, { red: 0, green: 0, blue: 0 }, player.nick, '', this.world);
 
-        cell.setIsMinimapCell(true);
+        cell.setIsMinimapCell();
         cell.isTeam = true;
         cell.update({ x: location.x, y: location.y, r: playerSize / 2 });
         cell.cell.tint = utils.string2hex(player.color.cell);

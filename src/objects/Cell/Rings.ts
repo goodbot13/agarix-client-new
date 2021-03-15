@@ -4,6 +4,7 @@ import Cell from "./index";;
 import * as PIXI from 'pixi.js';
 import { getColor } from "../../utils/helpers";
 import TextureGenerator from '../../Textures/TexturesGenerator';
+import SettingsState from "../../states/SettingsState";
 
 export default class Rings {
   public innerRing: Sprite;
@@ -66,6 +67,12 @@ export default class Rings {
   }
 
   public update(): void {
+
+    if (!SettingsState.rings) {
+      this.innerRing.visible = this.outerRing.visible = false;
+      return;
+    }
+    
     const { ringsType } = GameSettings.all.settings.game.cells;
     const { isPlayerCell, isTeam } = this.cell;
 

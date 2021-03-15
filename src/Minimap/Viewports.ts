@@ -1,4 +1,4 @@
-import { ParticleContainer } from "pixi.js";
+import { Container } from "pixi.js";
 import { Location } from "../objects/types";
 import ViewBox from "../objects/ViewBox";
 import World from "../render/World";
@@ -6,7 +6,7 @@ import GameSettings from "../Settings/Settings";
 import PlayerState from "../states/PlayerState";
 import { getColor } from "../utils/helpers";
 
-export default class Viewports extends ParticleContainer {
+export default class Viewports extends Container {
   private firstTab: ViewBox;
   private topOneTab: ViewBox;
 

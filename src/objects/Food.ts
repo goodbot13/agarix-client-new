@@ -18,18 +18,17 @@ class Food extends Sprite {
 
   constructor(location: Location, subtype: Subtype,) {
     super(TextureGenerator.food);
-    this.type = 'FOOD';
 
     const { x, y, r } = location;
     const { foodPerformanceMode } = GameSettings.all.settings.game.performance;
 
+    this.type = 'FOOD';
     this.anchor.set(0.5);
     this.originalSize = r * 2;
     this.subtype = subtype;
     this.x = x;
     this.y = y;
-    this.width = foodPerformanceMode ? 512 : 0;
-    this.height = foodPerformanceMode ? 512 : 0;
+    this.width = this.height = foodPerformanceMode ? 512 : 0;
     this.alpha = foodPerformanceMode ? 1 : 0;
   }
 
@@ -56,8 +55,7 @@ class Food extends Sprite {
   }
 
   public animate(): void {
-    const dependency = PlayerState.first.playing && 
-                       PlayerState.second.playing && 
+    const dependency = PlayerState.first.playing && PlayerState.second.playing && 
                        GameSettings.all.settings.game.gameplay.spectatorMode === 'Full map';
 
     const instantAnimation = GameSettings.all.settings.game.performance.foodPerformanceMode || dependency;

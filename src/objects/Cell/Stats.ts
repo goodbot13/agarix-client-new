@@ -12,13 +12,14 @@ export default class CellStats {
 
     this.name = new Sprite();
     this.name.anchor.set(0.5);
-    this.name.scale.set(1.2);
-    this.name.zIndex = 0;
+    this.name.scale.set(1.33);
+    this.name.zIndex = 5;
 
     this.mass = new Sprite();
     this.mass.anchor.set(0.5);
-    this.mass.scale.set(1.2);
-    this.mass.y = 100;
+    this.mass.scale.set(1.33);
+    this.mass.y = 105;
+    this.mass.zIndex = 5;
 
     this.updateNick(nick);
     this.updateMass(cell.shortMass);

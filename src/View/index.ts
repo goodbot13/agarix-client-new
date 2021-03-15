@@ -33,7 +33,7 @@ class View {
         return;
       }
 
-      this.mouse.zoomValue *= Math.pow((0.8 + (GameSettings.all.settings.game.gameplay.zoomSpeed / 100)), (e.deltaY / 140 || e.detail || 0))
+      this.mouse.zoomValue *= Math.pow((0.72 + (GameSettings.all.settings.game.gameplay.zoomSpeed / 100)), (e.deltaY / 140 || e.detail || 0))
 
       if (this.mouse.zoomValue <= 0.0228) {
         this.mouse.zoomValue = 0.02281;
@@ -69,7 +69,7 @@ class View {
       this.camera.x = (this.camera.x + valueX) / 2;
       this.camera.y = (this.camera.y + valueY) / 2;
     } else {
-      const speed = GameSettings.all.settings.game.gameplay.cameraSpeed * 6 * PIXI.Ticker.shared.deltaTime;
+      const speed = (130 - GameSettings.all.settings.game.gameplay.cameraSpeed * 6) * PIXI.Ticker.shared.deltaTime;
 
       this.camera.x = ((speed - 1) * this.camera.x + valueX) / speed;
       this.camera.y = ((speed - 1) * this.camera.y + valueY) / speed;

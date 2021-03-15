@@ -11,12 +11,12 @@ class Map extends Container {
   public background: Background;
   public globalBackground: GlobalBackground;
 
-  constructor(private world: World) {
+  constructor(world: World) {
     super();
 
-    this.borders = new Borders(world.textureGenerator);
-    this.background = new Background(world.view, world.textureGenerator);
-    this.globalBackground = new GlobalBackground(world.textureGenerator);
+    this.borders = new Borders();
+    this.background = new Background(world.view);
+    this.globalBackground = new GlobalBackground();
     
     this.addChild(this.globalBackground, this.background, this.borders);
   }

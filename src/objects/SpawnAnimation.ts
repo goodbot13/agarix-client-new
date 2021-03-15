@@ -44,7 +44,7 @@ class SpawnAnimation extends Container {
     this.zIndex = 0;
     this.x = location.x; 
     this.y = location.y;
-    this.r = 3300;
+    this.r = 3500;
   }
 
   private getStep(): number {
@@ -52,8 +52,8 @@ class SpawnAnimation extends Container {
     return this.r * this.deltaStepMultiplier * deltaTime;
   }
 
-  public setIsMinimap(value: boolean): void {
-    this.r = 85;
+  public setIsMinimap(): void {
+    this.r = 88;
   }
 
   public animate(): void {
@@ -74,9 +74,9 @@ class SpawnAnimation extends Container {
       sprite.height += step;
 
       if (i % 2 === 0) {
-        sprite.rotation += 0.0075 * deltaTime;
+        sprite.rotation += 0.007 * deltaTime;
       } else {
-        sprite.rotation -= 0.0075 * deltaTime;
+        sprite.rotation -= 0.007 * deltaTime;
       }
     });
   }

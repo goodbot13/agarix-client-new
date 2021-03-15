@@ -1,24 +1,24 @@
 import * as PIXI from 'pixi.js';
 import { Application, Container, filters, utils } from 'pixi.js';
-import Globals from './Globals';
-import TextureGenerator from './Textures/TexturesGenerator';
-import World from './render/World';
+import Globals from '../Globals';
+import TextureGenerator from '../Textures/TexturesGenerator';
+import World from '../render/World';
 import { KawaseBlurFilter } from '@pixi/filter-kawase-blur';
-import Master from './Master';
-import { IMapOffsets } from './tabs/Socket/Socket';
-import Hotkeys from './tabs/Hotkeys';
-import GameAPI from './communication/GameAPI';
-import GameSettings from './Settings/Settings';
-import FrontAPI from './communication/FrontAPI';
-import WorldState from './states/WorldState';
-import { createTokens, getColor } from './utils/helpers';
-import PlayerState from './states/PlayerState';
-import GamePerformance from './GamePerformance';
-import { GAME_VERSION } from './Versions';
+import Master from '../Master';
+import { IMapOffsets } from '../tabs/Socket/Socket';
+import Hotkeys from '../tabs/Hotkeys';
+import GameAPI from '../communication/GameAPI';
+import GameSettings from '../Settings/Settings';
+import FrontAPI from '../communication/FrontAPI';
+import WorldState from '../states/WorldState';
+import { createTokens, getColor } from '../utils/helpers';
+import PlayerState from '../states/PlayerState';
+import GamePerformance from '../GamePerformance';
+import { GAME_VERSION } from '../Versions';
 
 class Stage {
   public app: Application;
-  public stageFilter: KawaseBlurFilter;
+  public stageFilter: KawaseBlurFilter; // @ts-ignore
   public colorFilter: filters.ColorMatrixFilter;
   public world: World;
   public hue: number;
@@ -44,7 +44,8 @@ class Stage {
       resolution: 1,
       backgroundColor: getColor(GameSettings.all.settings.theming.map.backgroundTint),
       antialias: GameSettings.all.settings.game.performance.antialiasing,
-      powerPreference: 'high-performance'
+      powerPreference: 'high-performance',
+      forceCanvas: false
     });
 
     this.stageFilter = new KawaseBlurFilter(0, 8, false);
@@ -109,7 +110,7 @@ class Stage {
 
       this.world.view.center();
 
-      WorldState.mapOffsets = { minY: 0, minX: 0, maxX: 0, maxY: 0 };
+      WorldState.gameJoined = false;
     }
 
     const socketData = await Master.connect(token, serverToken);

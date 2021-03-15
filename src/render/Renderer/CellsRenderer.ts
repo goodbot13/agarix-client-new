@@ -5,14 +5,13 @@ import Virus from '../../objects/Virus/Virus';
 import World from '../World';
 import GameSettings from '../../Settings/Settings';
 import PlayerState from '../../states/PlayerState';
-import Master from '../../Master';
+import SettingsState from '../../states/SettingsState';
 
 export default class CellsRenderer {
 
   constructor(private world: World) { }
 
   private checkCellRender(cell: Cell | Virus, visible: boolean): Array<boolean> {
-
     const { firstTab, secondTab } = this.world.view;
     const { type, x, y } = cell;
     let isPlayerCell = false;
@@ -36,11 +35,9 @@ export default class CellsRenderer {
     }
 
     return [visible, isPlayerCell];
-
   }
 
   public render(cell: Cell | Virus | RemoveAnimation): void {
-
     if (GameSettings.all.settings.game.performance.culling) {
       if (this.world.view.shouldObjectBeCulled(cell.x, cell.y, cell.width)) {
         cell.setIsVisible(false);
@@ -54,7 +51,6 @@ export default class CellsRenderer {
 
     const fullMapViewEnabled = GameSettings.all.settings.game.gameplay.spectatorMode === 'Full map';
     const topOneViewEnabled = GameSettings.all.settings.game.gameplay.spectatorMode === 'Top one';
-    const isPartyMode = Master.gameMode.get() === ':party';
 
     const { subtype, type, x, y } = cell;
     const { firstTab, secondTab, topOneTab } = this.world.view;
@@ -96,7 +92,7 @@ export default class CellsRenderer {
       if (subtype === 'FIRST_TAB' && type === 'CELL') {
         if (this.world.playerCells.isSecondTab(cell as Cell)) {
           visible = false;
-        } /* else if (!PlayerState.first.playing) {
+        }/*  else if (!PlayerState.first.playing) {
           visible = false;
         } */
       }
@@ -112,12 +108,7 @@ export default class CellsRenderer {
 
       if (type === 'VIRUS') {
         if (fullMapViewEnabled) {
-
-          // tmp
-          if (isPartyMode) {
-            visible = false;
-          }
-
+          visible = false;
         } else if (GameSettings.all.settings.game.multibox.enabled) {
           if (PlayerState.first.playing && PlayerState.second.playing) {
             if (subtype === 'SECOND_TAB') {
@@ -144,17 +135,14 @@ export default class CellsRenderer {
       }
 
       if (type === 'REMOVE_ANIMATION' && fullMapViewEnabled) {
-        if (isPartyMode) {
-          visible = false;
-        }
+        visible = false;
       }
 
       cell.visible = visible; 
       cell.setIsVisible(visible);
     }
 
-    if (fullMapViewEnabled && !Globals.fullMapViewRender) {
-      // @ts-ignore
+    if (fullMapViewEnabled && !SettingsState.fullMapViewRender) {
       let visible = cell.isVisible;
 
       if (type === 'VIRUS' && subtype === 'SPEC_TABS') {

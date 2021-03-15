@@ -259,8 +259,8 @@ export default class Receiver {
 
       // for FIRST_TAB shifts === 0 
       // only affects SECOND_TAB || TOP_ONE_TAB || SPEC_TABS
-      x += this.socket.shiftOffsets.x;
-      y += this.socket.shiftOffsets.y;
+      x += this.socket.shiftOffsets.x * this.socket.offsetsPositionMultiplier.x;
+      y += this.socket.shiftOffsets.y * this.socket.offsetsPositionMultiplier.y;
 
       const type: CellType = isFood ? 'FOOD' : isVirus ? 'VIRUS' : 'CELL';
       const location: Location = { x, y, r };

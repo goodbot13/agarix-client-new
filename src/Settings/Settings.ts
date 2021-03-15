@@ -1,10 +1,11 @@
-import { IState } from "./Storage/initState"
+import { IState, RingsType, VirusMassType } from "./Storage/initState"
 import Storage from "./Storage/Storage";
-import Stage from '../index';
+import Stage from '../Stage/Stage';
 import Food from "../objects/Food";
 import Virus from "../objects/Virus/Virus";
 import Cell from "../objects/Cell";
 import TextureGenerator from '../Textures/TexturesGenerator'
+import SettingsState from "../states/SettingsState";
 
 export default new class Settings {
   public all: IState = Storage.init();
@@ -143,6 +144,25 @@ export default new class Settings {
     });
   }
 
+  updateThemingVirusesMassType(type: VirusMassType): void {
+    const viruses = this.stage.world.cells.children.filter((cell: any) => cell.type === 'VIRUS');
+
+    switch (type) {
+      case 'Disabled':
+      case 'Full mass':
+        viruses.forEach((virus: Virus) => {
+          virus.shots.visible = false;
+        });
+        break;
+
+      case 'Fill circle':
+        viruses.forEach((virus: Virus) => {
+          virus.shots.visible = true;
+        });
+        break;
+    }
+  }
+
 
 
 
@@ -151,6 +171,12 @@ export default new class Settings {
 
   updateSystemCells(): void {
     
+  }
+
+  updateSystemCellsRings(type: RingsType): void {
+    if (type !== 'Disabled' && !SettingsState.rings) {
+      SettingsState.rings = true;
+    } 
   }
 
   updateSystemEffects(): void {

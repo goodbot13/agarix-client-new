@@ -12,6 +12,7 @@ import WorldState from '../../states/WorldState';
 import SkinsLoader from '../../utils/SkinsLoader';
 import Master from '../../Master';
 import TextureGenerator from '../../Textures/TexturesGenerator';
+import SettingsState from '../../states/SettingsState';
 
 export default class Cell extends Container implements IMainGameObject {
   public readonly subtype: Subtype;
@@ -43,6 +44,7 @@ export default class Cell extends Container implements IMainGameObject {
   public usesSkinByAgarName: boolean;
   public customSkinTexture: Texture;
   public agarSkinTexture: Texture;
+  public skinByNameTexture: Texture;
 
   private usingSkin: boolean;
 
@@ -66,7 +68,11 @@ export default class Cell extends Container implements IMainGameObject {
     this.isVisible = false;
 
     this.nick = nick && nick.trim();
-    this.usesSkinByAgarName = this.nick ? Master.skins.reservedSkinsByName.has(this.nick.toLowerCase()) : false;
+    
+    if (this.nick) {
+      this.usesSkinByAgarName = Master.skins.skinsByNameHas(this.nick);
+    }
+
     this.getSkin();
 
     // add cell to main container
@@ -87,12 +93,20 @@ export default class Cell extends Container implements IMainGameObject {
   }
 
   private getSkin(): void {
-    if (this.agarSkinTexture) {
+    if (this.agarSkinName && this.agarSkinTexture) {
       return;
     }
 
-    if (this.usesSkinByAgarName || this.agarSkinName) {
-      this.agarSkinTexture = SkinsLoader.getTextureByAgarSkinName(this.agarSkinName, this.nick); 
+    if (this.usesSkinByAgarName && this.skinByNameTexture) {
+      return;
+    }
+
+    if (this.usesSkinByAgarName) {
+      this.skinByNameTexture = SkinsLoader.getAgarByNick(this.nick);
+    }
+
+    if (this.agarSkinName) {
+      this.agarSkinTexture = SkinsLoader.getAgar(this.agarSkinName);
     }
   }
 
@@ -118,8 +132,8 @@ export default class Cell extends Container implements IMainGameObject {
     this.shadow.changeTexture();
   }
 
-  public setIsMinimapCell(value: boolean): void {
-    this.isMinimap = value;
+  public setIsMinimapCell(): void {
+    this.isMinimap = true;
     this.setIsVisible(true);
     this.updateAlpha(1, true);
   }
@@ -169,6 +183,10 @@ export default class Cell extends Container implements IMainGameObject {
     this.stats.updateNick(nick);
     this.customSkinTexture = skinTexture;
     this.shadow.applyPlayerShadow();
+
+    if (this.nick) {
+      this.usesSkinByAgarName = Master.skins.skinsByNameHas(this.nick);
+    }
   }
 
   private applyTint(): void {
@@ -260,9 +278,8 @@ export default class Cell extends Container implements IMainGameObject {
 
   private updateSkinsVisibility(): void {
     const { skinsType } = GameSettings.all.settings.game.cells;
-    const allowSkins = true;
 
-    if (allowSkins) {
+    if (SettingsState.allowSkins) {
 
       if (GameSettings.all.settings.game.multibox.enabled && GameSettings.all.settings.game.multibox.hideOwnSkins && this.isPlayerCell) {
         this.cell.texture = TextureGenerator.cell;
@@ -272,13 +289,17 @@ export default class Cell extends Container implements IMainGameObject {
 
       const teamAndCustomSkin = this.isTeam && this.customSkinTexture;
       const playerAndCustomSkin = this.isPlayerCell && this.customSkinTexture;
+      const usesSkinByAgarName = this.usesSkinByAgarName && this.skinByNameTexture;
       const allowCustomSkins = skinsType === 'Custom' || skinsType === 'All';
 
       if ((teamAndCustomSkin || playerAndCustomSkin) && allowCustomSkins) {
         this.cell.texture = this.customSkinTexture;
         this.usingSkin = true;
       } else {
-        if (this.agarSkinTexture && (skinsType === 'Vanilla' || skinsType === 'All')) {
+        if (usesSkinByAgarName && (skinsType === 'Vanilla' || skinsType === 'All')) {
+          this.cell.texture = this.skinByNameTexture;
+          this.usingSkin = true;
+        } else if (this.agarSkinTexture && (skinsType === 'Vanilla' || skinsType === 'All')) {
           this.cell.texture = this.agarSkinTexture;
           this.usingSkin = true;
         } else {
@@ -334,7 +355,7 @@ export default class Cell extends Container implements IMainGameObject {
   }  
   
   private getAnimationSpeed(): number {
-    return 0.11 + 0.002 * GameSettings.all.settings.game.gameplay.animationSpeed * PIXI.Ticker.shared.deltaTime;
+    return (GameSettings.all.settings.game.gameplay.animationSpeed / 1000) * PIXI.Ticker.shared.deltaTime;
   }
 
   private getFadeSpeed(): number {
@@ -364,8 +385,7 @@ export default class Cell extends Container implements IMainGameObject {
     }
   }
 
-  private animateEaten(): void {
-    const animationSpeed = this.getAnimationSpeed();
+  private animateEaten(speed: number): void {
     const fadeSpeed = this.getFadeSpeed();
     const soakSpeed = this.getSoakSpeed();
 
@@ -375,7 +395,7 @@ export default class Cell extends Container implements IMainGameObject {
     }
 
     if (soakSpeed !== 0) {
-      const apf = this.isMinimap ? (animationSpeed / 5) : soakSpeed;
+      const apf = this.isMinimap ? (speed / 5) : soakSpeed;
 
       if (this.cell.width > 1) {
         const newSize = -(this.cell.width * apf);
@@ -420,14 +440,14 @@ export default class Cell extends Container implements IMainGameObject {
   private animateMove(): void {
     const { transparency } = GameSettings.all.settings.theming.cells;
 
-    const animationSpeed = this.getAnimationSpeed();
+    const speed = this.getAnimationSpeed();
     const fadeSpeed = this.getFadeSpeed();
 
     const mtv = (this.isMinimap && this.isTeam) ? 0.1 : 1;
 
-    const x = (this.newLocation.x - this.x) * animationSpeed * mtv;
-    const y = (this.newLocation.y - this.y) * animationSpeed * mtv;
-    const r = (this.newLocation.r - this.cell.width) * animationSpeed * mtv;
+    const x = (this.newLocation.x - this.x) * speed * mtv;
+    const y = (this.newLocation.y - this.y) * speed * mtv;
+    const r = (this.newLocation.r - this.cell.width) * speed * mtv;
 
     this.cell.width += r;
     this.cell.height += r;
@@ -457,14 +477,16 @@ export default class Cell extends Container implements IMainGameObject {
   }
 
   public animate(): void {
-    this.originalSize += (this.newOriginalSize - this.originalSize) * this.getAnimationSpeed();
+    const speed = this.getAnimationSpeed();
+
+    this.originalSize += (this.newOriginalSize - this.originalSize) * speed;
     this.updateInfo();
 
     if (this.removing) {
       if (this.removeType === 'REMOVE_CELL_OUT_OF_VIEW') {
         this.animateOutOfView();
       } else if (this.removeType === 'REMOVE_EATEN_CELL') {
-        this.animateEaten();
+        this.animateEaten(speed);
       }
     } else {
       this.animateMove();
