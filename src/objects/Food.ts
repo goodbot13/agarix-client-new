@@ -55,10 +55,9 @@ class Food extends Sprite {
   }
 
   public animate(): void {
-    const dependency = PlayerState.first.playing && PlayerState.second.playing && 
-                       GameSettings.all.settings.game.gameplay.spectatorMode === 'Full map';
-
-    const instantAnimation = GameSettings.all.settings.game.performance.foodPerformanceMode || dependency;
+    const instantAnimation = PlayerState.first.playing && 
+                             PlayerState.second.playing && 
+                             GameSettings.all.settings.game.gameplay.spectatorMode !== 'Full map';
 
     if (this.removing) {
 

@@ -2,12 +2,11 @@ import Stage from './Stage/Stage';
 import TestCase from './TestCase';
 import UICommunicationService from './communication/FrontAPI';
 import Master from './Master';
-import GameSettings from './Settings/Settings';
 
-const initialize = async () => {
+const stage = new Stage();
+
+export const initializeGame = async () => {
   console.clear();
-
-  let stage: Stage = new Stage();
 
   window.Game = stage;
   window.Master = Master;
@@ -24,7 +23,7 @@ const initialize = async () => {
   }
 }
 
-initialize();
+window.GameAPI.init = () => initializeGame();
 
 declare global {
   interface Window {

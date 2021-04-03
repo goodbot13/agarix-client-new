@@ -359,19 +359,23 @@ export default class Cell extends Container implements IMainGameObject {
   }
 
   private getFadeSpeed(): number {
-    if (GameSettings.all.settings.game.cells.fadeSpeed === 'Disabled') {
+    const { fadeSpeed } = GameSettings.all.settings.game.cells;
+
+    if (fadeSpeed === 0) {
       return 0;
     }
 
-    return 0.01 + (0.025 * (6 - +GameSettings.all.settings.game.cells.fadeSpeed)) * PIXI.Ticker.shared.deltaTime;
+    return ((250 - fadeSpeed) / 1000) * PIXI.Ticker.shared.deltaTime;
   }
 
   private getSoakSpeed(): number {
-    if (GameSettings.all.settings.game.cells.soakSpeed === 'Disabled') {
+    const { soakSpeed } = GameSettings.all.settings.game.cells;
+
+    if (soakSpeed === 0) {
       return 0;
     }
 
-    return (6 - +GameSettings.all.settings.game.cells.soakSpeed) / 15 * PIXI.Ticker.shared.deltaTime;
+    return ((250 - soakSpeed) / 1000) * PIXI.Ticker.shared.deltaTime;
   }
 
   private animateOutOfView(): void {
@@ -381,7 +385,7 @@ export default class Cell extends Container implements IMainGameObject {
       this.destroy({ children: true });
       this.isDestroyed = true;
     } else {
-      this.updateAlpha(-fadeSpeed * 1.5);
+      this.updateAlpha(-fadeSpeed);
     }
   }
 
@@ -413,10 +417,10 @@ export default class Cell extends Container implements IMainGameObject {
       if (fadeSpeed === 0) {
         this.fullDestroy();
         return;
-      }
+      } 
 
       if (this.cell.alpha > 0) {
-        this.updateAlpha(-fadeSpeed * 1.5);
+        this.updateAlpha(-fadeSpeed);
       } else {
         this.fullDestroy();
       }
@@ -437,12 +441,10 @@ export default class Cell extends Container implements IMainGameObject {
     this.shadow.sprite.height = r * this.shadow.TEXTURE_OFFSET;
   }
 
-  private animateMove(): void {
+  private animateMove(speed: number): void {
     const { transparency } = GameSettings.all.settings.theming.cells;
 
-    const speed = this.getAnimationSpeed();
     const fadeSpeed = this.getFadeSpeed();
-
     const mtv = (this.isMinimap && this.isTeam) ? 0.1 : 1;
 
     const x = (this.newLocation.x - this.x) * speed * mtv;
@@ -460,7 +462,7 @@ export default class Cell extends Container implements IMainGameObject {
 
     if (!this.isVisible) {
       if (this.cell.alpha > 0 && fadeSpeed !== 0) {
-        this.updateAlpha(-fadeSpeed * 1.5);
+        this.updateAlpha(-fadeSpeed);
       } else {
         this.updateAlpha(0, true);
         this.visible = false;
@@ -469,7 +471,7 @@ export default class Cell extends Container implements IMainGameObject {
       this.visible = true;
 
       if (this.cell.alpha < transparency && fadeSpeed !== 0) {
-        this.updateAlpha(fadeSpeed * 1.5);
+        this.updateAlpha(fadeSpeed);
       } else {
         this.updateAlpha(transparency, true);
       }
@@ -489,7 +491,7 @@ export default class Cell extends Container implements IMainGameObject {
         this.animateEaten(speed);
       }
     } else {
-      this.animateMove();
+      this.animateMove(speed);
     }
   }
 }

@@ -13,16 +13,18 @@ export default new class Storage {
   public init(): IState {
     const storage = localStorage.getItem(this.name) as string;
 
-    try {
-      const swapped = this.swap(storage);
+    if (storage) {
+      try {
+        const swapped = this.swap(storage);
 
-      if (swapped[swapped.length - 1] === '=') {
-        return JSON.parse(atob(swapped));
-      } 
-
-      return JSON.parse(storage);
-    } catch {
-      throw new Error('Could not load game settings from storage.');
+        // will throw exception if it has invalid format
+        const decoded = JSON.parse(atob(swapped));
+        
+        return decoded;
+      } catch {
+        // decoding failed, valid format
+        return JSON.parse(storage);
+      }
     }
   }
 }

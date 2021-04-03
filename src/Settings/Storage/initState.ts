@@ -25,8 +25,6 @@ export interface IState {
 
 export type SkinsType = 'Disabled' | 'Custom' | 'Vanilla' | 'All';
 export type RingsType = 'Disabled' | '2CL' | 'Acimazis' | 'Yue';
-export type SoakSpeedType = 'Disabled' | '1' | '2' | '3' | '4' | '5';
-export type FadeSpeedType = 'Disabled' | '1' | '2' | '3' | '4' | '5';
 export type ShadowType = 'Disabled' | 'Only me' | 'All';
 
 export type CellRemoveAnimationType = 'Disabled' | 'Default' | '2CL' | 'Yue' | 'Acimazis';
@@ -60,8 +58,8 @@ export interface IGameCellsState {
   skinsType: SkinsType,
   ringsType: RingsType,
   ringsSpinning: boolean,
-  soakSpeed: SoakSpeedType,
-  fadeSpeed: FadeSpeedType,
+  soakSpeed: number,
+  fadeSpeed: number,
   oneColored: boolean,
   shadow: ShadowType
 }

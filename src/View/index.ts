@@ -33,7 +33,7 @@ class View {
         return;
       }
 
-      this.mouse.zoomValue *= Math.pow((0.72 + (GameSettings.all.settings.game.gameplay.zoomSpeed / 100)), (e.deltaY / 140 || e.detail || 0))
+      this.mouse.zoomValue *= Math.pow((0.685 + (GameSettings.all.settings.game.gameplay.zoomSpeed / 100)), (e.deltaY / 100 || e.detail || 0))
 
       if (this.mouse.zoomValue <= 0.0228) {
         this.mouse.zoomValue = 0.02281;
