@@ -1,28 +1,46 @@
-import { Sprite, Texture, MIPMAP_MODES, SCALE_MODES, utils } from "pixi.js";
+import { BitmapText, Text, Point, TextStyle } from "pixi.js";
 import Cell from ".";
 import GameSettings from "../../Settings/Settings";
-import TextureGenerator from '../../Textures/TexturesGenerator';
+import WorldState from "../../states/WorldState";
+import * as PIXI from 'pixi.js';
+import TexturesGenerator from "../../Textures/TexturesGenerator";
 
 export default class CellStats {
-  public name: Sprite;
-  public mass: Sprite;
+  public nick: Text;
+  public mass: BitmapText;
+
+  private massValue: number = 0;
+  private shortMassValue: string = '0';
+  private currentAnchor: Point = new Point(0, 0);
+  private readonly NICK_STYLE: TextStyle = new TextStyle({
+    fontFamily: 'Lato',
+    fontSize: 140,
+    fill: 0xFFFFFF,
+    stroke: 0x101010,
+    strokeThickness: 5
+  })
 
   constructor(private cell: Cell) {
-    let nick = cell.nick === undefined ? '__undefined__' : cell.nick;
-
-    this.name = new Sprite();
-    this.name.anchor.set(0.5);
-    this.name.scale.set(1.33);
-    this.name.zIndex = 5;
-
-    this.mass = new Sprite();
-    this.mass.anchor.set(0.5);
-    this.mass.scale.set(1.33);
-    this.mass.y = 105;
+    this.mass = new BitmapText('0', { fontName: 'MassLato' });
+    this.mass.scale.set(0.55);
     this.mass.zIndex = 5;
+    this.setMassAnchor();
 
-    this.updateNick(nick);
-    this.updateMass(cell.shortMass);
+    this.updateNick();
+  }
+  
+  private setMassAnchor(): void {
+    if (GameSettings.all.settings.game.cells.nicks) {
+      if (this.currentAnchor.y !== -0.9) {
+        this.mass.anchor = new Point(0.5, -0.9);
+        this.currentAnchor = this.mass.anchor;
+      }
+    } else {
+      if (this.currentAnchor.y !== 0.5) {
+        this.mass.anchor = new Point(0.5, 0.5);
+        this.currentAnchor = this.mass.anchor;
+      }
+    }
   }
 
   public update(): void {
@@ -32,100 +50,75 @@ export default class CellStats {
     const mMass = GameSettings.all.settings.game.minimap.mass;
 
     if (this.cell.isMinimap && this.cell.isTeam) {
-      this.name.visible = mNicks;
-      this.name.scale.set(7);
-      this.name.y = -512;
+      this.nick.visible = mNicks;
+      this.nick.scale.set(7);
+      this.nick.y = -512;
       return;
     }
 
     if (this.cell.isPlayerCell) {
       this.mass.visible = myMass;
-      this.name.visible = myNick;
+      this.nick.visible = myNick;
     } else {
       if (this.cell.isMinimap && this.cell.originalSize >= 22) {
-        this.name.visible = mNicks;
+        this.nick.visible = mNicks;
         this.mass.visible = mMass;
-        this.name.scale.set(1.5);
+        this.nick.scale.set(1.5);
       } else if (this.cell.originalSize <= 40) {
         this.mass.visible = false;
-        this.name.visible = false;
+        this.nick.visible = false;
       } else {
-        const visible = autoHideMassAndNicks ? this.cell.originalSize > (20 / this.cell.world.view.camera.scale) : true;
+        const visible = autoHideMassAndNicks ? this.cell.originalSize > (25 / this.cell.world.view.camera.scale) : true;
         this.mass.visible = visible && mass;
-        this.name.visible = visible && nicks;
+        this.nick.visible = visible && nicks;
       }
     }
   }
 
   public updateTint(tint: number): void {
-    this.name.tint = tint;
+    this.nick.tint = tint;
     this.mass.tint = tint;
   }
 
-  public updateNick(_nick: string): void {
-    const nameTexture = TextureGenerator.cache.getNameTexture(_nick);
+  private generateNick(nick: string): void {
+    this.nick = new Text(nick, this.NICK_STYLE);
 
-    if (nameTexture) {
-      this.name.texture = nameTexture;
-    } else {
-      const texture = this.createText(_nick);
-      TextureGenerator.cache.addNameTexture(_nick, texture);
-      this.name.texture = texture;
-    }
+    this.nick.texture.baseTexture.mipmap = PIXI.MIPMAP_MODES.ON;
+    this.nick.scale.set(0.75);
+    this.nick.zIndex = 5;
+    this.nick.anchor.set(0.5, 0.5);
   }
 
-  public updateMass(_mass: string): void {
-    const massTexture = TextureGenerator.cache.getMassTexture(_mass);
-
-    if (massTexture) {
-      this.mass.texture = massTexture;
-    } else {
-      const texture = this.createText(_mass, false);
-      TextureGenerator.cache.addMassTexture(_mass, texture);
-      this.mass.texture = texture;
-    }
+  public updateNick(): void {
+    this.generateNick(this.cell.nick);
+  }
+  
+  private calculateMass(): void {
+    this.massValue = ~~(this.cell.originalSize * this.cell.originalSize / 100);
+    this.shortMassValue = Math.round(this.massValue / 100) / 10 + 'k';
   }
 
-  public createText(text: string, nick: boolean = true): Texture {
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
+  public updateMass(): void {
+    const { deltaTime } = PIXI.Ticker.shared;
+    const { ticks } = WorldState;
 
-    const drawText = text === '__undefined__' ? '' : text;
-    const font = nick ? '96px Quicksand' : '64px Quicksand';
-    const lineWidth = nick ? 5 : 3;
+    const shortMass = false;
+    const refreshDelay = 1;
 
-    ctx.textAlign = 'center';
-    ctx.lineWidth = lineWidth;
-    ctx.font = font;
-    
-    let { width } = ctx.measureText(drawText);
-    width += lineWidth * 2;
-
-    if (!nick && text.length <= 2) {
-      width *= 1.5;
+    if (refreshDelay > 1) {
+      if (~~(ticks * deltaTime) % refreshDelay === 1) {
+        this.calculateMass();
+      }
+    } else {
+      this.calculateMass();
     }
 
-    if (width > 2048) {
-      width = 2048;
+    if (shortMass) {
+      this.mass.text = this.shortMassValue;
+    } else {
+      this.mass.text = this.massValue.toString();
     }
 
-    canvas.width = width;
-    canvas.height = width;
-
-    ctx.textAlign = 'center';
-    ctx.font = font;
-    ctx.lineWidth = lineWidth;
-    ctx.strokeStyle = '#606060';
-    ctx.fillStyle = '#FFF';
-    ctx.strokeText(drawText, canvas.width / 2, canvas.height / 2);
-    ctx.fillText(drawText, canvas.width / 2, canvas.height / 2);
-
-    utils.trimCanvas(canvas);
-
-    const texture = Texture.from(canvas);
-    texture.baseTexture.mipmap = MIPMAP_MODES.ON;
-    texture.baseTexture.scaleMode = SCALE_MODES.LINEAR;
-
-    return texture;
+    this.setMassAnchor();
   }
 }

@@ -2,7 +2,6 @@ import { Container, Sprite } from "pixi.js";
 import GameSettings from "../../Settings/Settings";
 import { Location, Subtype, RemoveType, CellType, IMainGameObject } from "../types";
 import VirusShots from "./VirusShots";
-import World from "../../render/World";
 import * as PIXI from 'pixi.js';
 import PlayerState from "../../states/PlayerState";
 import TextureGenerator from '../../Textures/TexturesGenerator';
@@ -22,6 +21,7 @@ class Virus extends Container implements IMainGameObject {
 
   public shots: VirusShots;
   private sizeOffset: number;
+  private isMinimap: boolean;
 
   constructor(location: Location, subtype: Subtype) {
     super();
@@ -39,9 +39,7 @@ class Virus extends Container implements IMainGameObject {
     this.subtype = subtype;
     this.removing = false;
     this.removeType = null;
-    this.newLocation.x = x;
-    this.newLocation.y = y;
-    this.newLocation.r = r;
+    this.newLocation = location;
 
     this.sizeOffset = 512 / r / 1.35;
 
@@ -56,8 +54,13 @@ class Virus extends Container implements IMainGameObject {
     this.alpha = 0;
   }
 
+  private getSizes(): void {
+    
+  }
+
   public setIsMinimap(size: number): void {
     size *= 2;
+    this.isMinimap = true;
     this.virus.width = this.virus.height = size;
     this.shots.visible = false;
   }
@@ -115,11 +118,18 @@ class Virus extends Container implements IMainGameObject {
     const instantAnimation = GameSettings.all.settings.game.multibox.enabled && 
                              PlayerState.first.playing && 
                              PlayerState.second.playing && 
-                             GameSettings.all.settings.game.gameplay.spectatorMode === 'Full map';
+                             GameSettings.all.settings.game.gameplay.spectatorMode !== 'Full map';
 
     let x = (this.newLocation.x - this.x) * speed;
     let y = (this.newLocation.y - this.y) * speed;
     
+    
+    if (!this.isMinimap) {
+      let r = (this.newLocation.r - this.virus.width) * speed;
+      this.virus.width += r;
+      this.virus.height += r;
+    }
+
     this.x += x;
     this.y += y;
     this.zIndex = this.originalSize;

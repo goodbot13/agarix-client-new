@@ -9,11 +9,12 @@ import generateViewBox from './ViewBox';
 import generateCellShadow from './CellShadow';
 import generateVirusShots from './VirusShots';
 import generateMultiboxLinedRing from './MultiboxRing';
-import Cache from './Cache';
 import FrontAPI from '../communication/FrontAPI';
 import GameSettings from '../Settings/Settings';
 import generateMyCellShadow from './MyCellShadow';
 import Logger from '../utils/Logger';
+import CellNicksCache from './Cache/CellNicks';
+import MassFontsGenerator from './MassFonts/MassFontsGenerator';
 
 export default new class TextureGenerator {
   public mapBackgroundImage: Texture;
@@ -35,16 +36,19 @@ export default new class TextureGenerator {
   public virus: Texture;
   public viewBox: Texture;
   public virusShots: Texture;
-  public cache: Cache;
   public removeAnimationsAcim: Array<Texture> = [];
   public removeAnimationHSLO3D: Texture;
   public removeAnimationYue: Array<Texture> = [];
 
+  public cellNicksCache: CellNicksCache;
+  public massFontsGenerator: MassFontsGenerator;
+
   private logger: Logger;
 
   constructor() {
-    this.cache = new Cache();
     this.logger = new Logger('TextureGenerator');
+    this.cellNicksCache = new CellNicksCache();
+    this.massFontsGenerator = new MassFontsGenerator();
   }
 
   private async loadImg(url: string): Promise<HTMLImageElement> {
@@ -164,6 +168,8 @@ export default new class TextureGenerator {
     await this.load();
 
     const delay = () => new Promise((resolve: any) => setTimeout(() => resolve(), 50));
+
+    this.massFontsGenerator.generateLatoBitmap();
 
     await delay(); this.generateCell(); 
     await delay(); this.generateFood(); 

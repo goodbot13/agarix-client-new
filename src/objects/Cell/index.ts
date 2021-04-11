@@ -58,6 +58,7 @@ export default class Cell extends Container implements IMainGameObject {
     this.zIndex = doubleR;
     this.x = x;
     this.y = y;
+    this.nick = nick;
     this.color = color;
     this.originalSize = r;
     this.subtype = subtype;
@@ -66,8 +67,6 @@ export default class Cell extends Container implements IMainGameObject {
     this.world = world;
     this.sortableChildren = true;
     this.isVisible = false;
-
-    this.nick = nick && nick.trim();
     
     if (this.nick) {
       this.usesSkinByAgarName = Master.skins.skinsByNameHas(this.nick);
@@ -84,7 +83,7 @@ export default class Cell extends Container implements IMainGameObject {
     this.addChild(this.cell);
     this.addChild(this.shadow.sprite);
     this.cell.addChild(this.rings.innerRing, this.rings.outerRing);
-    this.cell.addChild(this.stats.name, this.stats.mass);
+    this.cell.addChild(this.stats.nick, this.stats.mass);
 
     this.addColorInformation(color);
     this.applyAlpha();
@@ -180,7 +179,7 @@ export default class Cell extends Container implements IMainGameObject {
 
     this.isPlayerCell = true;
     this.nick = nick && nick.trim();
-    this.stats.updateNick(nick);
+    this.stats.updateNick();
     this.customSkinTexture = skinTexture;
     this.shadow.applyPlayerShadow();
 
@@ -264,18 +263,6 @@ export default class Cell extends Container implements IMainGameObject {
 
   }
 
-  private calcMass(): void {
-    const { deltaTime } = PIXI.Ticker.shared;
-    const { ticks } = WorldState;
-
-    if (~~(ticks % (5 * deltaTime)) === 0) {
-      this.originalMass = ~~(this.originalSize * this.originalSize / 100);
-      this.shortMass = Math.round(this.originalMass / 100) / 10 + 'k';
-
-      this.stats.updateMass(this.shortMass);
-    }
-  }
-
   private updateSkinsVisibility(): void {
     const { skinsType } = GameSettings.all.settings.game.cells;
 
@@ -318,7 +305,7 @@ export default class Cell extends Container implements IMainGameObject {
     this.getSkin();
     this.updateSkinsVisibility();
     this.applyTint();
-    this.calcMass();
+    this.stats.updateMass();
 
     this.rings.update();
     this.shadow.update();

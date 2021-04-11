@@ -270,6 +270,10 @@ export default class Receiver {
         cellUpdate = true;
       }
 
+      if (name === undefined) {
+        name = '';
+      }
+
       this.socket.world.add(id, location, color, name, type, this.socket.tabType, cellSkin);
     } 
 

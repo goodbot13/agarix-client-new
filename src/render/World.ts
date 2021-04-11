@@ -259,7 +259,7 @@ export default class World {
 
     this.minimap.reset();
 
-    TextureGenerator.cache.clearNames();
+    TextureGenerator.cellNicksCache.clear();
   }
 
   public clearCellsByType(subtype: Subtype): void {

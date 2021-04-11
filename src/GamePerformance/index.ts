@@ -44,7 +44,7 @@ export default new class GamePerformance {
       const fps = Math.round(this.FPSCounter.fps);
       const loss = this.getLoss();
 
-      window.FrontAPI.updateStats(fps > 0 ? fps : 0, loss > 0 ? loss : 0);
+      window.FrontAPI?.updateStats(fps > 0 ? fps : 0, loss > 0 ? loss : 0);
     }, 1000);
   }
 }

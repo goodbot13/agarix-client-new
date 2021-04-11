@@ -3,6 +3,7 @@ import TestCase from './TestCase';
 import UICommunicationService from './communication/FrontAPI';
 import Master from './Master';
 
+
 const stage = new Stage();
 
 export const initializeGame = async () => {
@@ -24,6 +25,10 @@ export const initializeGame = async () => {
 }
 
 window.GameAPI.init = () => initializeGame();
+
+if (window.location.hostname.includes('localhost')) {
+  initializeGame();
+}
 
 declare global {
   interface Window {
