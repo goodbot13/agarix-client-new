@@ -101,12 +101,10 @@ export default class CellStats {
   public updateMass(): void {
     const { deltaTime } = PIXI.Ticker.shared;
     const { ticks } = WorldState;
+    const { shortMass, massUpdateDelay } = GameSettings.all.settings.game.cells;
 
-    const shortMass = false;
-    const refreshDelay = 1;
-
-    if (refreshDelay > 1) {
-      if (~~(ticks * deltaTime) % refreshDelay === 1) {
+    if (massUpdateDelay > 1) {
+      if (~~(ticks * deltaTime) % massUpdateDelay === 1) {
         this.calculateMass();
       }
     } else {

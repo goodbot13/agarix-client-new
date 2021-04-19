@@ -55,6 +55,8 @@ export interface IGameCellsState {
   myMass: boolean,
   myNick: boolean,
   autoHideMassAndNicks: boolean,
+  shortMass: boolean,
+  massUpdateDelay: number,
   skinsType: SkinsType,
   ringsType: RingsType,
   ringsSpinning: boolean,
