@@ -38,11 +38,6 @@ export default class CellsRenderer {
   }
 
   public render(cell: Cell | Virus | RemoveAnimation): void {
-
-    if (window.location.hostname.includes('localhost')) {
-      return;
-    }
-
     if (GameSettings.all.settings.game.performance.culling) {
       if (this.world.view.shouldObjectBeCulled(cell.x, cell.y, cell.width)) {
         cell.setIsVisible(false);
