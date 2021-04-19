@@ -56,7 +56,7 @@ export default class StaticPlayerCells extends Container {
     if (PlayerState.first.playing && playerPosition) {
       const { x, y } = this.transformLocation({ x: firstTab.viewport.x, y: firstTab.viewport.y, r: 0 });
 
-      if (!this.firstTab.visible && GameSettings.all.settings.game.effects.spawnAnimation) {
+      if (!this.firstTab.visible && GameSettings.all.settings.game.effects.spawnAnimation !== 'Disabled') {
         const animation = new SpawnAnimation({ x, y, r: 0 }, this.firstTab.cell.tint);
         animation.setIsMinimap();
         this.addChild(animation);
@@ -92,7 +92,7 @@ export default class StaticPlayerCells extends Container {
       const shift = secondTab.getShiftedViewport();
       const { x, y } = this.transformLocation({ x: shift.x, y: shift.y, r: 0 });
 
-      if (!this.secondTab.visible && GameSettings.all.settings.game.effects.spawnAnimation) {
+      if (!this.secondTab.visible && GameSettings.all.settings.game.effects.spawnAnimation !== 'Disabled') {
         const animation = new SpawnAnimation({ x, y, r: 0 }, this.secondTab.cell.tint);
         animation.setIsMinimap();
         this.addChild(animation);

@@ -154,7 +154,7 @@ export default class WorldLoop {
 
         UICommunicationService.setIsPlayerPlaying(true);
 
-        if (GameSettings.all.settings.game.effects.spawnAnimation) {
+        if (GameSettings.all.settings.game.effects.spawnAnimation !== 'Disabled') {
           const first: Cell = this.world.playerCells.firstTab.entries().next().value[1];
           this.world.cells.addChild(new SpawnAnimation(first.newLocation, first.cell.tint));
         }
@@ -187,7 +187,7 @@ export default class WorldLoop {
 
           UICommunicationService.setIsPlayerPlaying(true);
 
-          if (GameSettings.all.settings.game.effects.spawnAnimation) {
+          if (GameSettings.all.settings.game.effects.spawnAnimation !== 'Disabled') {
             const first: Cell = this.world.playerCells.secondTab.entries().next().value[1];
             this.world.cells.addChild(new SpawnAnimation(first.newLocation, first.cell.tint));
           }

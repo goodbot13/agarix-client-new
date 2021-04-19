@@ -20,6 +20,7 @@ import PlayerState from '../states/PlayerState';
 import SkinsLoader from '../utils/SkinsLoader';
 import TextureGenerator from '../Textures/TexturesGenerator';
 import Master from '../Master';
+import { getColor } from '../utils/helpers';
 
 export default class World {
   public cells: Container;
@@ -175,6 +176,33 @@ export default class World {
     }
   }
 
+  private addRemoveAnimation(object: Cell | Virus): void {
+
+    const matchSize = object.type === 'CELL' 
+      ? (object as Cell).cell.width > 150 
+      : object.type === 'VIRUS' ? (object as Virus).virusSprite.width : false;
+
+    const removeAnimation = GameSettings.all.settings.game.effects.cellRemoveAnimation !== 'Disabled';
+
+    if (removeAnimation && matchSize) {
+      const location: Location = {
+        x: object.x,
+        y: object.y,
+        r: object.width
+      }
+
+      let tint = 0xFFFFFF;
+
+      if (object.type == 'CELL') {
+        tint = (object as Cell).cell.tint;
+      } else if (object.type === 'VIRUS') {
+        tint = getColor(GameSettings.all.settings.theming.viruses.color);
+      }
+
+      this.cells.addChild(new RemoveAnimation(location, object.subtype, tint));
+    }
+  }
+
   private remove(id: number, removeType: RemoveType): void {
     const removeImmediatly = Date.now() - this.lastRenderTime > 100;
 
@@ -202,27 +230,8 @@ export default class World {
       } else {
         object.remove(removeType);
 
-        // @ts-ignore
-        const size = object.type === 'CELL' ? object.cell.width : object.type === 'VIRUS' ? 512 : 0;
-        const isEaten = removeType === 'REMOVE_EATEN_CELL';
-        const removeAnimation = GameSettings.all.settings.game.effects.cellRemoveAnimation !== 'Disabled';
-
-        if (isEaten && removeAnimation && size > 100) {
-          const location: Location = {
-            x: object.x,
-            y: object.y,
-            r: object.width
-          }
-
-          let tint = 0xFFFFFF;
-
-          if (object.type == 'CELL') {
-            tint = (object as Cell).cell.tint;
-          } else if (object.type === 'VIRUS') {
-            tint = (object as Virus).virus.tint;
-          }
-
-          this.cells.addChild(new RemoveAnimation(location, object.subtype, tint));
+        if (removeType === 'REMOVE_EATEN_CELL') {
+          this.addRemoveAnimation(object);
         }
       }
 

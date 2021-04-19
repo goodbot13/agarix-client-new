@@ -12,77 +12,80 @@ class Virus extends Container implements IMainGameObject {
   public isPlayerCell: boolean = false;
   public isDestroyed: boolean = false;
   public removing: boolean = false;
-  public removeType: RemoveType;
+  public removeType: RemoveType = null;
   public newLocation: Location = { x: 0, y: 0, r: 0 };
   public newOriginalSize: number;
-  public virus: Sprite;
+  public virusSprite: Sprite;
   public isVisible: boolean;
   public type: CellType;
 
   public shots: VirusShots;
-  private sizeOffset: number;
   private isMinimap: boolean;
+  private location: Location;
 
   constructor(location: Location, subtype: Subtype) {
     super();
 
     this.type = 'VIRUS';
-    this.virus = new Sprite(TextureGenerator.virus);
-    this.virus.anchor.set(0.5);
-    this.addChild(this.virus);
+    this.subtype = subtype;
+    this.location = location;
+    this.newLocation = location;
 
-    this.shots = new VirusShots();
+    this.virusSprite = new Sprite(TextureGenerator.virus);
+    this.virusSprite.anchor.set(0.5);
+    this.addChild(this.virusSprite);
+
+    this.shots = new VirusShots(location.r);
     this.addChild(this.shots);
 
     const { x, y, r } = location;
 
-    this.subtype = subtype;
-    this.removing = false;
-    this.removeType = null;
-    this.newLocation = location;
-
-    this.sizeOffset = 512 / r / 1.35;
-
-    this.newLocation.r *= this.sizeOffset;
     this.originalSize = r;
     this.newOriginalSize = r;
+
+    this.setSize(r);
     this.x = x;
     this.y = y;    
-    this.virus.width = this.newLocation.r;
-    this.virus.height = this.newLocation.r;
+
     this.zIndex = this.originalSize;
     this.alpha = 0;
   }
 
-  private getSizes(): void {
-    
+  private getGlowDistance(): number {
+    const { glow, glowDistance } = GameSettings.all.settings.theming.viruses;
+
+    if (!glow) {
+      return 0;
+    }
+
+    return glowDistance; 
+  }
+
+  private setSize(radius: number): void {
+    const size = radius * 2 + this.getGlowDistance();
+    this.width = this.height = size;
+  }
+
+  public updateTexture(): void {
+    this.virusSprite.texture = TextureGenerator.virus;
+    this.setSize(this.location.r);
   }
 
   public setIsMinimap(size: number): void {
     size *= 2;
     this.isMinimap = true;
-    this.virus.width = this.virus.height = size;
+    this.virusSprite.width = this.virusSprite.height = size;
     this.shots.visible = false;
   }
 
   public update(location: Location): void {
-    const { x, y, r } = location;
-
-    this.newLocation.x = x;
-    this.newLocation.y = y;
-    this.newLocation.r = r;
-
-    this.newOriginalSize = r;
-    this.sizeOffset = 512 / r / 1.35;
-    this.newLocation.r *= this.sizeOffset;
-
-    this.shots.update(r);
+    this.shots.update(location.r);
+    this.newLocation = location;
   }
 
   public remove(removeType: RemoveType): void  {
     this.removing = true;
     this.removeType = removeType;
-    this.shots.update(0);
   }
 
   private animateOutOfView(speed: number) {
@@ -120,16 +123,14 @@ class Virus extends Container implements IMainGameObject {
                              PlayerState.second.playing && 
                              GameSettings.all.settings.game.gameplay.spectatorMode !== 'Full map';
 
+    const glowOffset = this.getGlowDistance();
+
     let x = (this.newLocation.x - this.x) * speed;
     let y = (this.newLocation.y - this.y) * speed;
-    
-    
-    if (!this.isMinimap) {
-      let r = (this.newLocation.r - this.virus.width) * speed;
-      this.virus.width += r;
-      this.virus.height += r;
-    }
+    let r = ((this.newLocation.r * 2 + glowOffset) - this.width) * speed;
 
+    this.width += r;
+    this.height += r;
     this.x += x;
     this.y += y;
     this.zIndex = this.originalSize;
@@ -145,11 +146,9 @@ class Virus extends Container implements IMainGameObject {
     this.shots.animate();
   }
 
-  public animate(): void  {
-    const { deltaTime } = PIXI.Ticker.shared;
+  public animate(): void {
     const speed = this.getAnimationSpeed();
 
-    this.virus.rotation += 0.005 * deltaTime;
     this.originalSize += (this.newOriginalSize - this.originalSize) * speed;
 
     if (this.removing) {

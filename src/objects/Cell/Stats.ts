@@ -3,7 +3,6 @@ import Cell from ".";
 import GameSettings from "../../Settings/Settings";
 import WorldState from "../../states/WorldState";
 import * as PIXI from 'pixi.js';
-import TexturesGenerator from "../../Textures/TexturesGenerator";
 
 export default class CellStats {
   public nick: Text;
@@ -17,12 +16,13 @@ export default class CellStats {
     fontSize: 140,
     fill: 0xFFFFFF,
     stroke: 0x101010,
-    strokeThickness: 5
+    strokeThickness: 5,
+    fontWeight: '600'
   })
 
   constructor(private cell: Cell) {
     this.mass = new BitmapText('0', { fontName: 'MassLato' });
-    this.mass.scale.set(0.55);
+    this.mass.scale.set(0.58);
     this.mass.zIndex = 5;
     this.setMassAnchor();
 
@@ -31,8 +31,8 @@ export default class CellStats {
   
   private setMassAnchor(): void {
     if (GameSettings.all.settings.game.cells.nicks) {
-      if (this.currentAnchor.y !== -0.9) {
-        this.mass.anchor = new Point(0.5, -0.9);
+      if (this.currentAnchor.y !== -0.75) {
+        this.mass.anchor = new Point(0.5, -0.75);
         this.currentAnchor = this.mass.anchor;
       }
     } else {

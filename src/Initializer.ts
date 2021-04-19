@@ -3,7 +3,6 @@ import TestCase from './TestCase';
 import UICommunicationService from './communication/FrontAPI';
 import Master from './Master';
 
-
 const stage = new Stage();
 
 export const initializeGame = async () => {
@@ -16,6 +15,7 @@ export const initializeGame = async () => {
     await stage.init();
     stage.world.view.mouse.zoomValue = 0.1;
     const testCase = new TestCase(stage);
+    console.log(testCase);
     setTimeout(() => stage.unblurGameScene(true), 100);
   } else {
     UICommunicationService.setGameVersion();

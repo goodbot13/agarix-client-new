@@ -52,7 +52,7 @@ export default class RealPlayersCells extends Container {
 
     buffer
       .filter((obj: any) => obj.type === 'VIRUS')
-      .forEach((virus) => (virus as Virus).virus.texture = TextureGenerator.virus);
+      .forEach((virus) => (virus as Virus).updateTexture());
   }
 
   public changeCellShadowTexture(): void {

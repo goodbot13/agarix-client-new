@@ -1,10 +1,10 @@
 import GameSettings from '../Settings/Settings';
-import { MIPMAP_MODES, SCALE_MODES, Texture, Sprite, Container } from 'pixi.js';
+import { MIPMAP_MODES, SCALE_MODES, Texture, Sprite, Container, Rectangle } from 'pixi.js';
 import { GlowFilter } from '@pixi/filter-glow';
 import { getColor, rgbToStringHex } from '../utils/helpers';
 import Globals from '../Globals';
 
-const generateVirus = () => {
+const generateVirus = (): Texture => {
   const {
     color,
     transparency,
@@ -16,76 +16,38 @@ const generateVirus = () => {
     glowStrength
   } = GameSettings.all.settings.theming.viruses;
 
-  const size = 512;
-  const glowQuality = 0.015;
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
 
-  const cellCanvas = document.createElement('canvas');
-  const ctx = cellCanvas.getContext('2d');
-  cellCanvas.width = cellCanvas.height = size;
-  ctx.fillStyle = rgbToStringHex(color);
-  ctx.globalAlpha = transparency;
-  ctx.arc(size / 2, size / 2, size / 4, 0, Math.PI * 2);
-  ctx.fill();
+  const halfBorder = borderWidth / 2;
+  const glowOffset = glow ? glowDistance * 2 : 0;
+  canvas.width = canvas.height = 400 + borderWidth + glowOffset;
+  
+  ctx.strokeStyle = rgbToStringHex(borderColor);
+  ctx.lineWidth = borderWidth;
 
-  const canv = document.createElement('canvas');
-  const ct = canv.getContext('2d');
-  canv.width = canv.height = size;
-  ct.strokeStyle = rgbToStringHex(borderColor);
-  ct.lineWidth = borderWidth;
-  ct.arc(size / 2, size / 2, size / 4, 0, Math.PI * 2);
-  ct.stroke();
+  const glowShift = glow ? glowDistance : 0;
+  ctx.arc(200 + halfBorder + glowShift, 200 + halfBorder + glowShift, 200, 0, Math.PI * 2);
+  ctx.stroke();
 
-  let border: Sprite;
-  let cell: Sprite;
-  let cont: Container;
+  let texture = Texture.from(canvas);
+
+  texture.baseTexture.mipmap = MIPMAP_MODES.ON;
+  texture.baseTexture.scaleMode = SCALE_MODES.LINEAR;
+
+  const sprite = new Sprite(texture);
 
   if (glow) {
-
-    if (GameSettings.all.settings.game.performance.glowFilterShaderType === 'GPU-1') {
-
-      cell = Sprite.from(Texture.from(cellCanvas));
-      border = Sprite.from(Texture.from(canv));
-      cont = new Container();
-
-      border.filters = [new GlowFilter({
-        color: getColor(glowColor),
-        distance: glowDistance,
-        outerStrength: glowStrength,
-        quality: glowQuality
-      })];
-
-    } else if (GameSettings.all.settings.game.performance.glowFilterShaderType === 'Canvas') {
-      ctx.strokeStyle = rgbToStringHex(borderColor);
-      ctx.lineWidth = borderWidth;
-      ctx.arc(size / 2, size / 2, size / 4, 0, Math.PI * 2);
-      ctx.shadowBlur = glowDistance / 1.25;
-      ctx.shadowColor = rgbToStringHex(glowColor);
-      
-      for (let i = 0; i < glowStrength / 1.75; i++) {
-        ctx.stroke();
-      }
-    }
-
+    sprite.filters = [new GlowFilter({
+      color: getColor(glowColor),
+      distance: glowDistance,
+      outerStrength: glowStrength,
+      quality: 0.0175
+    })];
   }
 
-  let texture: Texture;
-
-  if (glow) {
-    if (GameSettings.all.settings.game.performance.glowFilterShaderType === 'GPU-1') {
-      cont.addChild(cell, border);
-      texture = Globals.app.renderer.generateTexture(cont, SCALE_MODES.LINEAR, 1);
-    } else if (GameSettings.all.settings.game.performance.glowFilterShaderType === 'Canvas') {
-      texture = Texture.from(cellCanvas);
-    }
-  } else {
-    cell = Sprite.from(Texture.from(cellCanvas));
-    border = Sprite.from(Texture.from(canv));
-    cont = new Container();
-    cont.addChild(cell, border);
-    texture = Globals.app.renderer.generateTexture(cont, SCALE_MODES.LINEAR, 1);
-  }
-
-  texture.baseTexture.mipmap = MIPMAP_MODES.POW2;
+  texture = Globals.app.renderer.generateTexture(sprite, SCALE_MODES.LINEAR, 1);
+  texture.baseTexture.mipmap = MIPMAP_MODES.ON;
   texture.baseTexture.scaleMode = SCALE_MODES.LINEAR;
 
   return texture;

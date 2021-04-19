@@ -135,12 +135,10 @@ export default new class Settings {
   updateThemingViruses(): void {
     TextureGenerator.generateVirus();
 
-    const virusTexture = TextureGenerator.virus;
-
     this.stage.world.minimap.changeVirusTexture();
 
     this.stage.world.cells.children.filter((cell: any) => cell.type === 'VIRUS').forEach((virus: Virus) => {
-      virus.virus.texture = virusTexture;
+      virus.updateTexture();
     });
   }
 
