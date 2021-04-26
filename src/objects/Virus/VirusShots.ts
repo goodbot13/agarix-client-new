@@ -72,7 +72,6 @@ export default class VirusShots extends Container {
   }
 
   public update(virusRadius: number): void {
-    console.log(virusRadius);
     this.virusRadius = virusRadius;
   } 
 

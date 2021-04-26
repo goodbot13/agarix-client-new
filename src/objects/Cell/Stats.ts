@@ -50,27 +50,27 @@ export default class CellStats {
     const mMass = GameSettings.all.settings.game.minimap.mass;
 
     if (this.cell.isMinimap && this.cell.isTeam) {
-      this.nick.visible = mNicks;
+      this.nick.visible = this.nick.renderable = mNicks;
       this.nick.scale.set(7);
       this.nick.y = -512;
       return;
     }
 
     if (this.cell.isPlayerCell) {
-      this.mass.visible = myMass;
-      this.nick.visible = myNick;
+      this.mass.visible = this.mass.renderable = myMass;
+      this.nick.visible = this.nick.renderable = myNick;
     } else {
       if (this.cell.isMinimap && this.cell.originalSize >= 22) {
-        this.nick.visible = mNicks;
-        this.mass.visible = mMass;
+        this.nick.visible = this.nick.renderable = mNicks;
+        this.mass.visible = this.mass.renderable = mMass;
         this.nick.scale.set(1.5);
       } else if (this.cell.originalSize <= 40) {
-        this.mass.visible = false;
-        this.nick.visible = false;
+        this.mass.visible = this.mass.renderable = false;
+        this.nick.visible = this.nick.renderable = false;
       } else {
-        const visible = autoHideMassAndNicks ? this.cell.originalSize > (25 / this.cell.world.view.camera.scale) : true;
-        this.mass.visible = visible && mass;
-        this.nick.visible = visible && nicks;
+        const visible = autoHideMassAndNicks ? this.cell.originalSize > (27 / this.cell.world.view.camera.scale) : true;
+        this.mass.visible = this.mass.renderable = visible && mass;
+        this.nick.visible = this.nick.renderable = visible && nicks;
       }
     }
   }
@@ -81,7 +81,11 @@ export default class CellStats {
   }
 
   private generateNick(nick: string): void {
-    this.nick = new Text(nick, this.NICK_STYLE);
+    if (this.nick) {
+      this.nick.text = nick;
+    } else {
+      this.nick = new Text(nick, this.NICK_STYLE);
+    }
 
     this.nick.texture.baseTexture.mipmap = PIXI.MIPMAP_MODES.ON;
     this.nick.scale.set(0.75);
@@ -98,7 +102,7 @@ export default class CellStats {
     this.shortMassValue = Math.round(this.massValue / 100) / 10 + 'k';
   }
 
-  public updateMass(): void {
+  public updateMass(forced: boolean = false): void {
     const { deltaTime } = PIXI.Ticker.shared;
     const { ticks } = WorldState;
     const { shortMass, massUpdateDelay } = GameSettings.all.settings.game.cells;
@@ -108,6 +112,10 @@ export default class CellStats {
         this.calculateMass();
       }
     } else {
+      this.calculateMass();
+    }
+
+    if (forced) {
       this.calculateMass();
     }
 

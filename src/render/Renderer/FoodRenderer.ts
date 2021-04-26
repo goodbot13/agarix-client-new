@@ -9,9 +9,13 @@ export default class FoodRenderer {
   public render(food: Food): void {
 
     if (GameSettings.all.settings.game.performance.culling) {
-      if (this.world.view.shouldObjectBeCulled(food.x, food.y, food.width)) {
-        food.hide();
+      if (this.world.view.shouldObjectBeCulled(food.x, food.y, food.width / 2)) {
+        food.culled = true;
+        food.renderable = false;
         return;
+      } else {
+        food.culled = false;
+        food.renderable = true;
       }
     }
 

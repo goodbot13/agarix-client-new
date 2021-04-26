@@ -12,6 +12,8 @@ class Food extends Sprite {
   public removing: boolean = false;
   public isDestroyed: boolean = false;
   public type: CellType;
+  public culled: boolean = false;
+
   private SIZE: number = 512;
   private SPEED: number = 0.0225;
   private realAlpha: number = 0;
@@ -61,6 +63,12 @@ class Food extends Sprite {
 
     if (this.removing) {
 
+      if (this.culled) {
+        this.destroy();
+        this.isDestroyed = true;
+        return;
+      }
+
       // instantly remove & destroy 
       if (instantAnimation) {
         this.destroy();
@@ -85,6 +93,16 @@ class Food extends Sprite {
       }
 
     } else {
+
+      if (this.culled) {
+        this.width = this.height = this.SIZE;
+        this.realAlpha = 1;
+        this.alpha = 1;
+        this.visible = false;
+        return;
+      } else {
+        this.visible = true;
+      }
 
       // instantly set alpha & scale 
       if (instantAnimation) {

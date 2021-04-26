@@ -28,6 +28,7 @@ import {
 } from './Opcodes';
 import Master from '../../Master';
 import Logger from '../../utils/Logger';
+import Settings from '../../Settings/Settings';
 
 export default class Socket {
   public readonly socketData: ISocketData;
@@ -135,11 +136,6 @@ export default class Socket {
   
   public destroy(): void {
     this.socket.close();
-  }
-
-  public calcOffsetShift(): void {
-    this.shiftOffsets.x = (WorldState.mapOffsets.minX - this.mapOffsets.minX);
-    this.shiftOffsets.y = (WorldState.mapOffsets.minY - this.mapOffsets.minY);
   }
 
   public sendLogin(token: string, type: 2 | 4 = 2) {
@@ -266,6 +262,12 @@ export default class Socket {
         break;
 
       case COMPRESSED_MESSAGE: 
+      
+        // no need to decompress, reveice only viewport
+        if (this.tabType === 'TOP_ONE_TAB' && Settings.all.settings.game.gameplay.spectatorMode === 'Full map' && this.mapOffsetFixed) {
+          return;
+        }
+
         this.receiver.handleCompressedMessage();
         break;
     }
@@ -311,7 +313,8 @@ export default class Socket {
         WorldState.mapOffsets = { minX, minY, maxX, maxY };
       }
     } else {
-      this.calcOffsetShift();
+      this.shiftOffsets.x = (WorldState.mapOffsets.minX - this.mapOffsets.minX);
+      this.shiftOffsets.y = (WorldState.mapOffsets.minY - this.mapOffsets.minY);
     }
 
     const viewport: IViewport = {

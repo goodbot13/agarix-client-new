@@ -41,7 +41,6 @@ class Hotkeys implements IGameAPIHotkeys {
     if (!this.macroFeedInterval) {
       if (currentFocusedTab === 'FIRST_TAB') {
         firstTabSocket.emitter.sendFeed();
-
       } else {
         secondTabSocket.emitter.sendFeed();
       } 
@@ -152,23 +151,22 @@ class Hotkeys implements IGameAPIHotkeys {
       return;
     }
 
-
     if (PlayerState.first.playing && PlayerState.second.playing) {
 
       if (this.controller.currentFocusedTab === 'FIRST_TAB') {
         this.controller.setSecondTabActive();
 
-        if (this.macroFeedInterval) {
+        /* if (this.macroFeedInterval) {
           this.stopFeed();
           this.macroFeed();
-        }
+        } */
       } else {
         this.controller.setFirstTabActive();
 
-        if (this.macroFeedInterval) {
+        /* if (this.macroFeedInterval) {
           this.stopFeed();
           this.macroFeed();
-        }
+        } */
       }
 
       return;

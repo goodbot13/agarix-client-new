@@ -69,7 +69,6 @@ class Stage {
     this.world = new World(this);
     this.createMainScene();
 
-    window.GameAPI.connectOgar();
     return true;
   }
 

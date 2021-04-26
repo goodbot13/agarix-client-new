@@ -1,4 +1,3 @@
-import Globals from '../../Globals';
 import Cell from '../../objects/Cell/index';
 import RemoveAnimation from '../../objects/RemoveAnimation';
 import Virus from '../../objects/Virus/Virus';
@@ -6,6 +5,7 @@ import World from '../World';
 import GameSettings from '../../Settings/Settings';
 import PlayerState from '../../states/PlayerState';
 import SettingsState from '../../states/SettingsState';
+import SpawnAnimation from '../../objects/SpawnAnimation';
 
 export default class CellsRenderer {
 
@@ -39,10 +39,21 @@ export default class CellsRenderer {
 
   public render(cell: Cell | Virus | RemoveAnimation): void {
     if (GameSettings.all.settings.game.performance.culling) {
-      if (this.world.view.shouldObjectBeCulled(cell.x, cell.y, cell.width)) {
-        cell.setIsVisible(false);
-        cell.visible = false;
-        return;
+      if (this.world.view.shouldObjectBeCulled(cell.x, cell.y, cell.width / 2)) {
+        if (cell.type === 'CELL') {
+          (cell as Cell).culled = true;
+          (cell as Cell).renderable = false;
+          return;
+        } else if (cell.type === 'VIRUS') {
+          (cell as Virus).renderable = false;
+          return;
+        } else if (cell.type === 'REMOVE_ANIMATION' || cell.type === 'SPAWN_ANIMATION') {
+          (cell as RemoveAnimation | SpawnAnimation).renderable = false;
+          (cell as RemoveAnimation | SpawnAnimation).visible = false;
+        }
+      } else {
+        (cell as Cell).culled = false;
+        (cell as Cell).renderable = true;
       }
     }
     // if cell subtype is TOP_ONE_TAB or SPEC_TABS and it is a player cell

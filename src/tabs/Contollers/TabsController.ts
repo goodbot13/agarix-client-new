@@ -5,7 +5,6 @@ import UICommunicationService from '../../communication/FrontAPI';
 import FullmapController from './FullmapController';
 import Logger from '../../utils/Logger';
 import PlayerState from '../../states/PlayerState';
-import Master from '../../Master';
 import Ogar from '../../Ogar';
 
 class Controller {
@@ -33,8 +32,13 @@ class Controller {
 
       const reg = socketData.https.match(/live-arena-([\w\d]+)\.agar\.io:\d+/)[1];
 
-      Ogar.connected && Ogar.firstTab.join(reg, socketData.token);
-      Ogar.connected && Ogar.secondTab.join(reg, socketData.token);
+      if (!Ogar.connected) {
+        window.GameAPI.connectOgar().then(() => Ogar.firstTab.join(reg, socketData.token));
+      } else {
+        Ogar.firstTab.join(reg, socketData.token)
+      }
+
+      /* Ogar.connected && Ogar.secondTab.join(reg, socketData.token); */
     }
 
     return new Promise((resolve: any) => {
@@ -134,9 +138,9 @@ class Controller {
   public disconnectFullMapView(): void {
     this.fullmapController.disconnectAll();
 
-    if (GameSettings.all.settings.game.gameplay.spectatorMode !== 'Top one') {
+    /* if (GameSettings.all.settings.game.gameplay.spectatorMode !== 'Top one') { */
       this.disconnectTopOneTab();
-    }
+    /* } */
   }
 
   public disconnectAll(): void {
@@ -174,15 +178,11 @@ class Controller {
 
   public spawnFirstTab(): Promise<boolean> {
     this.firstTabSocket.emitter.handleSpawnV3(GameSettings.all.profiles.leftProfileNick);
-    Ogar.firstTab.spawn();
-
     return new Promise((resolve) => this.firstTabSocket.onPlayerSpawn = resolve);
   }
 
   public spawnSecondTab(): Promise<boolean> {
     this.secondTabSocket.emitter.handleSpawnV3(GameSettings.all.profiles.rightProfileNick);
-    Ogar.secondTab.spawn();
-
     return new Promise((resolve) => this.secondTabSocket.onPlayerSpawn = resolve);
   }
 

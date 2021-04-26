@@ -132,7 +132,7 @@ export default class WorldLoop {
     if (this.world.playerCells.firstTab.size === 0) {
       this.controller.firstTabSocket && (this.controller.firstTabSocket.playerSpawned = false);
       PlayerState.first.playing = false;
-      Ogar.connected && (Ogar.firstTab.player.alive = false);
+      Ogar.connected && (Ogar.firstTab.death());
 
       if (this.ftp !== false) {
         this.ftp = false;
@@ -147,7 +147,7 @@ export default class WorldLoop {
       }
     } else {
       PlayerState.first.playing = true;
-      Ogar.connected && (Ogar.firstTab.player.alive = true);
+      Ogar.connected && (Ogar.firstTab.spawn());
 
       if (this.ftp !== true) {
         this.ftp = true;
@@ -165,7 +165,7 @@ export default class WorldLoop {
       if (this.world.playerCells.secondTab.size === 0) {
         this.controller.secondTabSocket.playerSpawned = false;
         PlayerState.second.playing = false;
-        Ogar.connected && (Ogar.secondTab.player.alive = false);
+        Ogar.connected && (Ogar.secondTab.death());
 
         if (this.stp !== false) {
           this.stp = false;
@@ -180,7 +180,7 @@ export default class WorldLoop {
         }
       } else {
         PlayerState.second.playing = true;
-        Ogar.connected && (Ogar.secondTab.player.alive = true);
+        Ogar.connected && (Ogar.secondTab.spawn());
 
         if (this.stp !== true) {
           this.stp = true;

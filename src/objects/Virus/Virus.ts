@@ -72,10 +72,11 @@ class Virus extends Container implements IMainGameObject {
   }
 
   public setIsMinimap(size: number): void {
-    size *= 2;
+    size *= 2.2;
     this.isMinimap = true;
-    this.virusSprite.width = this.virusSprite.height = size;
+    this.width = this.height = size;
     this.shots.visible = false;
+    this.shots.renderable = false;
   }
 
   public update(location: Location): void {
@@ -123,7 +124,7 @@ class Virus extends Container implements IMainGameObject {
                              PlayerState.second.playing && 
                              GameSettings.all.settings.game.gameplay.spectatorMode !== 'Full map';
 
-    const glowOffset = this.getGlowDistance();
+    const glowOffset = this.isMinimap ? 4 : this.getGlowDistance();
 
     let x = (this.newLocation.x - this.x) * speed;
     let y = (this.newLocation.y - this.y) * speed;
@@ -164,6 +165,7 @@ class Virus extends Container implements IMainGameObject {
 
   public setIsVisible(value: boolean): void {
     this.visible = value;
+    this.renderable = value;
     this.isVisible = false;
   }
 }

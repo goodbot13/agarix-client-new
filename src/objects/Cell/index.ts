@@ -45,6 +45,7 @@ export default class Cell extends Container implements IMainGameObject {
   public customSkinTexture: Texture;
   public agarSkinTexture: Texture;
   public skinByNameTexture: Texture;
+  public culled: boolean = false;
 
   private usingSkin: boolean;
 
@@ -67,6 +68,7 @@ export default class Cell extends Container implements IMainGameObject {
     this.world = world;
     this.sortableChildren = true;
     this.isVisible = false;
+    this.renderable = false;
     
     if (this.nick) {
       this.usesSkinByAgarName = Master.skins.skinsByNameHas(this.nick);
@@ -79,6 +81,8 @@ export default class Cell extends Container implements IMainGameObject {
     this.shadow = new Shadow(this.cell, this, doubleR);
     this.stats = new Stats(this);
     this.rings = new Rings(this);
+
+    this.stats.updateMass(true);
 
     this.addChild(this.cell);
     this.addChild(this.shadow.sprite);
@@ -133,8 +137,15 @@ export default class Cell extends Container implements IMainGameObject {
 
   public setIsMinimapCell(): void {
     this.isMinimap = true;
+    this.renderable = true;
     this.setIsVisible(true);
     this.updateAlpha(1, true);
+    this.shadow.sprite.visible = false;
+    this.shadow.sprite.renderable = false;
+    this.stats.nick.visible = false;
+    this.stats.nick.renderable = false;
+    this.stats.mass.visible = false;
+    this.stats.mass.renderable = false;
   }
 
   public setIsFoucsedTab(value: boolean): void {
@@ -453,9 +464,11 @@ export default class Cell extends Container implements IMainGameObject {
       } else {
         this.updateAlpha(0, true);
         this.visible = false;
+        this.renderable = false;
       }
     } else {
       this.visible = true;
+      this.renderable = true;
 
       if (this.cell.alpha < transparency && fadeSpeed !== 0) {
         this.updateAlpha(fadeSpeed);
@@ -472,13 +485,28 @@ export default class Cell extends Container implements IMainGameObject {
     this.updateInfo();
 
     if (this.removing) {
+      if (this.culled) {
+        this.fullDestroy();
+        return;
+      }
+
       if (this.removeType === 'REMOVE_CELL_OUT_OF_VIEW') {
         this.animateOutOfView();
       } else if (this.removeType === 'REMOVE_EATEN_CELL') {
         this.animateEaten(speed);
       }
     } else {
-      this.animateMove(speed);
+      if (this.culled) {
+        this.visible = false;
+        this.renderable = false;
+        this.x = this.newLocation.x;
+        this.y = this.newLocation.y;
+        this.cell.width = this.cell.height = this.newLocation.r;
+        this.shadow.sprite.width = this.shadow.sprite.height = this.shadow.TEXTURE_OFFSET * this.newLocation.r;
+      } else {
+        this.animateMove(speed);
+      }
+      
     }
   }
 }

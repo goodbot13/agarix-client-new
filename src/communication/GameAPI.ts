@@ -41,15 +41,18 @@ export default class GameAPI {
   /*************** Ogar ***************/
 
   public async connectOgar(): Promise<boolean> {
-    Ogar.firstTab.deltaOverOgar();
-
     await Ogar.firstTab.connect();
+    /* await Ogar.secondTab.connect(); */
     
     if (!Ogar.connected) {
+      Ogar.connected = true;
+
       Ogar.firstTab.player.nick = GameSettings.all.profiles.leftProfileNick;
       Ogar.firstTab.player.skin = GameSettings.all.profiles.leftProfileSkinUrl;
-      Ogar.firstTab.player.tag = GameSettings.all.profiles.tag;
-      Ogar.connected = true;
+      
+/*       Ogar.secondTab.player.nick = GameSettings.all.profiles.rightProfileNick;
+      Ogar.secondTab.player.skin = GameSettings.all.profiles.rightProfileSkinUrl;
+      */
 
       UICommunicationService.sendChatGameMessage('Delta server connection established.');
       this.logger.info('Delta server connection established');
@@ -59,6 +62,11 @@ export default class GameAPI {
           this.stage.world.controller.socketData.https.match(/live-arena-([\w\d]+)\.agar\.io:\d+/)[1],
           this.stage.world.controller.socketData.token
         );
+
+/*         Ogar.secondTab.join(
+          this.stage.world.controller.socketData.https.match(/live-arena-([\w\d]+)\.agar\.io:\d+/)[1],
+          this.stage.world.controller.socketData.token
+        ); */
       }
       
       return true;
@@ -68,7 +76,9 @@ export default class GameAPI {
   public disconnectOgar(): void {
     if (Ogar.connected) {
       Ogar.firstTab.disconnect();
+      Ogar.secondTab.disconnect();
       Ogar.connected = false;
+
       this.logger.info('Ogar/Delta server disconnected');
     }
   }
@@ -76,13 +86,15 @@ export default class GameAPI {
   public setTag(): void {
     Ogar.firstTab.player.tag = GameSettings.all.profiles.tag;
     Ogar.firstTab.emitter.sendPlayerTag();
-    this.logger.info(`Tag changed: [${GameSettings.all.profiles.tag === '' ? 'no-tag' : GameSettings.all.profiles.tag}]`);
+
+    /* this.logger.info(`Tag changed: [${GameSettings.all.profiles.tag === '' ? 'no-tag' : GameSettings.all.profiles.tag}]`); */
   }
 
   public setFirstTabNick(): void {
     Ogar.firstTab.player.nick = GameSettings.all.profiles.leftProfileNick;
     Ogar.firstTab.emitter.sendPlayerNick();
-    this.logger.info(`First tab nick changed: [${GameSettings.all.profiles.leftProfileNick}]`);
+    
+    /* this.logger.info(`First tab nick changed: [${GameSettings.all.profiles.leftProfileNick}]`); */
   }
 
   public setFirstTabSkin(): void {
@@ -90,22 +102,29 @@ export default class GameAPI {
     
     Ogar.firstTab.player.skin = leftProfileSkinUrl;
     Ogar.firstTab.emitter.sendPlayerSkin();
+
     SkinsLoader.load(leftProfileSkinUrl);
-    this.logger.info(`First tab skin changed: [${leftProfileSkinUrl}]`);
+
+    /* this.logger.info(`First tab skin changed: [${leftProfileSkinUrl}]`); */
   }
 
   public setSecondTabNick(): void {
-    Ogar.secondTab.player.nick = GameSettings.all.profiles.rightProfileNick;
+    const { rightProfileNick } = GameSettings.all.profiles;
+    
+    Ogar.secondTab.player.nick = rightProfileNick;
     Ogar.secondTab.emitter.sendPlayerNick();
-    this.logger.info(`Second tab nick changed: [${GameSettings.all.profiles.rightProfileNick}]`);
+
+    /* this.logger.info(`Second tab nick changed: [${rightProfileNick}]`); */
   }
 
   public setSecondTabSkin(): void {
     const { rightProfileSkinUrl } = GameSettings.all.profiles;
 
     Ogar.secondTab.player.skin = rightProfileSkinUrl;
-    SkinsLoader.load(rightProfileSkinUrl);
     Ogar.secondTab.emitter.sendPlayerSkin();
+
+    SkinsLoader.load(rightProfileSkinUrl);
+
     this.logger.info(`Second tab skin changed: [${rightProfileSkinUrl}]`);
   }
 
@@ -125,23 +144,18 @@ export default class GameAPI {
     }
 
     WorldState.spectator.free && this.stage.world.controller.stopFreeSpectate();
-    
-    if (GameSettings.all.settings.game.gameplay.spectatorMode !== 'Disabled') {
-      if (Master.gameMode.get() === ':party') {
-        this.stage.world.view.spectateTopOne(false);
-      } else {
-        if (!WorldState.spectator.topOne) {
-          this.stage.world.controller.firstTabSocket.emitter.sendSpectate();
-          this.stage.world.view.spectateTopOne(true);
-        }
-      }
-    } else {
-      if (!WorldState.spectator.topOne) {
-        this.stage.world.controller.firstTabSocket.emitter.sendSpectate();
-        this.stage.world.view.spectateTopOne(true);
-      }
-    }
 
+    const { spectatorMode } = GameSettings.all.settings.game.gameplay;
+    const gameMode = Master.gameMode.get();
+
+    if (!this.stage.world.controller.topOneViewEnabled) {
+      this.stage.world.controller.connectTopOneTab().then(() => {
+        this.stage.world.view.spectateTopOne(false);
+      });
+    } else {
+      this.stage.world.view.spectateTopOne(false);
+    }
+    
     this.logger.info('Spectate mode changed to TOP 1');
   }
 
@@ -163,6 +177,8 @@ export default class GameAPI {
   }
 
   public spectateTarget(): void {
+    return;
+
     if (!this.stage.world.controller.firstTabSocket) {
       return;
     }
