@@ -97,7 +97,7 @@ export default class WorldLoop {
     const { deltaTime } =  PIXI.Ticker.shared;
 
     if (GameSettings.all.settings.theming.food.enabled) {
-      this.food.visible = true;
+      this.food.visible = this.food.renderable = true;
 
       if (this.food.alpha >= 1) {
         this.food.alpha = 1;
@@ -107,7 +107,7 @@ export default class WorldLoop {
     } else {
       if (this.food.alpha <= 0) {
         this.food.alpha = 0;
-        this.food.visible = false;
+        this.food.visible = this.food.renderable = false;
       } else {
         this.food.alpha -= 0.033 * deltaTime;
       }
