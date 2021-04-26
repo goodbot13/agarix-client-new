@@ -18,7 +18,7 @@ export default class Regions {
     }
   }
 
-  private unname(name: GameServerLocationTypes): string {
+  private unname(name: GameServerLocationTypes): GameServerOriginalLocationTypes {
     switch (name) {
       case "Europe": return "EU-London";
       case "North America": return "US-Atlanta";
@@ -51,7 +51,7 @@ export default class Regions {
     this.selected = index;
   }
 
-  public getCurrent(): string {
+  public getCurrent(): GameServerOriginalLocationTypes {
     return this.unname(this.data[this.selected].location);
   }
 
@@ -70,6 +70,7 @@ export default class Regions {
 }
 
 export type GameServerLocationTypes = 'South America' | 'China' | 'Europe' | 'East Asia' | 'Russia' | 'Oceania' | 'Turkey' | 'North America';
+export type GameServerOriginalLocationTypes = 'EU-London' | 'US-Atlanta' | 'RU-Russia' | 'BR-Brazil' | 'TK-Turkey' | 'JP-Tokyo' | 'CN-China' | 'SG-Singapore';
 
 export interface IGameServer {
   location: GameServerLocationTypes,
