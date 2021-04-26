@@ -8,5 +8,7 @@ export default new class Ogar {
   constructor() {
     this.firstTab = new Socket(false);
     this.secondTab = new Socket(true);
+
+    (window as any).Ogar = this;
   }
 }

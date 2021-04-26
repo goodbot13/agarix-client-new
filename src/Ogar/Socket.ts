@@ -3,11 +3,10 @@ import Emitter from './Emitter';
 import Player from './Player';
 import Receiver from './Receiver';
 import UICommunicationService from '../communication/FrontAPI';
-import { extend } from './DeltaSocketExtender';
 import { SOCKET_OPENED } from '../tabs/Socket/Opcodes';
 
 export default class Socket {
-	private readonly ip: string = 'wss://wss.ogario.eu:3443';
+	private readonly ip: string = 'wss://snez.org:8080/ws?040';
 	public readonly handshakeKey: number;
 
 	private receiver: Receiver;
@@ -29,10 +28,6 @@ export default class Socket {
 		this.connected = false;
 		this.second = second;
 	}
-	
-	public deltaOverOgar(): void {
-		extend();
-	}
 
   public connect(): Promise<boolean> {
     return new Promise((resolve: any) => {
@@ -46,6 +41,7 @@ export default class Socket {
 
 			this.ws.onopen = () => {
 				this.emitter.sendHandshake();
+				this.join('');
 				resolve(true);
 			};
 			
@@ -95,7 +91,6 @@ export default class Socket {
 		}
 	}
 	
-	
 	public add(id: number): Player {
 		if (!this.team.has(id)) {
 			const player = new Player(id);
@@ -134,19 +129,23 @@ export default class Socket {
 	}
 
 	public spawn(): void {
-		if (this.player.color.cell === "#000000") {
-			setTimeout(() => this.spawn(), 333);
-      return;
-    } 
+		if (this.player.alive) {
+			return;
+		}
 		
+		this.emitter.sendPlayerNick();
+		this.emitter.sendPlayerTag();
+		this.emitter.sendPlayerJoin();
 		this.emitter.sendPlayerSpawn();
 	}
 
 	public death(): void {
-		if (this.player.alive) {
-			this.player.color.cell = "#000000";
-			this.emitter.sendPlayerDeath();
+		if (!this.player.alive) {
+			return;
 		}
+
+		this.player.color.cell = '#000000';
+		this.emitter.sendPlayerDeath();
 	}
 
 	public updatePosition(x: number, y: number, mass: number): void {
@@ -155,16 +154,35 @@ export default class Socket {
 		this.player.mass = mass;
 	}
 
-	public join(serverToken: string, partyToken: string): void {
-		this.sendPartyData(serverToken, partyToken);
-		this.emitter.sendPlayerDeath();
-		this.emitter.sendPlayerJoin();
-	}
-
-	public sendPartyData(serverToken: string, partyToken: string): void {
-		this.emitter.sendPlayerTag();
-		this.emitter.sendPartyToken(partyToken ? partyToken : '');
+	public async join(serverToken: string, partyToken: string = '') {
 		this.emitter.sendServerToken(serverToken);
+		this.emitter.sendServerRegion();
+		this.emitter.sendServerGamemode();
+		this.emitter.sendCustomColor();
+		this.emitter.sendPlayerTag();
 		this.emitter.sendPlayerNick();
+		this.emitter.sendPlayerDeath()
+		this.emitter.sendPlayerJoin();
+
+/* 		this.emitter.sendServerToken(serverToken);
+		this.emitter.sendPartyToken(partyToken);
+		this.emitter.sendServerRegion();
+		this.emitter.sendServerGamemode();
+		this.emitter.sendCustomColor();
+		this.emitter.sendPlayerTag();
+		this.emitter.sendPlayerNick();
+		this.emitter.sendPlayerSkin();
+		this.emitter.sendPlayerDeath();
+		this.emitter.sendPlayerJoin(); */
+
+/* 		this.send_serverToken(),
+                    this.send_region(),
+                    this.send_gamemode(),
+                    this.send_customColor(),
+                    this.send_clanTag(),
+                    this.send_nick(),
+                    this.sendPlayerDeath(),
+                    this.sendPlayerJoin(),
+                    this.client.play && this.sendPlayerSpawn() */
 	}
 }

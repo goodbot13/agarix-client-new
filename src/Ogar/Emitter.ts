@@ -1,11 +1,12 @@
 import Writer from '../utils/Writer';
 import Socket from './Socket';
-import GameSettings from '../Settings/Settings';
 import FrontAPI from '../communication/FrontAPI';
+import GameSettings from '../Settings/Settings';
+import Master from '../Master';
 
-const JOIN_OPCODE                    = 1;
-const SPAWN_OPCODE                   = 2;
-const DEATH_OPCODE                   = 3;
+const SPAWN_OPCODE                   = 1;
+const DEATH_OPCODE                   = 2;
+const JOIN_OPCODE                    = 3;
 const NICK_OPCODE                    = 10;
 const TAG_OPCODE                     = 11;
 const SKIN_OPCODE                    = 12;
@@ -55,90 +56,125 @@ export default class Emitter {
 	public sendPlayerSpawn(): void {
 		this.socket.player.alive = true;
 		this.sendPlayerState(SPAWN_OPCODE);
+		console.log('PLAYER_SPAWN');
 	}
 
 	public sendPlayerDeath(): void {
 		this.socket.player.alive = false;
 		this.sendPlayerState(DEATH_OPCODE);
+		console.log('PLAYER_DEATH');
 	}
 
 	public sendPlayerJoin(): void {
 		this.socket.player.alive = false;
 		this.sendPlayerState(JOIN_OPCODE);
+		console.log('PLAYER_JOIN');
 	}
 
 	public sendPlayerNick(): void {
 		this.sendString(NICK_OPCODE, this.socket.player.nick);
+		console.log('PLAYER_NICK', this.socket.player.nick);
 	}
 
 	public sendPlayerSkin(): void {
 		this.sendString(SKIN_OPCODE, this.socket.player.skin);
+		console.log('PLAYER_SKIN', this.socket.player.skin);
 	}
 
-	public sendPlayerTag(): void  {
-		this.sendString(TAG_OPCODE, this.socket.player.tag);
+	public sendPlayerTag(): void {
+		this.sendString(TAG_OPCODE, GameSettings.all.profiles.tag);
 		this.socket.team.clear();
+
+		console.log('PLAYER_TAG', GameSettings.all.profiles.tag);
 		
 		FrontAPI.updateTopTeam([]);
 	}
 
-	public sendPartyToken(token: string): void  {
-		this.socket.player.partyToken = token;
+	public sendPartyToken(token: string): void {
+		console.log('PARTY_TOKEN', token);
 		this.sendString(PARTY_TOKEN_OPCODE, token);
 	}
 
-	public sendServerToken(token: string): void  {
-		this.socket.player.serverToken = token;
+	public sendServerToken(token: string): void {
+		console.log('SERVER_TOKEN (ws)', token);
 		this.sendString(SERVER_TOKEN_OPCODE, token);
 		this.socket.team.clear();
 	}
 
-	public sendServerRegion(region: string): void  {
-		this.sendString(REGION_OPCODE, region);
+	public sendServerRegion(): void {
+		console.log('SERVER_REGION', Master.regions.getCurrent().split('-')[0]);
+		this.sendString(REGION_OPCODE, Master.regions.getCurrent().split('-')[0]);
 	}
 
-	public sendServerGamemode(gameMode: TOgarGameMode): void  {
-		this.sendString(GAMEMODE_OPCODE, gameMode);
+	public sendServerGamemode(): void {
+		console.log('GAME_MODE', Master.gameMode.getOgar());
+		this.sendString(GAMEMODE_OPCODE, Master.gameMode.getOgar());
 	}
 
-	public sendPlayerUpdate(): void  {
-		const player = this.socket.player;
-		const size = 13 + player.nick.length * 2 + player.skin.length * 2 + player.skin.length * 2 + player.color.cell.length * 2 + player.color.custom.length * 2;
+	public sendCustomColor(): void {
+		console.log('CUSTOM_COLOR', this.socket.player.color.custom);
+		this.sendString(CUSTOM_COLOR_OPCODE, this.socket.player.color.custom);
+	}
+
+	public sendPlayerUpdate(): void {
+		const { 
+			id,
+			nick, 
+			skin, 
+			color: { 
+				cell : colorCell, 
+				custom: colorCustom 
+			}, 
+		} = this.socket.player;
+
+		const size = 13 + nick.length * 2 + skin.length * 2 + colorCell.length * 2 + colorCustom.length * 2;
 
 		const buffer = new Writer(size);
 
 		buffer.writeUInt8(PLAYER_UPDATE_OPCODE);
 
-		buffer.writeUInt32(player.id);
-		buffer.writeString16(player.nick);
-		buffer.writeString16(player.skin);
-		buffer.writeString16(player.color.custom);
-		buffer.writeString16(player.color.cell);
+		buffer.writeUInt32(id);
+		buffer.writeString16(nick);
+		buffer.writeString16(skin);
+		buffer.writeString16(colorCustom);
+		buffer.writeString16(colorCell);
+
+		console.log(`PLAYER_UPDATE. id: ${id} nick: ${nick} skin: ${skin} ccustom: ${colorCustom} ccell: ${colorCell}, size: ${size}`);
 
 		this.socket.send(buffer.buffer);
-	}
+	}						
 
-	public sendPlayerPositionUpdate(): void  {
-		const player = this.socket.player;
+	public sendPlayerPositionUpdate(): void {
+		const { 
+			id, 
+			mass, 
+			position: { 
+				x: posX, 
+				y: posY 
+			} 
+		} = this.socket.player;
+
     const buffer = new Writer(17);
     
 		buffer.writeUInt8(PLAYER_POSITION_UPDATE_OPCODE);
 
-		buffer.writeUInt32(player.id);
-		buffer.writeInt32(player.position.x);
-		buffer.writeInt32(player.position.y);
-    buffer.writeUInt32(player.mass);
+		buffer.writeUInt32(id);
+		buffer.writeInt32(posX);
+		buffer.writeInt32(posY);
+    buffer.writeUInt32(mass);
+
+		console.log(`PLAYER_POSITION_UPDATE. ID: ${id} x: ${posX} y: ${posY} mass: ${mass}`);
     
 		this.socket.send(buffer.buffer);
 	}
 
-	public sendPlayerState(state: number): void  {
+	private sendPlayerState(state: number): void  {
 		const buffer = new Writer(1);
 		buffer.writeUInt8(state);
 		this.socket.send(buffer.dataView.buffer);
 	}
 
-	public sendString(opcode: number, str: string): void {
+	private sendString(opcode: number, str: string): void {
 		const view = new DataView(new ArrayBuffer(1 + 2 * str.length));
     view.setUint8(0, opcode);
     
@@ -149,5 +185,3 @@ export default class Emitter {
 		this.socket.send(view.buffer);
 	}
 }
-
-export type TOgarGameMode = 'FFA' | 'PTY' | 'EXP';

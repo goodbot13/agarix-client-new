@@ -18,7 +18,7 @@ export default class Player {
   public tag: string = '';
   public alive: boolean = false;
   public updateTime: number = 0;
-  public color: Color = { cell: '', custom: '' };
+  public color: Color = { cell: '#000000', custom: '#3633a5' };
   public partyToken: string = '';
   public serverToken: string = '';
 
