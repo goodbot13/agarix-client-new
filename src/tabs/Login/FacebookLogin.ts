@@ -4,7 +4,6 @@ import GameSettings from '../../Settings/Settings';
 import PlayerState from '../../states/PlayerState';
 import Logger from '../../utils/Logger';
 import Controller from '../Contollers/TabsController';
-import Player from '../../Ogar/Player';
 
 export default new class FacebookLogin {
   public loggedIn: boolean = false;
@@ -30,8 +29,7 @@ export default new class FacebookLogin {
         appId: this.FB_APP_ID,
         cookie: true,
         xfbml: true,
-        status: true,
-        version: "v2.8",
+        version: "v2.7",
       });
 
       this.SDKLoaded = true;  
@@ -68,6 +66,7 @@ export default new class FacebookLogin {
 
     window.FB.login((response: Facebook.Response) => {
       if (response.authResponse) {
+        console.log(response);
         this.token = response.authResponse.accessToken;
   
         localStorage.setItem(this.storage_key, JSON.stringify({
@@ -92,6 +91,7 @@ export default new class FacebookLogin {
   public logOut(): void {
     this.token = null;
     this.loggedIn = false;
+    /* window.FB.logout((resp) => console.log(resp)); */
     localStorage.removeItem(this.storage_key);
     UICommunicationService.setFacebookLogged(false);
   }
@@ -152,7 +152,8 @@ namespace Facebook {
 
   export interface SDK {
     init(args: Object): void,
-    login: any
+    login: any,
+    logout: any
   }
 }
 
