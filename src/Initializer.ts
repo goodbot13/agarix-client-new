@@ -3,11 +3,11 @@ import TestCase from './TestCase';
 import UICommunicationService from './communication/FrontAPI';
 import Master from './Master';
 
+console.clear();
+
 const stage = new Stage();
 
 export const initializeGame = async () => {
-  console.clear();
-
   window.Game = stage;
   window.Master = Master;
 

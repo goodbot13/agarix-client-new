@@ -4,6 +4,7 @@ import { Location } from "../objects/types";
 import Ogar from "../Ogar";
 import World from "../render/World";
 import GameSettings from "../Settings/Settings";
+import PlayerState from "../states/PlayerState";
 import { transformMinimapLocation } from "../utils/helpers";
 
 export default class TeamPlayers extends Container {
@@ -60,6 +61,10 @@ export default class TeamPlayers extends Container {
       } else {
 
         if (!player.alive) {
+          return;
+        }
+
+        if (player.nick === GameSettings.all.profiles.rightProfileNick && PlayerState.second.playing) {
           return;
         }
 

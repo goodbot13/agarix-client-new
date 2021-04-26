@@ -4,6 +4,7 @@ import Player from './Player';
 import Receiver from './Receiver';
 import UICommunicationService from '../communication/FrontAPI';
 import { SOCKET_OPENED } from '../tabs/Socket/Opcodes';
+import Logger from '../utils/Logger';
 
 export default class Socket {
 	private readonly ip: string = 'wss://snez.org:8080/ws?040';
@@ -19,6 +20,8 @@ export default class Socket {
 	public team: Map<number, Player>;
 	public second: boolean;
 
+	private logger: Logger;
+
   constructor(second: boolean) {
 		this.handshakeKey = 401;
     this.emitter = new Emitter(this);
@@ -27,6 +30,8 @@ export default class Socket {
 		this.team = new Map();
 		this.connected = false;
 		this.second = second;
+
+		this.logger = new Logger('Delta Socket');
 	}
 
   public connect(): Promise<boolean> {
@@ -41,6 +46,11 @@ export default class Socket {
 
 			this.ws.onopen = () => {
 				this.emitter.sendHandshake();
+
+				const tab = this.second ? 'multibox tab' : 'main tab';
+				UICommunicationService.sendChatGameMessage(`Delta server connection established (${tab})`);
+				this.logger.info(`Delta server connection established (${tab})`);
+
 				resolve(true);
 			};
 			

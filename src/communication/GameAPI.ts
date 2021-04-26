@@ -42,7 +42,7 @@ export default class GameAPI {
 
   public async connectOgar(): Promise<boolean> {
     await Ogar.firstTab.connect();
-    /* await Ogar.secondTab.connect(); */
+    await Ogar.secondTab.connect();
     
     if (!Ogar.connected) {
       Ogar.connected = true;
@@ -50,12 +50,8 @@ export default class GameAPI {
       Ogar.firstTab.player.nick = GameSettings.all.profiles.leftProfileNick;
       Ogar.firstTab.player.skin = GameSettings.all.profiles.leftProfileSkinUrl;
       
-/*       Ogar.secondTab.player.nick = GameSettings.all.profiles.rightProfileNick;
+      Ogar.secondTab.player.nick = GameSettings.all.profiles.rightProfileNick;
       Ogar.secondTab.player.skin = GameSettings.all.profiles.rightProfileSkinUrl;
-      */
-
-      UICommunicationService.sendChatGameMessage('Delta server connection established.');
-      this.logger.info('Delta server connection established');
     
       if (WorldState.gameJoined) {
         Ogar.firstTab.join(
@@ -63,10 +59,10 @@ export default class GameAPI {
           this.stage.world.controller.socketData.token
         );
 
-/*         Ogar.secondTab.join(
+        Ogar.secondTab.join(
           this.stage.world.controller.socketData.https.match(/live-arena-([\w\d]+)\.agar\.io:\d+/)[1],
           this.stage.world.controller.socketData.token
-        ); */
+        );
       }
       
       return true;
@@ -246,11 +242,8 @@ export default class GameAPI {
   }
 
   public setTopOneView(enabled: boolean): void {
-    if (GameSettings.all.settings.game.gameplay.spectatorMode === 'Disabled') {
-      return
-    }
-
     if (enabled) {
+      this.stage.world.controller.disconnectFullMapView();
       this.stage.world.controller.connectTopOneTab();
     } else {
       this.stage.world.controller.disconnectTopOneTab();

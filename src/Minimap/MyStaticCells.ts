@@ -81,13 +81,12 @@ export default class StaticPlayerCells extends Container {
     const { playerPosition } = GameSettings.all.settings.game.minimap;
 
     if (PlayerState.second.playing && playerPosition) {
-      const shift = secondTab.getShiftedViewport();
       const { x, y } = transformMinimapLocation({ 
           x: secondTab.viewport.x, 
           y: secondTab.viewport.y, 
           r: 0 
         },
-        this.world.view.firstTab.mapOffsets
+        this.world.view.secondTab.mapOffsets
       );
 
       if (!this.secondTab.visible && GameSettings.all.settings.game.effects.spawnAnimation !== 'Disabled') {

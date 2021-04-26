@@ -33,12 +33,10 @@ class Controller {
       const reg = socketData.https.match(/live-arena-([\w\d]+)\.agar\.io:\d+/)[1];
 
       if (!Ogar.connected) {
-        window.GameAPI.connectOgar().then(() => Ogar.firstTab.join(reg, socketData.token));
+        window.GameAPI.connectOgar().then(() => Ogar.join(reg, socketData.token));
       } else {
-        Ogar.firstTab.join(reg, socketData.token)
+        Ogar.join(reg, socketData.token);
       }
-
-      /* Ogar.connected && Ogar.secondTab.join(reg, socketData.token); */
     }
 
     return new Promise((resolve: any) => {
@@ -93,7 +91,7 @@ class Controller {
 
   public connectTopOneTab() {
     return new Promise((resolve: any, reject: any) => {
-      if (!this.firstTabSocket) {
+      if (!this.firstTabSocket) { 
         this.logger.error('First player tab is not connected yet');
         UICommunicationService.sendChatGameMessage('Could not connect top 1 tab. Main tab is not connected yet.');
         return reject();
@@ -108,7 +106,7 @@ class Controller {
 
       this.topOneTabSocket = new Socket(this.socketData, 'TOP_ONE_TAB', this.world);
       this.topOneTabSocket.subscribeOnDisconnect = () => {
-        this.topOneViewEnabled = false;
+        this.disconnectTopOneTab();
       }
       
       this.topOneTabSocket.init().then(() => {
@@ -137,10 +135,7 @@ class Controller {
 
   public disconnectFullMapView(): void {
     this.fullmapController.disconnectAll();
-
-    /* if (GameSettings.all.settings.game.gameplay.spectatorMode !== 'Top one') { */
-      this.disconnectTopOneTab();
-    /* } */
+    this.disconnectTopOneTab();
   }
 
   public disconnectAll(): void {

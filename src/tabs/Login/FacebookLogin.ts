@@ -31,7 +31,7 @@ export default new class FacebookLogin {
         cookie: true,
         xfbml: true,
         status: true,
-        version: "v2.0",
+        version: "v2.8",
       });
 
       this.SDKLoaded = true;  
