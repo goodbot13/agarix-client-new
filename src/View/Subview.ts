@@ -66,6 +66,19 @@ class Subview {
     this.viewport = viewport;
   }
 
+  public getShiftedMapOffsets(): IMapOffsets {
+    if (this.mapOffsetsShift.x === 0 && this.mapOffsetsShift.y === 0) {
+      return this.mapOffsets;
+    }
+
+    return {
+      minX: this.mapOffsets.minX + this.mapOffsetsShift.x,
+      minY: this.mapOffsets.minY + this.mapOffsetsShift.y,
+      maxX: this.mapOffsets.maxX + this.mapOffsetsShift.x,
+      maxY: this.mapOffsets.maxY + this.mapOffsetsShift.y
+    }
+  }
+
   public getShiftedViewport(): IViewport {
     if (this.mapOffsetsShift.x === 0 && this.mapOffsetsShift.y === 0) {
       return this.viewport;

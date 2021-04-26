@@ -100,15 +100,21 @@ class View {
       return;
     }
 
+    const firstTabViewport = this.firstTab.getShiftedViewport();
+    const secondTabViewport = this.secondTab.getShiftedViewport();
+
+    const firstTabOffsets = this.firstTab.getShiftedMapOffsets();
+    const secondTabOffsets = this.secondTab.getShiftedMapOffsets();
+
     Ogar.firstTab.updatePosition(
-      this.firstTab.viewport.x - (this.firstTab.mapOffsets.minX + 7071),
-      this.firstTab.viewport.y - (this.firstTab.mapOffsets.minY + 7071),
+      firstTabViewport.x - (firstTabOffsets.minX + 7071),
+      firstTabViewport.y - (firstTabOffsets.minY + 7071),
       this.firstTab.playerBox.mass
     );
     
     Ogar.secondTab.updatePosition(
-      this.secondTab.viewport.x - (this.secondTab.mapOffsets.minX + 7071),
-      this.secondTab.viewport.y - (this.secondTab.mapOffsets.minY + 7071),
+      secondTabViewport.x - (secondTabOffsets.minX + 7071),
+      secondTabViewport.y - (secondTabOffsets.minY + 7071),
       this.secondTab.playerBox.mass
     );
   }
