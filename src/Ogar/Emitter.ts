@@ -56,63 +56,51 @@ export default class Emitter {
 	public sendPlayerSpawn(): void {
 		this.socket.player.alive = true;
 		this.sendPlayerState(SPAWN_OPCODE);
-		console.log('PLAYER_SPAWN');
 	}
 
 	public sendPlayerDeath(): void {
 		this.socket.player.alive = false;
 		this.sendPlayerState(DEATH_OPCODE);
-		console.log('PLAYER_DEATH');
 	}
 
 	public sendPlayerJoin(): void {
 		this.socket.player.alive = false;
 		this.sendPlayerState(JOIN_OPCODE);
-		console.log('PLAYER_JOIN');
 	}
 
 	public sendPlayerNick(): void {
 		this.sendString(NICK_OPCODE, this.socket.player.nick);
-		console.log('PLAYER_NICK', this.socket.player.nick);
 	}
 
 	public sendPlayerSkin(): void {
 		this.sendString(SKIN_OPCODE, this.socket.player.skin);
-		console.log('PLAYER_SKIN', this.socket.player.skin);
 	}
 
 	public sendPlayerTag(): void {
 		this.sendString(TAG_OPCODE, GameSettings.all.profiles.tag);
 		this.socket.team.clear();
-
-		console.log('PLAYER_TAG', GameSettings.all.profiles.tag);
 		
 		FrontAPI.updateTopTeam([]);
 	}
 
 	public sendPartyToken(token: string): void {
-		console.log('PARTY_TOKEN', token);
 		this.sendString(PARTY_TOKEN_OPCODE, token);
 	}
 
 	public sendServerToken(token: string): void {
-		console.log('SERVER_TOKEN (ws)', token);
 		this.sendString(SERVER_TOKEN_OPCODE, token);
 		this.socket.team.clear();
 	}
 
 	public sendServerRegion(): void {
-		console.log('SERVER_REGION', Master.regions.getCurrent().split('-')[0]);
 		this.sendString(REGION_OPCODE, Master.regions.getCurrent().split('-')[0]);
 	}
 
 	public sendServerGamemode(): void {
-		console.log('GAME_MODE', Master.gameMode.getOgar());
 		this.sendString(GAMEMODE_OPCODE, Master.gameMode.getOgar());
 	}
 
 	public sendCustomColor(): void {
-		console.log('CUSTOM_COLOR', this.socket.player.color.custom);
 		this.sendString(CUSTOM_COLOR_OPCODE, this.socket.player.color.custom);
 	}
 
@@ -139,8 +127,6 @@ export default class Emitter {
 		buffer.writeString16(colorCustom);
 		buffer.writeString16(colorCell);
 
-		console.log(`PLAYER_UPDATE. id: ${id} nick: ${nick} skin: ${skin} ccustom: ${colorCustom} ccell: ${colorCell}, size: ${size}`);
-
 		this.socket.send(buffer.buffer);
 	}						
 
@@ -162,8 +148,6 @@ export default class Emitter {
 		buffer.writeInt32(posX);
 		buffer.writeInt32(posY);
     buffer.writeUInt32(mass);
-
-		console.log(`PLAYER_POSITION_UPDATE. ID: ${id} x: ${posX} y: ${posY} mass: ${mass}`);
     
 		this.socket.send(buffer.buffer);
 	}

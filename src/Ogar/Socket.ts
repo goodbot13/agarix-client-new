@@ -41,7 +41,6 @@ export default class Socket {
 
 			this.ws.onopen = () => {
 				this.emitter.sendHandshake();
-				this.join('');
 				resolve(true);
 			};
 			
@@ -51,6 +50,10 @@ export default class Socket {
 			this.connected = true;
 			this.interval = setInterval(() => this.updateInterval(), 1000);
 		});
+	}
+
+	public isConnected(): boolean {
+		return this.connected;
 	}
 	
 	public disconnect(): void {
@@ -133,9 +136,9 @@ export default class Socket {
 			return;
 		}
 		
-		this.emitter.sendPlayerNick();
+/* 		this.emitter.sendPlayerNick();
 		this.emitter.sendPlayerTag();
-		this.emitter.sendPlayerJoin();
+		this.emitter.sendPlayerJoin(); */
 		this.emitter.sendPlayerSpawn();
 	}
 
@@ -161,28 +164,8 @@ export default class Socket {
 		this.emitter.sendCustomColor();
 		this.emitter.sendPlayerTag();
 		this.emitter.sendPlayerNick();
+		this.emitter.sendPlayerSkin();
 		this.emitter.sendPlayerDeath()
 		this.emitter.sendPlayerJoin();
-
-/* 		this.emitter.sendServerToken(serverToken);
-		this.emitter.sendPartyToken(partyToken);
-		this.emitter.sendServerRegion();
-		this.emitter.sendServerGamemode();
-		this.emitter.sendCustomColor();
-		this.emitter.sendPlayerTag();
-		this.emitter.sendPlayerNick();
-		this.emitter.sendPlayerSkin();
-		this.emitter.sendPlayerDeath();
-		this.emitter.sendPlayerJoin(); */
-
-/* 		this.send_serverToken(),
-                    this.send_region(),
-                    this.send_gamemode(),
-                    this.send_customColor(),
-                    this.send_clanTag(),
-                    this.send_nick(),
-                    this.sendPlayerDeath(),
-                    this.sendPlayerJoin(),
-                    this.client.play && this.sendPlayerSpawn() */
 	}
 }

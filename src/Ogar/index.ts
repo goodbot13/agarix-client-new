@@ -11,4 +11,9 @@ export default new class Ogar {
 
     (window as any).Ogar = this;
   }
+
+  public join(serverToken: string, partyToken: string = '') {
+    this.firstTab.isConnected() && this.firstTab.join(serverToken, partyToken);
+    this.secondTab.isConnected() && this.secondTab.join(serverToken, partyToken);
+  }
 }
