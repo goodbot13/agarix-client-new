@@ -4,6 +4,7 @@ import { Location } from "../objects/types";
 import Ogar from "../Ogar";
 import World from "../render/World";
 import GameSettings from "../Settings/Settings";
+import { transformMinimapLocation } from "../utils/helpers";
 
 export default class TeamPlayers extends Container {
   private buffer: Map<number, Cell>;
@@ -14,20 +15,6 @@ export default class TeamPlayers extends Container {
     this.zIndex = 0;
 
     this.buffer = new Map();
-  }
-
-  private transformLocation(location: Location, shift?: boolean): Location {
-    const { size } = GameSettings.all.settings.theming.minimap;
-    const { minX, minY } = this.world.view.firstTab.mapOffsets;
-
-    const offsetX = !shift ? minX : -7071;
-    const offsetY = !shift ? minY : -7071;
-
-    return {
-      x: (location.x - offsetX)  / 14142 * size,
-      y: (location.y - offsetY) / 14142 * size,
-      r: location.r / 14142 * size
-    }
   }
 
   public changeCellShadowTexture(): void {
@@ -51,7 +38,15 @@ export default class TeamPlayers extends Container {
 
         const cell = this.buffer.get(player.id);
 
-        const location = this.transformLocation({ x: player.position.x, y: player.position.y, r: 0 }, true);
+        const location = transformMinimapLocation({ 
+            x: player.position.x, 
+            y: player.position.y, 
+            r: 0 
+          }, 
+          this.world.view.firstTab.getShiftedMapOffsets(),
+          true
+        );
+
         cell.update({ x: location.x, y: location.y, r: playerSize / 2 });
 
         if (!player.alive) {
@@ -68,7 +63,15 @@ export default class TeamPlayers extends Container {
           return;
         }
 
-        const location = this.transformLocation({ x: player.position.x, y: player.position.y, r: 0 }, true);
+         const location = transformMinimapLocation({ 
+            x: player.position.x, 
+            y: player.position.y, 
+            r: 0 
+          }, 
+          this.world.view.firstTab.getShiftedMapOffsets(),
+          true
+        );
+        
         const cell = new Cell('FIRST_TAB', location, { red: 0, green: 0, blue: 0 }, player.nick, '', this.world);
 
         cell.setIsMinimapCell();

@@ -4,7 +4,7 @@ import { Location } from "../objects/types";
 import World from "../render/World";
 import GameSettings from "../Settings/Settings";
 import { IGhostCell } from "../tabs/Socket/Receiver";
-import { getColor } from "../utils/helpers";
+import { getColor, transformMinimapLocation } from "../utils/helpers";
 
 export default class GhostCells extends Container {
   private buffer: Array<Cell>;
@@ -28,6 +28,7 @@ export default class GhostCells extends Container {
         cell.setIsMinimapCell();
         cell.cell.tint = getColor(ghostCellsColor);
         cell.shadow.sprite.visible = false;
+        cell.shadow.sprite.renderable = false;
 
         return cell;
     });
@@ -35,28 +36,16 @@ export default class GhostCells extends Container {
     this.addChild(...this.buffer);
   }
 
-  private transformLocation(location: Location, shift?: boolean): Location {
-    const { size } = GameSettings.all.settings.theming.minimap;
-    const { minX, minY } = this.world.view.firstTab.mapOffsets;
-
-    const offsetX = !shift ? minX : -7071;
-    const offsetY = !shift ? minY : -7071;
-
-    return {
-      x: (location.x - offsetX)  / 14142 * size,
-      y: (location.y - offsetY) / 14142 * size,
-      r: location.r / 14142 * size
-    }
-  }
-
   public update(cells: Array<IGhostCell>): void {
     const { ghostCells, realPlayersCells } = GameSettings.all.settings.game.minimap;
 
     if (!ghostCells) {
       this.visible = false;
+      this.renderable = false;
       return;
     } else {
       this.visible = true;
+      this.renderable = true;
     }
 
     let i = 0;
@@ -66,9 +55,16 @@ export default class GhostCells extends Container {
         return;
       }
 
-      const location = this.transformLocation({ x: cell.playerX, y: cell.playerY, r: cell.size * 2 });
+      const location = transformMinimapLocation({ 
+          x: cell.playerX, 
+          y: cell.playerY, 
+          r: cell.size * 2 
+        },
+        this.world.view.firstTab.mapOffsets
+      );
 
       this.buffer[i].visible = true;
+      this.buffer[i].renderable = true;
       this.buffer[i].forceAnimateSet(location);
 
       i++;
@@ -78,6 +74,7 @@ export default class GhostCells extends Container {
     // Case: server has < 20 players
     for (let x = i; x < 20; x++) {
       this.buffer[x].visible = false;
+      this.buffer[i].renderable = false;
     }
   }
 

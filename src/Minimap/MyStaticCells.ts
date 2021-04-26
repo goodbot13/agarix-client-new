@@ -4,7 +4,7 @@ import { Location } from "../objects/types";
 import SpawnAnimation from "../objects/SpawnAnimation";
 import World from "../render/World";
 import GameSettings from "../Settings/Settings";
-import { getColor } from "../utils/helpers";
+import { getColor, transformMinimapLocation } from "../utils/helpers";
 import PlayerState from "../states/PlayerState";
 
 export default class StaticPlayerCells extends Container {
@@ -18,20 +18,6 @@ export default class StaticPlayerCells extends Container {
     this.sortableChildren = true;
 
     this.create();
-  }
-
-  private transformLocation(location: Location, shift?: boolean): Location {
-    const { size } = GameSettings.all.settings.theming.minimap;
-    const { minX, minY } = this.world.view.firstTab.mapOffsets;
-
-    const offsetX = !shift ? minX : -7071;
-    const offsetY = !shift ? minY : -7071;
-
-    return {
-      x: (location.x - offsetX)  / 14142 * size,
-      y: (location.y - offsetY) / 14142 * size,
-      r: location.r / 14142 * size
-    }
   }
 
   private create(): void {
@@ -54,7 +40,13 @@ export default class StaticPlayerCells extends Container {
     const { playerPosition } = GameSettings.all.settings.game.minimap;
 
     if (PlayerState.first.playing && playerPosition) {
-      const { x, y } = this.transformLocation({ x: firstTab.viewport.x, y: firstTab.viewport.y, r: 0 });
+      const { x, y } = transformMinimapLocation({ 
+          x: firstTab.viewport.x, 
+          y: firstTab.viewport.y, 
+          r: 0 
+        },
+        this.world.view.firstTab.mapOffsets
+      );
 
       if (!this.firstTab.visible && GameSettings.all.settings.game.effects.spawnAnimation !== 'Disabled') {
         const animation = new SpawnAnimation({ x, y, r: 0 }, this.firstTab.cell.tint);
@@ -90,7 +82,13 @@ export default class StaticPlayerCells extends Container {
 
     if (PlayerState.second.playing && playerPosition) {
       const shift = secondTab.getShiftedViewport();
-      const { x, y } = this.transformLocation({ x: shift.x, y: shift.y, r: 0 });
+      const { x, y } = transformMinimapLocation({ 
+          x: secondTab.viewport.x, 
+          y: secondTab.viewport.y, 
+          r: 0 
+        },
+        this.world.view.firstTab.mapOffsets
+      );
 
       if (!this.secondTab.visible && GameSettings.all.settings.game.effects.spawnAnimation !== 'Disabled') {
         const animation = new SpawnAnimation({ x, y, r: 0 }, this.secondTab.cell.tint);

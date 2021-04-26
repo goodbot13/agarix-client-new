@@ -4,7 +4,7 @@ import ViewBox from "../objects/ViewBox";
 import World from "../render/World";
 import GameSettings from "../Settings/Settings";
 import PlayerState from "../states/PlayerState";
-import { getColor } from "../utils/helpers";
+import { getColor, transformMinimapLocation } from "../utils/helpers";
 
 export default class Viewports extends Container {
   private firstTab: ViewBox;
@@ -16,20 +16,6 @@ export default class Viewports extends Container {
     this.zIndex = -8;
 
     this.create();
-  }
-
-  private transformLocation(location: Location, shift?: boolean): Location {
-    const { size } = GameSettings.all.settings.theming.minimap;
-    const { minX, minY } = this.world.view.firstTab.mapOffsets;
-
-    const offsetX = !shift ? minX : -7071;
-    const offsetY = !shift ? minY : -7071;
-
-    return {
-      x: (location.x - offsetX)  / 14142 * size,
-      y: (location.y - offsetY) / 14142 * size,
-      r: location.r / 14142 * size
-    }
   }
 
   private create(): void {
@@ -54,7 +40,15 @@ export default class Viewports extends Container {
       this.firstTab.visible = PlayerState.first.playing;
 
       const bounds = this.world.view.firstTab.bounds;
-      const { x, y } = this.transformLocation({ x: bounds.left, y: bounds.top, r: 0 });
+
+      const { x, y } = transformMinimapLocation({ 
+          x: bounds.left, 
+          y: bounds.top, 
+          r: 0 
+        }, 
+        this.world.view.firstTab.getShiftedMapOffsets()
+      );
+
       const w = bounds.width / 14142 * size;
       const h = bounds.height / 14142 * size;
  
@@ -75,7 +69,14 @@ export default class Viewports extends Container {
 
       const bounds = this.world.view.topOneTab.bounds;
 
-      const { x, y } = this.transformLocation({ x: bounds.left, y: bounds.top, r: 0 });
+      const { x, y } = transformMinimapLocation({ 
+          x: bounds.left, 
+          y: bounds.top, 
+          r: 0 
+        }, 
+        this.world.view.firstTab.getShiftedMapOffsets()
+      );
+
       const w = bounds.width / 14142 * size;
       const h = bounds.height / 14142 * size;
  

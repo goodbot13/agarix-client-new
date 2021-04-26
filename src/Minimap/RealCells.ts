@@ -5,6 +5,7 @@ import Virus from "../objects/Virus/Virus";
 import World from "../render/World";
 import GameSettings from "../Settings/Settings";
 import TextureGenerator from '../Textures/TexturesGenerator';
+import { transformMinimapLocation } from "../utils/helpers";
 
 export default class RealPlayersCells extends Container {
   private buffer: Map<number, Cell | Virus>;
@@ -17,20 +18,6 @@ export default class RealPlayersCells extends Container {
     this.sortableChildren = true;
 
     this.buffer = new Map();
-  }
-
-  private transformLocation(location: Location, shift?: boolean): Location {
-    const { size } = GameSettings.all.settings.theming.minimap;
-    const { minX, minY } = this.world.view.firstTab.mapOffsets;
-
-    const offsetX = !shift ? minX : -7071;
-    const offsetY = !shift ? minY : -7071;
-
-    return {
-      x: (location.x - offsetX)  / 14142 * size,
-      y: (location.y - offsetY) / 14142 * size,
-      r: location.r / 14142 * size
-    }
   }
 
   private renderCells(): void {
@@ -72,7 +59,8 @@ export default class RealPlayersCells extends Container {
 
       if (type === 'CELL') {
 
-        const cell = new Cell(subtype, this.transformLocation(location), color, name, skin, this.world);
+        const loc = transformMinimapLocation(location, this.world.view.firstTab.getShiftedMapOffsets());
+        const cell = new Cell(subtype, loc, color, name, skin, this.world);
 
         cell.setIsVisible(true);
         cell.setIsMinimapCell();
@@ -82,7 +70,7 @@ export default class RealPlayersCells extends Container {
 
       } else if (type === 'VIRUS') {
 
-        location = this.transformLocation(location);
+        location = transformMinimapLocation(location, this.world.view.firstTab.getShiftedMapOffsets());
 
         const virus = new Virus(location, subtype);
 
@@ -123,7 +111,8 @@ export default class RealPlayersCells extends Container {
     }
 
     if (this.buffer.has(id)) {
-      this.buffer.get(id).update(this.transformLocation(location));
+      const loc = transformMinimapLocation(location, this.world.view.firstTab.getShiftedMapOffsets());
+      this.buffer.get(id).update(loc);
     }
   }
 

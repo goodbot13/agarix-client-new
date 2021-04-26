@@ -1,5 +1,20 @@
 import { utils } from "pixi.js";
-import { RGB } from "../objects/types";
+import { Location, RGB } from "../objects/types";
+import Settings from "../Settings/Settings";
+import { IMapOffsets } from "../tabs/Socket/Socket";
+
+export const transformMinimapLocation = (location: Location, mapOffsets: IMapOffsets, shift?: boolean): Location => {
+  const { size } = Settings.all.settings.theming.minimap;
+
+  const offsetX = !shift ? mapOffsets.minX : -7071;
+  const offsetY = !shift ? mapOffsets.minY : -7071;
+
+  return {
+    x: (location.x - offsetX)  / 14142 * size,
+    y: (location.y - offsetY) / 14142 * size,
+    r: location.r / 14142 * size
+  }
+}
 
 export const createTokens = (party: string, server: string): string => {
   if (party) {
