@@ -1,17 +1,15 @@
-import { IState, RingsType, VirusMassType } from "./Storage/initState"
-import Storage from "./Storage/Storage";
+import { IState, RingsType, VirusMassType } from './Storage/initState';
+import Storage from './Storage/Storage';
 import Stage from '../Stage/Stage';
-import Food from "../objects/Food";
-import Virus from "../objects/Virus/Virus";
-import Cell from "../objects/Cell";
-import TextureGenerator from '../Textures/TexturesGenerator'
-import SettingsState from "../states/SettingsState";
+import Food from '../objects/Food';
+import Virus from '../objects/Virus/Virus';
+import Cell from '../objects/Cell';
+import TextureGenerator from '../Textures/TexturesGenerator';
+import SettingsState from '../states/SettingsState';
 
-export default new class Settings {
+export default new (class Settings {
   public all: IState = Storage.init();
   public stage: Stage;
-
-  
 
   init(stage: Stage) {
     this.stage = stage;
@@ -32,19 +30,16 @@ export default new class Settings {
     profiles.rightProfileSkinUrl = profiles.rightProfiles[profiles.rightSelectedIndex].skinUrl;
   }
 
-
-
-
-  
-
   updateThemingCells(type: TThemingCells): void {
     switch (type) {
       case 'Shadow':
         TextureGenerator.generateCellShadow();
-        
-        this.stage.world.cells.children.filter((cell: any) => cell.type === 'CELL').forEach((cell: Cell) => {
-          cell.changeShadowTexture();
-        });
+
+        this.stage.world.cells.children
+          .filter((cell: any) => cell.type === 'CELL')
+          .forEach((cell: Cell) => {
+            cell.changeShadowTexture();
+          });
 
         this.stage.world.minimap.changeCellShadowTexture();
         break;
@@ -77,7 +72,7 @@ export default new class Settings {
 
   updateThemingMap(type: TThemingMap): void {
     switch (type) {
-      case 'BgImgUrl': 
+      case 'BgImgUrl':
         this.stage.world.map.background.updateTexture();
         break;
 
@@ -128,18 +123,18 @@ export default new class Settings {
     }
   }
 
-  updateThemingViewports(): void {
-    
-  }
+  updateThemingViewports(): void {}
 
   updateThemingViruses(): void {
     TextureGenerator.generateVirus();
 
     this.stage.world.minimap.changeVirusTexture();
 
-    this.stage.world.cells.children.filter((cell: any) => cell.type === 'VIRUS').forEach((virus: Virus) => {
-      virus.updateTexture();
-    });
+    this.stage.world.cells.children
+      .filter((cell: any) => cell.type === 'VIRUS')
+      .forEach((virus: Virus) => {
+        virus.updateTexture();
+      });
   }
 
   updateThemingVirusesMassType(type: VirusMassType): void {
@@ -161,42 +156,24 @@ export default new class Settings {
     }
   }
 
-
-
-
-
-
-
-  updateSystemCells(): void {
-    
-  }
+  updateSystemCells(): void {}
 
   updateSystemCellsRings(type: RingsType): void {
     if (type !== 'Disabled' && !SettingsState.rings) {
       SettingsState.rings = true;
-    } 
+    }
   }
 
-  updateSystemEffects(): void {
-    
-  }
+  updateSystemEffects(): void {}
 
-  updateSystemGameplay(): void {
-    
-  }
+  updateSystemGameplay(): void {}
 
-  updateSystemMinimap(): void {
-    
-  }
+  updateSystemMinimap(): void {}
 
-  updateSystemMultibox(): void {
-    
-  }
+  updateSystemMultibox(): void {}
 
-  updateSystemPerformance(): void {
-    
-  }
-}
+  updateSystemPerformance(): void {}
+})();
 
 export type TThemingMap = 'Border' | 'BgTint' | 'BgImgUrl' | 'GlobalBgImgUrl' | 'GlobalBgImgTint';
 export type TThemingCells = 'Shadow' | 'MyShadow';

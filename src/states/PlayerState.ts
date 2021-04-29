@@ -1,4 +1,4 @@
-export default new class PlayerState {
+export default new (class PlayerState {
   public first: IPlayerState = {
     spawning: false,
     playing: false,
@@ -6,7 +6,7 @@ export default new class PlayerState {
     loggedIn: false,
     connected: false,
     shouldBeReconnected: false,
-  }
+  };
 
   public second: IPlayerState = {
     spawning: false,
@@ -15,14 +15,14 @@ export default new class PlayerState {
     loggedIn: false,
     connected: false,
     shouldBeReconnected: false,
-  }
-}
+  };
+})();
 
 interface IPlayerState {
-  spawning: boolean,
-  playing: boolean,
-  focused: boolean,
-  loggedIn: boolean,
-  connected: boolean,
-  shouldBeReconnected: boolean
+  spawning: boolean;
+  playing: boolean;
+  focused: boolean;
+  loggedIn: boolean;
+  connected: boolean;
+  shouldBeReconnected: boolean;
 }

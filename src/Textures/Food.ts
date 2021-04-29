@@ -8,14 +8,14 @@ const generateFood = () => {
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
 
-  const { 
+  const {
     size,
     color,
     glow,
     glowColor,
     glowDistance,
     glowStrength,
-    crisp
+    crisp,
   } = GameSettings.all.settings.theming.food;
 
   const canvasSize = 512;
@@ -32,32 +32,30 @@ const generateFood = () => {
 
   if (glow) {
     if (GameSettings.all.settings.game.performance.glowFilterShaderType === 'GPU-1') {
-
       utils.trimCanvas(canvas);
 
       sprite = new Sprite(Texture.from(canvas));
 
-      sprite.filters = [new GlowFilter({
-        color: getColor(glowColor),
-        distance: glowDistance,
-        outerStrength: glowStrength,
-        quality: glowQuality
-      })];
-
+      sprite.filters = [
+        new GlowFilter({
+          color: getColor(glowColor),
+          distance: glowDistance,
+          outerStrength: glowStrength,
+          quality: glowQuality,
+        }),
+      ];
     } else {
-
       ctx.shadowColor = rgbToStringHex(glowColor);
       ctx.shadowBlur = glowDistance / 2.5;
-  
+
       for (let i = 0; i < glowStrength / 1.5; i++) {
         ctx.fill();
       }
-  
+
       utils.trimCanvas(canvas);
 
       sprite = new Sprite(Texture.from(canvas));
     }
-    
   } else {
     sprite = new Sprite(Texture.from(canvas));
   }
@@ -70,6 +68,6 @@ const generateFood = () => {
   }
 
   return texture;
-}
+};
 
 export default generateFood;

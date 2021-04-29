@@ -1,8 +1,8 @@
-import Cell from "../objects/Cell/index";
-import { RGB, Subtype } from "../objects/types";
-import SkinsLoader from "../utils/SkinsLoader";
-import GameSettings from "../Settings/Settings";
-import Ogar from "../Ogar";
+import Cell from '../objects/Cell/index';
+import { RGB, Subtype } from '../objects/types';
+import SkinsLoader from '../utils/SkinsLoader';
+import GameSettings from '../Settings/Settings';
+import Ogar from '../Ogar';
 
 export default class PlayerCells {
   public firstTab: Map<number, Cell>;
@@ -29,8 +29,8 @@ export default class PlayerCells {
     this.firstTab.set(id, cell);
 
     cell.setPlayerCell(
-      GameSettings.all.profiles.leftProfileNick, 
-      SkinsLoader.getTextureByUrl(GameSettings.all.profiles.leftProfileSkinUrl)
+      GameSettings.all.profiles.leftProfileNick,
+      SkinsLoader.getTextureByUrl(GameSettings.all.profiles.leftProfileSkinUrl),
     );
 
     Ogar.firstTab.player.color.cell = cell.colorHex[1];
@@ -40,10 +40,10 @@ export default class PlayerCells {
     this.secondTab.set(id, cell);
 
     cell.setPlayerCell(
-      GameSettings.all.profiles.rightProfileNick, 
-      SkinsLoader.getTextureByUrl(GameSettings.all.profiles.rightProfileSkinUrl)
+      GameSettings.all.profiles.rightProfileNick,
+      SkinsLoader.getTextureByUrl(GameSettings.all.profiles.rightProfileSkinUrl),
     );
-    
+
     Ogar.secondTab.player.color.cell = cell.colorHex[1];
   }
 
@@ -86,7 +86,8 @@ export default class PlayerCells {
 
   private compare(nick: string, color: RGB, nick2: string, color2: RGB): boolean {
     const sameNick = nick === nick2;
-    const sameColor = color.blue === color2.blue && color.green === color2.green && color.blue === color2.blue;
+    const sameColor =
+      color.blue === color2.blue && color.green === color2.green && color.blue === color2.blue;
 
     return sameNick && sameColor;
   }

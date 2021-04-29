@@ -1,11 +1,11 @@
-import { Container } from "pixi.js";
-import Cell from "../objects/Cell/index";
-import { CellType, Location, RemoveType, RGB, Subtype } from "../objects/types";
-import Virus from "../objects/Virus/Virus";
-import World from "../render/World";
-import GameSettings from "../Settings/Settings";
+import { Container } from 'pixi.js';
+import Cell from '../objects/Cell/index';
+import { CellType, Location, RemoveType, RGB, Subtype } from '../objects/types';
+import Virus from '../objects/Virus/Virus';
+import World from '../render/World';
+import GameSettings from '../Settings/Settings';
 import TextureGenerator from '../Textures/TexturesGenerator';
-import { transformMinimapLocation } from "../utils/helpers";
+import { transformMinimapLocation } from '../utils/helpers';
 
 export default class RealPlayersCells extends Container {
   private buffer: Map<number, Cell | Virus>;
@@ -26,7 +26,7 @@ export default class RealPlayersCells extends Container {
     for (let i = 0; i < this.children.length; i++) {
       const obj = this.children[i] as Cell | Virus;
 
-      obj.animate();   
+      obj.animate();
 
       if (obj.isDestroyed) {
         this.removeChild(obj);
@@ -50,16 +50,25 @@ export default class RealPlayersCells extends Container {
       .forEach((cell) => (cell as Cell).changeShadowTexture());
   }
 
-  public add(id: number, location: Location, color: RGB, name: string, type: CellType, subtype: Subtype, skin?: string): void {
+  public add(
+    id: number,
+    location: Location,
+    color: RGB,
+    name: string,
+    type: CellType,
+    subtype: Subtype,
+    skin?: string,
+  ): void {
     if (!GameSettings.all.settings.game.minimap.realPlayersCells) {
       return;
     }
 
     if (subtype === 'TOP_ONE_TAB') {
-
       if (type === 'CELL') {
-
-        const loc = transformMinimapLocation(location, this.world.view.firstTab.getShiftedMapOffsets());
+        const loc = transformMinimapLocation(
+          location,
+          this.world.view.firstTab.getShiftedMapOffsets(),
+        );
         const cell = new Cell(subtype, loc, color, name, skin, this.world);
 
         cell.setIsVisible(true);
@@ -67,10 +76,11 @@ export default class RealPlayersCells extends Container {
 
         this.buffer.set(id, cell);
         this.addChild(cell);
-
       } else if (type === 'VIRUS') {
-
-        location = transformMinimapLocation(location, this.world.view.firstTab.getShiftedMapOffsets());
+        location = transformMinimapLocation(
+          location,
+          this.world.view.firstTab.getShiftedMapOffsets(),
+        );
 
         const virus = new Virus(location, subtype);
 
@@ -78,17 +88,16 @@ export default class RealPlayersCells extends Container {
 
         this.buffer.set(id, virus);
         this.addChild(virus);
-
       }
     }
   }
-  
+
   public remove(id: number, removeType: RemoveType): void {
     if (!GameSettings.all.settings.game.minimap.realPlayersCells) {
       return;
     }
 
-    const removeImmediately = Date.now() - this.lastRenderTime >  100;
+    const removeImmediately = Date.now() - this.lastRenderTime > 100;
 
     if (this.buffer.has(id)) {
       const obj = this.buffer.get(id);
@@ -111,7 +120,10 @@ export default class RealPlayersCells extends Container {
     }
 
     if (this.buffer.has(id)) {
-      const loc = transformMinimapLocation(location, this.world.view.firstTab.getShiftedMapOffsets());
+      const loc = transformMinimapLocation(
+        location,
+        this.world.view.firstTab.getShiftedMapOffsets(),
+      );
       this.buffer.get(id).update(loc);
     }
   }

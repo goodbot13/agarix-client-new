@@ -5,7 +5,7 @@ import PlayerState from '../../states/PlayerState';
 import Logger from '../../utils/Logger';
 import Controller from '../Contollers/TabsController';
 
-export default new class FacebookLogin {
+export default new (class FacebookLogin {
   public loggedIn: boolean = false;
   public token: string = '';
   public FB_APP_ID: number = 0;
@@ -29,28 +29,29 @@ export default new class FacebookLogin {
         appId: this.FB_APP_ID,
         cookie: true,
         xfbml: true,
-        version: "v2.7",
+        version: 'v2.7',
       });
 
-      this.SDKLoaded = true;  
+      this.SDKLoaded = true;
     } else {
       this.SDKLoaded = false;
       UICommunicationService.setFacebookLogged(false);
     }
   }
-  
+
   private checkStorageToken(): void {
     const tokenData: any = JSON.parse(localStorage.getItem(this.storage_key));
 
     if (tokenData) {
       if (tokenData.expiry > Date.now()) {
-
         const expiresIn = ~~((tokenData.expiry - Date.now()) / 1000 / 60);
 
         this.token = tokenData.token;
         this.loggedIn = true;
         UICommunicationService.setFacebookLogged(true);
-        UICommunicationService.sendChatGameMessage(`Facebook logged in. Re-login required in ${expiresIn} minutes.`);
+        UICommunicationService.sendChatGameMessage(
+          `Facebook logged in. Re-login required in ${expiresIn} minutes.`,
+        );
       } else {
         UICommunicationService.setFacebookLogged(false);
         UICommunicationService.sendChatGameMessage('Facebook token expired. Please, log in again.');
@@ -64,28 +65,34 @@ export default new class FacebookLogin {
       return;
     }
 
-    window.FB.login((response: Facebook.Response) => {
-      if (response.authResponse) {
-        console.log(response);
-        this.token = response.authResponse.accessToken;
-  
-        localStorage.setItem(this.storage_key, JSON.stringify({
-          token: this.token,
-          expiry: Date.now() + 1000 * response.authResponse.expiresIn
-        }));
-        
-        this.loggedIn = true;
-        UICommunicationService.sendChatGameMessage('Facebook token received successfully.');
-        UICommunicationService.setFacebookLogged(true);
+    window.FB.login(
+      (response: Facebook.Response) => {
+        if (response.authResponse) {
+          console.log(response);
+          this.token = response.authResponse.accessToken;
 
-       this.forceSendLogin(controller);
-      } else {
-        UICommunicationService.sendChatGameMessage('Facebook login error.');
-        UICommunicationService.setFacebookLogged(false);
-      }
-    }, {
-      scope: "public_profile, email",
-    });
+          localStorage.setItem(
+            this.storage_key,
+            JSON.stringify({
+              token: this.token,
+              expiry: Date.now() + 1000 * response.authResponse.expiresIn,
+            }),
+          );
+
+          this.loggedIn = true;
+          UICommunicationService.sendChatGameMessage('Facebook token received successfully.');
+          UICommunicationService.setFacebookLogged(true);
+
+          this.forceSendLogin(controller);
+        } else {
+          UICommunicationService.sendChatGameMessage('Facebook login error.');
+          UICommunicationService.setFacebookLogged(false);
+        }
+      },
+      {
+        scope: 'public_profile, email',
+      },
+    );
   }
 
   public logOut(): void {
@@ -120,9 +127,9 @@ export default new class FacebookLogin {
             PlayerState.first.loggedIn = true;
             this.logger.info('Logged in' + ' [' + socket.tabType + ']');
           }
-          
+
           break;
-        
+
         case 'SECOND_TAB':
           if (rightProfileLoginType === 'FACEBOOK') {
             socket.emitter.sendLogin(this.token, 2);
@@ -133,32 +140,32 @@ export default new class FacebookLogin {
       }
     }
   }
-}
+})();
 
 namespace Facebook {
   interface AuthResponse {
     accessToken: string;
-		userID: string;
-		expiresIn: number;
-		signedRequest: string;
-		graphDomain: string;
-		data_access_expiration_time: number;
+    userID: string;
+    expiresIn: number;
+    signedRequest: string;
+    graphDomain: string;
+    data_access_expiration_time: number;
   }
 
   export interface Response {
     authResponse: AuthResponse;
-		status: string;
+    status: string;
   }
 
   export interface SDK {
-    init(args: Object): void,
-    login: any,
-    logout: any
+    init(args: Object): void;
+    login: any;
+    logout: any;
   }
 }
 
 declare global {
   interface Window {
-    FB: Facebook.SDK
+    FB: Facebook.SDK;
   }
 }

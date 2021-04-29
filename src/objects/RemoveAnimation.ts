@@ -1,7 +1,7 @@
-import { Container, Sprite } from "pixi.js";
-import GameSettings from "../Settings/Settings";
-import { CellType, Location, Subtype } from "./types";
-import TextureGenerator from "../Textures/TexturesGenerator";
+import { Container, Sprite } from 'pixi.js';
+import GameSettings from '../Settings/Settings';
+import { CellType, Location, Subtype } from './types';
+import TextureGenerator from '../Textures/TexturesGenerator';
 import * as PIXI from 'pixi.js';
 
 class RemoveAnimation extends Container {
@@ -40,9 +40,9 @@ class RemoveAnimation extends Container {
       sprite.width = sprite.height = 0;
     });
 
-    this.addChild(...this.spriteBuffer);  
+    this.addChild(...this.spriteBuffer);
 
-    this.x = x; 
+    this.x = x;
     this.y = y;
     this.zIndex = 0;
     this.subtype = subtype;

@@ -3,8 +3,8 @@ import Controller from './TabsController';
 import UICommunicationService from '../../communication/FrontAPI';
 
 export interface ISpectateCoords {
-  x: number,
-  y: number
+  x: number;
+  y: number;
 }
 
 export default class FullmapController {
@@ -14,7 +14,7 @@ export default class FullmapController {
 
   public enabling: boolean = false;
 
-  constructor(private tabsController: Controller) { 
+  constructor(private tabsController: Controller) {
     for (let y = 0, centerYFixed = 1519; y < 5; y++, centerYFixed += 1571 * 2) {
       for (let x = 1; x <= 5; x += 2) {
         this.coordinates.push({ x: 2535 * x, y: centerYFixed });
@@ -41,11 +41,10 @@ export default class FullmapController {
         this.sockets[index].spectate(this.coordinates[index].x, this.coordinates[index].y);
         resolve();
       });
-    }); 
+    });
   }
 
   public enable(i?: number): void {
-
     if (i === undefined) {
       if (!this.tabsController.topOneViewEnabled) {
         this.tabsController.connectTopOneTab().then(() => {
@@ -54,7 +53,7 @@ export default class FullmapController {
         });
 
         return;
-      } 
+      }
 
       UICommunicationService.sendChatGameMessage('Full map view is establishing.');
 
@@ -74,18 +73,14 @@ export default class FullmapController {
       if (i < 14) {
         this.enable(++i);
       } else {
-
         this.sockets[i].onFullMapViewEnabled = () => {
-
           const time = ~~((Date.now() - this.establishBegin) / 1000);
 
           this.enabling = false;
 
           UICommunicationService.sendChatGameMessage(`Full map view is established. (${time}s)`);
-
         };
       }
     });
-
   }
 }

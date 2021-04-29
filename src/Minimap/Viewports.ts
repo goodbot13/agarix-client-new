@@ -1,10 +1,10 @@
-import { Container } from "pixi.js";
-import { Location } from "../objects/types";
-import ViewBox from "../objects/ViewBox";
-import World from "../render/World";
-import GameSettings from "../Settings/Settings";
-import PlayerState from "../states/PlayerState";
-import { getColor, transformMinimapLocation } from "../utils/helpers";
+import { Container } from 'pixi.js';
+import { Location } from '../objects/types';
+import ViewBox from '../objects/ViewBox';
+import World from '../render/World';
+import GameSettings from '../Settings/Settings';
+import PlayerState from '../states/PlayerState';
+import { getColor, transformMinimapLocation } from '../utils/helpers';
 
 export default class Viewports extends Container {
   private firstTab: ViewBox;
@@ -41,17 +41,18 @@ export default class Viewports extends Container {
 
       const bounds = this.world.view.firstTab.bounds;
 
-      const { x, y } = transformMinimapLocation({ 
-          x: bounds.left, 
-          y: bounds.top, 
-          r: 0 
-        }, 
-        this.world.view.firstTab.getShiftedMapOffsets()
+      const { x, y } = transformMinimapLocation(
+        {
+          x: bounds.left,
+          y: bounds.top,
+          r: 0,
+        },
+        this.world.view.firstTab.getShiftedMapOffsets(),
       );
 
-      const w = bounds.width / 14142 * size;
-      const h = bounds.height / 14142 * size;
- 
+      const w = (bounds.width / 14142) * size;
+      const h = (bounds.height / 14142) * size;
+
       this.firstTab.animate(x, y, w, h);
     } else {
       this.firstTab.visible = false;
@@ -65,21 +66,22 @@ export default class Viewports extends Container {
     if (viewport === 'All' || viewport === 'Top one tab') {
       const { viewport } = this.world.view.topOneTab;
 
-      this.topOneTab.visible = (viewport.x !== 0 && viewport.y !== 0);
+      this.topOneTab.visible = viewport.x !== 0 && viewport.y !== 0;
 
       const bounds = this.world.view.topOneTab.bounds;
 
-      const { x, y } = transformMinimapLocation({ 
-          x: bounds.left, 
-          y: bounds.top, 
-          r: 0 
-        }, 
-        this.world.view.firstTab.getShiftedMapOffsets()
+      const { x, y } = transformMinimapLocation(
+        {
+          x: bounds.left,
+          y: bounds.top,
+          r: 0,
+        },
+        this.world.view.firstTab.getShiftedMapOffsets(),
       );
 
-      const w = bounds.width / 14142 * size;
-      const h = bounds.height / 14142 * size;
- 
+      const w = (bounds.width / 14142) * size;
+      const h = (bounds.height / 14142) * size;
+
       this.topOneTab.animate(x, y, w, h);
     } else {
       this.topOneTab.visible = false;

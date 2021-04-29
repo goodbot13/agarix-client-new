@@ -1,8 +1,8 @@
-import { Container, filters, NineSlicePlane, Sprite } from "pixi.js";
-import GameSettings from "../../Settings/Settings";
-import TextureGenerator from "../../Textures/TexturesGenerator";
+import { Container, filters, NineSlicePlane, Sprite } from 'pixi.js';
+import GameSettings from '../../Settings/Settings';
+import TextureGenerator from '../../Textures/TexturesGenerator';
 import * as PIXI from 'pixi.js';
-import IMapObject from "./interfaces";
+import IMapObject from './interfaces';
 
 export default class Borders extends Container implements IMapObject {
   private bordersSprite: NineSlicePlane;
@@ -44,7 +44,7 @@ export default class Borders extends Container implements IMapObject {
       } else {
         this.colorMatrixFilterHue += 0.1 * deltaTime;
       }
-      
+
       this.colorMatrixFilter.hue(this.colorMatrixFilterHue, false);
     } else {
       if (this.colorMatrixFilterHue !== 0) {
@@ -63,7 +63,7 @@ export default class Borders extends Container implements IMapObject {
     const { borderGlow, borderWidth, borderGlowDistance } = GameSettings.all.settings.theming.map;
     const { glowFilterShaderType } = GameSettings.all.settings.game.performance;
     const MAP_RATIO = 14142 / 2048;
-    
+
     if (this.bordersSprite) {
       TextureGenerator.generateMapBorders();
       this.removeChild(this.bordersSprite);
@@ -80,12 +80,20 @@ export default class Borders extends Container implements IMapObject {
 
     let sideSize = 0;
     if (glowFilterShaderType === 'GPU-1') {
-      sideSize = borderGlow ? (borderWidth * 2 + borderGlowDistance * 2) : borderWidth * 2;
+      sideSize = borderGlow ? borderWidth * 2 + borderGlowDistance * 2 : borderWidth * 2;
     } else {
-      sideSize = borderGlow ? (borderWidth * 2 + borderGlowDistance * 2) / MAP_RATIO / 2 : borderWidth * 2 / MAP_RATIO / 2;
+      sideSize = borderGlow
+        ? (borderWidth * 2 + borderGlowDistance * 2) / MAP_RATIO / 2
+        : (borderWidth * 2) / MAP_RATIO / 2;
     }
 
-    this.bordersSprite = new NineSlicePlane(TextureGenerator.mapBorders, sideSize, sideSize, sideSize, sideSize);
+    this.bordersSprite = new NineSlicePlane(
+      TextureGenerator.mapBorders,
+      sideSize,
+      sideSize,
+      sideSize,
+      sideSize,
+    );
     this.bordersSprite.width = bordersSize;
     this.bordersSprite.height = bordersSize;
     this.bordersSprite.x = pos;
@@ -123,7 +131,7 @@ export default class Borders extends Container implements IMapObject {
   }
 
   public renderTick(): void {
-    const { borderType } = GameSettings.all.settings.theming.map
+    const { borderType } = GameSettings.all.settings.theming.map;
 
     this.visible = borderType !== 'Disabled';
     this.rgbBorders.visible = borderType === 'RGB' || borderType === 'RGB (anim)';

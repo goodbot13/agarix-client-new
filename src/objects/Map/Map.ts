@@ -17,7 +17,7 @@ class Map extends Container {
     this.borders = new Borders();
     this.background = new Background(world.view);
     this.globalBackground = new GlobalBackground();
-    
+
     this.addChild(this.globalBackground, this.background, this.borders);
   }
 

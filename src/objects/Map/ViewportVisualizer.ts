@@ -1,11 +1,11 @@
-import { Container } from "pixi.js";
-import Globals from "../../Globals";
-import TextureGenerator from "../../Textures/TexturesGenerator";
-import View from "../../View";
-import ViewBox from "../ViewBox";
+import { Container } from 'pixi.js';
+import Globals from '../../Globals';
+import TextureGenerator from '../../Textures/TexturesGenerator';
+import View from '../../View';
+import ViewBox from '../ViewBox';
 import * as PIXI from 'pixi.js';
-import GameSettings from "../../Settings/Settings";
-import IMapObject from "./interfaces";
+import GameSettings from '../../Settings/Settings';
+import IMapObject from './interfaces';
 
 export default class ViewportVisualizer extends Container implements IMapObject {
   public firstTab: ViewBox;
@@ -16,19 +16,11 @@ export default class ViewportVisualizer extends Container implements IMapObject 
     super();
     this.create();
 
-
-
-
     this.visible = false;
-
-
-
-    
-
   }
 
   private checkSettings(): void {
-/*     const { firstTab, secondTab, topOneTab } = Settings.viewBox;
+    /*     const { firstTab, secondTab, topOneTab } = Settings.viewBox;
     const { deltaTime } = PIXI.Ticker.shared;
     const { ticks } = Globals;
 
@@ -48,7 +40,7 @@ export default class ViewportVisualizer extends Container implements IMapObject 
   }
 
   private create(): void {
-    this.firstTab = new ViewBox(); 
+    this.firstTab = new ViewBox();
     this.firstTab.zIndex = 101;
 
     this.secondTab = new ViewBox();
@@ -64,24 +56,24 @@ export default class ViewportVisualizer extends Container implements IMapObject 
     const { topOneTab, firstTab, secondTab } = this.view;
 
     this.firstTab.animate(
-      firstTab.bounds.left - firstTab.mapOffsets.minX, 
-      firstTab.bounds.top - firstTab.mapOffsets.minY, 
-      firstTab.bounds.width, 
-      firstTab.bounds.height
+      firstTab.bounds.left - firstTab.mapOffsets.minX,
+      firstTab.bounds.top - firstTab.mapOffsets.minY,
+      firstTab.bounds.width,
+      firstTab.bounds.height,
     );
 
     this.secondTab.animate(
-      secondTab.bounds.left - firstTab.mapOffsets.minX, 
-      secondTab.bounds.top - firstTab.mapOffsets.minY, 
-      secondTab.bounds.width, 
-      secondTab.bounds.height
+      secondTab.bounds.left - firstTab.mapOffsets.minX,
+      secondTab.bounds.top - firstTab.mapOffsets.minY,
+      secondTab.bounds.width,
+      secondTab.bounds.height,
     );
 
     this.topOneTab.animate(
-      topOneTab.bounds.left - firstTab.mapOffsets.minX, 
-      topOneTab.bounds.top - firstTab.mapOffsets.minY, 
-      topOneTab.bounds.width, 
-      topOneTab.bounds.height
+      topOneTab.bounds.left - firstTab.mapOffsets.minX,
+      topOneTab.bounds.top - firstTab.mapOffsets.minY,
+      topOneTab.bounds.width,
+      topOneTab.bounds.height,
     );
 
     this.checkSettings();

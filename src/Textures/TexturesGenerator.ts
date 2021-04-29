@@ -16,7 +16,7 @@ import Logger from '../utils/Logger';
 import CellNicksCache from './Cache/CellNicks';
 import MassFontsGenerator from './MassFonts/MassFontsGenerator';
 
-export default new class TextureGenerator {
+export default new (class TextureGenerator {
   public mapBackgroundImage: Texture;
   public secondBackgroundImage: Texture;
   public backgroundDisplacement: Texture;
@@ -58,13 +58,20 @@ export default new class TextureGenerator {
       img.src = url;
       img.onload = () => resolve(img);
       img.onerror = () => {
-        this.logger.error(`[GameLoader]: Reosurce not found: ${!url ? '[EMPTY_URL]' : url} (skipped)`);
+        this.logger.error(
+          `[GameLoader]: Reosurce not found: ${!url ? '[EMPTY_URL]' : url} (skipped)`,
+        );
         resolve(new Image());
-      }
+      };
     });
   }
 
-  private generateNewTexture(width: number, height: number, img: HTMLImageElement, isRect: boolean = true): Texture {
+  private generateNewTexture(
+    width: number,
+    height: number,
+    img: HTMLImageElement,
+    isRect: boolean = true,
+  ): Texture {
     const canvas = document.createElement('canvas');
     canvas.width = width;
     canvas.height = height;
@@ -73,7 +80,7 @@ export default new class TextureGenerator {
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = 'high';
     ctx.drawImage(img, 0, 0, width, height);
-    
+
     if (!isRect) {
       ctx.globalCompositeOperation = 'destination-in';
       ctx.beginPath();
@@ -131,7 +138,9 @@ export default new class TextureGenerator {
   }
 
   public async updateGlobalBackground(): Promise<Texture> {
-    const sMapBg = await this.loadImg(GameSettings.all.settings.theming.map.globalBackgroundImageUrl);
+    const sMapBg = await this.loadImg(
+      GameSettings.all.settings.theming.map.globalBackgroundImageUrl,
+    );
     const texture = this.generateNewTexture(2048, 2048, sMapBg);
 
     this.removeFromCache(this.secondBackgroundImage);
@@ -141,26 +150,30 @@ export default new class TextureGenerator {
   }
 
   private async load() {
-    const mapBg = await this.loadImg(GameSettings.all.settings.theming.map.backgroundImageUrl); 
-    const rgbBorder = await this.loadImg('https://i.imgur.com/7eDfixc.png'); 
-    const bgDispl = await this.loadImg('https://res.cloudinary.com/dvxikybyi/image/upload/v1486634113/2yYayZk_vqsyzx.png'); 
-    const sMapBg = await this.loadImg(GameSettings.all.settings.theming.map.globalBackgroundImageUrl); 
-    const glDispl = await this.loadImg('https://i.imgur.com/vtLSnyt.jpg'); 
-    const outerRing = await this.loadImg('https://i.imgur.com/B24DABv.png'); 
-    const innerRing = await this.loadImg('https://i.imgur.com/nr8ngwx.png'); 
-    const hsloRing = await this.loadImg('https://i.imgur.com/Bx8Im3s.png'); 
-    const rmAnimHslo = await(this.loadImg('https://i.imgur.com/ZTiEaOI.png'));
+    const mapBg = await this.loadImg(GameSettings.all.settings.theming.map.backgroundImageUrl);
+    const rgbBorder = await this.loadImg('https://i.imgur.com/7eDfixc.png');
+    const bgDispl = await this.loadImg(
+      'https://res.cloudinary.com/dvxikybyi/image/upload/v1486634113/2yYayZk_vqsyzx.png',
+    );
+    const sMapBg = await this.loadImg(
+      GameSettings.all.settings.theming.map.globalBackgroundImageUrl,
+    );
+    const glDispl = await this.loadImg('https://i.imgur.com/vtLSnyt.jpg');
+    const outerRing = await this.loadImg('https://i.imgur.com/B24DABv.png');
+    const innerRing = await this.loadImg('https://i.imgur.com/nr8ngwx.png');
+    const hsloRing = await this.loadImg('https://i.imgur.com/Bx8Im3s.png');
+    const rmAnimHslo = await this.loadImg('https://i.imgur.com/ZTiEaOI.png');
     await this.loadRemoveAnimationAcim();
     await this.loadRemoveAnimationYue();
 
-    this.mapBackgroundImage = this.generateNewTexture(2048, 2048, mapBg); 
-    this.rgbBorder = this.generateNewTexture(2048, 2048, rgbBorder); 
-    this.secondBackgroundImage = this.generateNewTexture(2048, 2048, sMapBg); 
-    this.globalDisplacement = this.generateNewTexture(512, 512, glDispl); 
-    this.backgroundDisplacement = this.generateNewTexture(512, 512, bgDispl); 
-    this.outerRing = this.generateNewTexture(512, 512, outerRing, true); 
-    this.innerRing = this.generateNewTexture(512, 512, innerRing, true); 
-    this.hsloRing = this.generateNewTexture(512, 512, hsloRing, true); 
+    this.mapBackgroundImage = this.generateNewTexture(2048, 2048, mapBg);
+    this.rgbBorder = this.generateNewTexture(2048, 2048, rgbBorder);
+    this.secondBackgroundImage = this.generateNewTexture(2048, 2048, sMapBg);
+    this.globalDisplacement = this.generateNewTexture(512, 512, glDispl);
+    this.backgroundDisplacement = this.generateNewTexture(512, 512, bgDispl);
+    this.outerRing = this.generateNewTexture(512, 512, outerRing, true);
+    this.innerRing = this.generateNewTexture(512, 512, innerRing, true);
+    this.hsloRing = this.generateNewTexture(512, 512, hsloRing, true);
     this.removeAnimationHSLO3D = this.generateNewTexture(512, 512, rmAnimHslo);
   }
 
@@ -171,17 +184,28 @@ export default new class TextureGenerator {
 
     this.massFontsGenerator.generateLatoBitmap();
 
-    await delay(); this.generateCell(); 
-    await delay(); this.generateFood(); 
-    await delay(); this.generateVirus(); 
-    await delay(); this.generateMultiboxLinedRing(); 
-    await delay(); this.generateMapBorders();
-    await delay(); this.generateCellShadow(); 
-    await delay(); this.generateRemoveEffect(); 
-    await delay(); this.generateViewBox();
-    await delay(); this.generateMyCellShadow();
-    await delay(); this.mapBordersRgbLine = generateRgbBorderLine();
-    await delay(); this.virusShots = generateVirusShots();
+    await delay();
+    this.generateCell();
+    await delay();
+    this.generateFood();
+    await delay();
+    this.generateVirus();
+    await delay();
+    this.generateMultiboxLinedRing();
+    await delay();
+    this.generateMapBorders();
+    await delay();
+    this.generateCellShadow();
+    await delay();
+    this.generateRemoveEffect();
+    await delay();
+    this.generateViewBox();
+    await delay();
+    this.generateMyCellShadow();
+    await delay();
+    this.mapBordersRgbLine = generateRgbBorderLine();
+    await delay();
+    this.virusShots = generateVirusShots();
 
     FrontAPI.setGameLoaderShown(false);
   }
@@ -242,4 +266,4 @@ export default new class TextureGenerator {
     this.removeFromCache(this.myCellShadow);
     this.myCellShadow = generateMyCellShadow();
   }
-}
+})();

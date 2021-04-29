@@ -7,17 +7,20 @@ class FPSCounter {
 
   public tick() {
     this.timeMeasurements.push(performance.now());
-    
-    const msPassed = this.timeMeasurements[this.timeMeasurements.length - 1] - this.timeMeasurements[0];
-    
+
+    const msPassed =
+      this.timeMeasurements[this.timeMeasurements.length - 1] - this.timeMeasurements[0];
+
     if (msPassed >= this.updateEachSecond * 1000) {
-      this.fps = Math.round(this.timeMeasurements.length / msPassed * 1000 * this.decimalPlacesRatio) / this.decimalPlacesRatio;
+      this.fps =
+        Math.round((this.timeMeasurements.length / msPassed) * 1000 * this.decimalPlacesRatio) /
+        this.decimalPlacesRatio;
       this.timeMeasurements = [];
     }
   }
 }
 
-export default new class GamePerformance {
+export default new (class GamePerformance {
   private readonly DEFAULT_SERVER_RENDER_TIME: number = 25;
   private loss: number = 0;
   public FPSCounter: FPSCounter;
@@ -32,9 +35,9 @@ export default new class GamePerformance {
   }
 
   public getLoss(): number {
-    let value = (100 - this.loss / this.DEFAULT_SERVER_RENDER_TIME * 100) * 1.5;
+    let value = (100 - (this.loss / this.DEFAULT_SERVER_RENDER_TIME) * 100) * 1.5;
     value = value > 100 ? 100 : value;
-    
+
     this.loss = 0;
     return +value.toFixed(0);
   }
@@ -47,4 +50,4 @@ export default new class GamePerformance {
       window.FrontAPI?.updateStats(fps > 0 ? fps : 0, loss > 0 ? loss : 0);
     }, 1000);
   }
-}
+})();

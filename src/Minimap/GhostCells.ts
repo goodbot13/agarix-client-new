@@ -1,10 +1,10 @@
-import { Container } from "pixi.js";
+import { Container } from 'pixi.js';
 import Cell from '../objects/Cell/index';
-import { Location } from "../objects/types";
-import World from "../render/World";
-import GameSettings from "../Settings/Settings";
-import { IGhostCell } from "../tabs/Socket/Receiver";
-import { getColor, transformMinimapLocation } from "../utils/helpers";
+import { Location } from '../objects/types';
+import World from '../render/World';
+import GameSettings from '../Settings/Settings';
+import { IGhostCell } from '../tabs/Socket/Receiver';
+import { getColor, transformMinimapLocation } from '../utils/helpers';
 
 export default class GhostCells extends Container {
   private buffer: Array<Cell>;
@@ -21,16 +21,21 @@ export default class GhostCells extends Container {
   private create(): void {
     const { ghostCellsColor } = GameSettings.all.settings.theming.minimap;
 
-    this.buffer = new Array(20)
-      .fill({} as Cell)
-      .map(() => {
-        const cell = new Cell('TOP_ONE_TAB', { x: 0, y: 0, r: 0 }, ghostCellsColor, '', '', this.world);
-        cell.setIsMinimapCell();
-        cell.cell.tint = getColor(ghostCellsColor);
-        cell.shadow.sprite.visible = false;
-        cell.shadow.sprite.renderable = false;
+    this.buffer = new Array(20).fill({} as Cell).map(() => {
+      const cell = new Cell(
+        'TOP_ONE_TAB',
+        { x: 0, y: 0, r: 0 },
+        ghostCellsColor,
+        '',
+        '',
+        this.world,
+      );
+      cell.setIsMinimapCell();
+      cell.cell.tint = getColor(ghostCellsColor);
+      cell.shadow.sprite.visible = false;
+      cell.shadow.sprite.renderable = false;
 
-        return cell;
+      return cell;
     });
 
     this.addChild(...this.buffer);
@@ -51,16 +56,20 @@ export default class GhostCells extends Container {
     let i = 0;
 
     cells.forEach((cell) => {
-      if (realPlayersCells && this.world.view.topOneTab.hasInViewBounds(cell.playerX, cell.playerY, cell.totalMass / 2)) {
+      if (
+        realPlayersCells &&
+        this.world.view.topOneTab.hasInViewBounds(cell.playerX, cell.playerY, cell.totalMass / 2)
+      ) {
         return;
       }
 
-      const location = transformMinimapLocation({ 
-          x: cell.playerX, 
-          y: cell.playerY, 
-          r: cell.size * 2 
+      const location = transformMinimapLocation(
+        {
+          x: cell.playerX,
+          y: cell.playerY,
+          r: cell.size * 2,
         },
-        this.world.view.firstTab.mapOffsets
+        this.world.view.firstTab.mapOffsets,
       );
 
       this.buffer[i].visible = true;
@@ -70,7 +79,7 @@ export default class GhostCells extends Container {
       i++;
     });
 
-    // Make invisible cells that are not used. 
+    // Make invisible cells that are not used.
     // Case: server has < 20 players
     for (let x = i; x < 20; x++) {
       this.buffer[x].visible = false;
@@ -83,10 +92,13 @@ export default class GhostCells extends Container {
   }
 
   public updateColor(): void {
-    this.buffer.forEach((cell) => cell.cell.tint = getColor(GameSettings.all.settings.theming.minimap.ghostCellsColor));
+    this.buffer.forEach(
+      (cell) =>
+        (cell.cell.tint = getColor(GameSettings.all.settings.theming.minimap.ghostCellsColor)),
+    );
   }
 
   public reset(): void {
-    this.buffer.forEach((cell) => cell.visible = false);
+    this.buffer.forEach((cell) => (cell.visible = false));
   }
 }

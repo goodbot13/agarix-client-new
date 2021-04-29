@@ -13,7 +13,7 @@ const generateVirus = (): Texture => {
     borderColor,
     glowColor,
     glowDistance,
-    glowStrength
+    glowStrength,
   } = GameSettings.all.settings.theming.viruses;
 
   const canvas = document.createElement('canvas');
@@ -22,7 +22,7 @@ const generateVirus = (): Texture => {
   const halfBorder = borderWidth / 2;
   const glowOffset = glow ? glowDistance * 2 : 0;
   canvas.width = canvas.height = 400 + borderWidth + glowOffset;
-  
+
   ctx.strokeStyle = rgbToStringHex(borderColor);
   ctx.lineWidth = borderWidth;
 
@@ -38,12 +38,14 @@ const generateVirus = (): Texture => {
   const sprite = new Sprite(texture);
 
   if (glow) {
-    sprite.filters = [new GlowFilter({
-      color: getColor(glowColor),
-      distance: glowDistance,
-      outerStrength: glowStrength,
-      quality: 0.0175
-    })];
+    sprite.filters = [
+      new GlowFilter({
+        color: getColor(glowColor),
+        distance: glowDistance,
+        outerStrength: glowStrength,
+        quality: 0.0175,
+      }),
+    ];
   }
 
   texture = Globals.app.renderer.generateTexture(sprite, SCALE_MODES.LINEAR, 1);
@@ -51,6 +53,6 @@ const generateVirus = (): Texture => {
   texture.baseTexture.scaleMode = SCALE_MODES.LINEAR;
 
   return texture;
-}
+};
 
 export default generateVirus;

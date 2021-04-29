@@ -1,11 +1,11 @@
-import { Container, filters, Graphics, Sprite, WRAP_MODES } from "pixi.js";
-import GameSettings from "../../Settings/Settings";
-import TextureGenerator from "../../Textures/TexturesGenerator";
+import { Container, filters, Graphics, Sprite, WRAP_MODES } from 'pixi.js';
+import GameSettings from '../../Settings/Settings';
+import TextureGenerator from '../../Textures/TexturesGenerator';
 import * as PIXI from 'pixi.js';
-import ViewportVisualizer from "./ViewportVisualizer";
-import View from "../../View";
+import ViewportVisualizer from './ViewportVisualizer';
+import View from '../../View';
 import IMapObject from './interfaces';
-import { getColor } from "../../utils/helpers";
+import { getColor } from '../../utils/helpers';
 
 export default class Background extends Container implements IMapObject {
   private sprite: Sprite;
@@ -55,7 +55,7 @@ export default class Background extends Container implements IMapObject {
 
     if (!this.spriteContainer) {
       this.spriteContainer = new Container();
-      this.addChild(this.spriteContainer); 
+      this.addChild(this.spriteContainer);
     }
 
     if (this.sprite) {
@@ -91,7 +91,7 @@ export default class Background extends Container implements IMapObject {
     const { backgroundImageLiveEffectStrength } = GameSettings.all.settings.theming.map;
 
     const liveEffectEnabled = backgroundImageLiveEffectStrength !== 'Disabled';
-    const strength = Number(backgroundImageLiveEffectStrength); 
+    const strength = Number(backgroundImageLiveEffectStrength);
     // temprary
     const isLiveEffectStatic = false;
 
@@ -105,7 +105,7 @@ export default class Background extends Container implements IMapObject {
 
       let x = 0;
       let y = 0;
-  
+
       if (isLiveEffectStatic) {
         x += strength * deltaTime;
         y += strength * deltaTime;
@@ -113,7 +113,7 @@ export default class Background extends Container implements IMapObject {
         x = Math.round(Math.random() * strength) * deltaTime;
         y = Math.round(Math.random() * strength) * deltaTime;
       }
-  
+
       this.displacementSprite.x += x;
       this.displacementSprite.y += y;
       this.displacementSprite.visible = true;

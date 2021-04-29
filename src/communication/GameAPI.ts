@@ -1,26 +1,21 @@
-import Stage from "../Stage/Stage";
-import Logger from "../utils/Logger";
-import UICommunicationService from "./FrontAPI";
+import Stage from '../Stage/Stage';
+import Logger from '../utils/Logger';
+import UICommunicationService from './FrontAPI';
 import { TGameMode } from '../Master/GameMode';
 import GameSettings from '../Settings/Settings';
-import WorldState from "../states/WorldState";
-import FacebookLogin from "../tabs/Login/FacebookLogin";
-import GoogleLogin from "../tabs/Login/GoogleLogin";
-import Master from "../Master";
-import SkinsLoader from "../utils/SkinsLoader";
-import Ogar from "../Ogar";
+import WorldState from '../states/WorldState';
+import FacebookLogin from '../tabs/Login/FacebookLogin';
+import GoogleLogin from '../tabs/Login/GoogleLogin';
+import Master from '../Master';
+import SkinsLoader from '../utils/SkinsLoader';
+import Ogar from '../Ogar';
 
 export default class GameAPI {
-
   private logger: Logger;
 
   constructor(private stage: Stage) {
     this.logger = new Logger('GameAPI');
   }
-
-
-
-
 
   /*************** Master ***************/
 
@@ -31,40 +26,42 @@ export default class GameAPI {
 
   public setRegion(index: number): void {
     Master.regions.setCurrent(index);
-    this.logger.info(`Game mode changed to [name: ${Master.regions.getCurrent()}, index: ${index}]`);
+    this.logger.info(
+      `Game mode changed to [name: ${Master.regions.getCurrent()}, index: ${index}]`,
+    );
   }
-
-
-
-
 
   /*************** Ogar ***************/
 
   public async connectOgar(): Promise<boolean> {
     await Ogar.firstTab.connect();
     await Ogar.secondTab.connect();
-    
+
     if (!Ogar.connected) {
       Ogar.connected = true;
 
       Ogar.firstTab.player.nick = GameSettings.all.profiles.leftProfileNick;
       Ogar.firstTab.player.skin = GameSettings.all.profiles.leftProfileSkinUrl;
-      
+
       Ogar.secondTab.player.nick = GameSettings.all.profiles.rightProfileNick;
       Ogar.secondTab.player.skin = GameSettings.all.profiles.rightProfileSkinUrl;
-    
+
       if (WorldState.gameJoined) {
         Ogar.firstTab.join(
-          this.stage.world.controller.socketData.https.match(/live-arena-([\w\d]+)\.agar\.io:\d+/)[1],
-          this.stage.world.controller.socketData.token
+          this.stage.world.controller.socketData.https.match(
+            /live-arena-([\w\d]+)\.agar\.io:\d+/,
+          )[1],
+          this.stage.world.controller.socketData.token,
         );
 
         Ogar.secondTab.join(
-          this.stage.world.controller.socketData.https.match(/live-arena-([\w\d]+)\.agar\.io:\d+/)[1],
-          this.stage.world.controller.socketData.token
+          this.stage.world.controller.socketData.https.match(
+            /live-arena-([\w\d]+)\.agar\.io:\d+/,
+          )[1],
+          this.stage.world.controller.socketData.token,
         );
       }
-      
+
       return true;
     }
   }
@@ -89,13 +86,13 @@ export default class GameAPI {
   public setFirstTabNick(): void {
     Ogar.firstTab.player.nick = GameSettings.all.profiles.leftProfileNick;
     Ogar.firstTab.emitter.sendPlayerNick();
-    
+
     /* this.logger.info(`First tab nick changed: [${GameSettings.all.profiles.leftProfileNick}]`); */
   }
 
   public setFirstTabSkin(): void {
     const { leftProfileSkinUrl } = GameSettings.all.profiles;
-    
+
     Ogar.firstTab.player.skin = leftProfileSkinUrl;
     Ogar.firstTab.emitter.sendPlayerSkin();
 
@@ -106,7 +103,7 @@ export default class GameAPI {
 
   public setSecondTabNick(): void {
     const { rightProfileNick } = GameSettings.all.profiles;
-    
+
     Ogar.secondTab.player.nick = rightProfileNick;
     Ogar.secondTab.emitter.sendPlayerNick();
 
@@ -128,12 +125,8 @@ export default class GameAPI {
     Ogar.firstTab.sendChat(message);
   }
 
-
-
-
-
   /*************** View ***************/
-  
+
   public spectateTopOne(): void {
     if (!this.stage.world.controller.firstTabSocket) {
       return;
@@ -151,7 +144,7 @@ export default class GameAPI {
     } else {
       this.stage.world.view.spectateTopOne(false);
     }
-    
+
     this.logger.info('Spectate mode changed to TOP 1');
   }
 
@@ -208,18 +201,12 @@ export default class GameAPI {
     this.logger.info('Spectate mode changed to FREE');
   }
 
-
-
-
-
   /*************** Socket controller ***************/
 
   // used to reconnect frist tab
   public setFirstTabEnabled(enabled: boolean): void {
     if (enabled) {
-      this.stage.world.controller.connectFirstPlayerTab().then((mapOffsets) => {
-        
-      });
+      this.stage.world.controller.connectFirstPlayerTab().then((mapOffsets) => {});
     } else {
       this.stage.world.controller.disconnectFirstTab();
     }
@@ -235,7 +222,10 @@ export default class GameAPI {
     } else {
       this.stage.world.controller.disconnectFullMapView();
 
-      if (GameSettings.all.settings.game.minimap.realPlayersCells && GameSettings.all.settings.game.gameplay.spectatorMode !== 'Top one') {
+      if (
+        GameSettings.all.settings.game.minimap.realPlayersCells &&
+        GameSettings.all.settings.game.gameplay.spectatorMode !== 'Top one'
+      ) {
         this.stage.world.minimap.reset();
       }
     }
@@ -260,10 +250,6 @@ export default class GameAPI {
       this.logger.info('Multibox mode disabled');
     }
   }
-  
-
-
-
 
   /*************** Main ***************/
 
@@ -282,11 +268,6 @@ export default class GameAPI {
       this.stage.unblurGameScene(zoom);
     }
   }
-
-  
-
-
-
 
   /*************** Login ***************/
   public logInWithFb(): void {
@@ -311,33 +292,33 @@ export default class GameAPI {
 declare global {
   interface Window {
     GameAPI: {
-      setSceneBlurred(blurred: boolean, zoom?: boolean): void,
-      join(token?: string): Promise<string>,
-      play(): Promise<string>,
-      setMultiboxEnabled(enabled: boolean): void,
-      setTopOneView(enabled: boolean, reset?: boolean): void,
-      setFullMapView(enabled: boolean): void,
-      fullMapViewAbort(): void,
-      spectateFree(): void,
-      spectateTarget(): void,
-      spectateCenter(): void,
-      spectateTopOne(): void,
-      sendMessage(message: string): void,
-      setSecondTabSkin(): void,
-      setSecondTabNick(): void,
-      setFirstTabSkin(): void,
-      setFirstTabNick(): void,
-      setTag(): void,
-      disconnectOgar(): void,
-      connectOgar(): Promise<boolean>,
-      setRegion(index: number): void,
-      setMode(mode: TGameMode): void,
-      logInWithFb(): void,
-      logOutWithFb(): void,
-      logInWithGoogle(): void,
-      logOutWithGoogle(): void,
+      setSceneBlurred(blurred: boolean, zoom?: boolean): void;
+      join(token?: string): Promise<string>;
+      play(): Promise<string>;
+      setMultiboxEnabled(enabled: boolean): void;
+      setTopOneView(enabled: boolean, reset?: boolean): void;
+      setFullMapView(enabled: boolean): void;
+      fullMapViewAbort(): void;
+      spectateFree(): void;
+      spectateTarget(): void;
+      spectateCenter(): void;
+      spectateTopOne(): void;
+      sendMessage(message: string): void;
+      setSecondTabSkin(): void;
+      setSecondTabNick(): void;
+      setFirstTabSkin(): void;
+      setFirstTabNick(): void;
+      setTag(): void;
+      disconnectOgar(): void;
+      connectOgar(): Promise<boolean>;
+      setRegion(index: number): void;
+      setMode(mode: TGameMode): void;
+      logInWithFb(): void;
+      logOutWithFb(): void;
+      logInWithGoogle(): void;
+      logOutWithGoogle(): void;
 
-      init(): void
-    }
+      init(): void;
+    };
   }
 }

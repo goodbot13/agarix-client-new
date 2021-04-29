@@ -1,11 +1,11 @@
-import { Container, utils } from "pixi.js";
+import { Container, utils } from 'pixi.js';
 import Cell from '../objects/Cell/index';
-import { Location } from "../objects/types";
-import Ogar from "../Ogar";
-import World from "../render/World";
-import GameSettings from "../Settings/Settings";
-import PlayerState from "../states/PlayerState";
-import { transformMinimapLocation } from "../utils/helpers";
+import { Location } from '../objects/types';
+import Ogar from '../Ogar';
+import World from '../render/World';
+import GameSettings from '../Settings/Settings';
+import PlayerState from '../states/PlayerState';
+import { transformMinimapLocation } from '../utils/helpers';
 
 export default class TeamPlayers extends Container {
   private buffer: Map<number, Cell>;
@@ -19,7 +19,7 @@ export default class TeamPlayers extends Container {
   }
 
   public changeCellShadowTexture(): void {
-    this.buffer.forEach((cell) => (cell as Cell).changeShadowTexture())
+    this.buffer.forEach((cell) => (cell as Cell).changeShadowTexture());
   }
 
   public reset(): void {
@@ -36,16 +36,16 @@ export default class TeamPlayers extends Container {
 
     Ogar.firstTab.team.forEach((player) => {
       if (this.buffer.has(player.id)) {
-
         const cell = this.buffer.get(player.id);
 
-        const location = transformMinimapLocation({ 
-            x: player.position.x, 
-            y: player.position.y, 
-            r: 0 
-          }, 
+        const location = transformMinimapLocation(
+          {
+            x: player.position.x,
+            y: player.position.y,
+            r: 0,
+          },
           this.world.view.firstTab.getShiftedMapOffsets(),
-          true
+          true,
         );
 
         cell.update({ x: location.x, y: location.y, r: playerSize / 2 });
@@ -57,27 +57,36 @@ export default class TeamPlayers extends Container {
         } else {
           cell.animate();
         }
-
       } else {
-
         if (!player.alive) {
           return;
         }
 
-        if (player.nick === GameSettings.all.profiles.rightProfileNick && PlayerState.second.playing) {
+        if (
+          player.nick === GameSettings.all.profiles.rightProfileNick &&
+          PlayerState.second.playing
+        ) {
           return;
         }
 
-         const location = transformMinimapLocation({ 
-            x: player.position.x, 
-            y: player.position.y, 
-            r: 0 
-          }, 
+        const location = transformMinimapLocation(
+          {
+            x: player.position.x,
+            y: player.position.y,
+            r: 0,
+          },
           this.world.view.firstTab.getShiftedMapOffsets(),
-          true
+          true,
         );
 
-        const cell = new Cell('FIRST_TAB', location, { red: 0, green: 0, blue: 0 }, player.nick, '', this.world);
+        const cell = new Cell(
+          'FIRST_TAB',
+          location,
+          { red: 0, green: 0, blue: 0 },
+          player.nick,
+          '',
+          this.world,
+        );
 
         cell.setIsMinimapCell();
         cell.isTeam = true;
@@ -88,7 +97,6 @@ export default class TeamPlayers extends Container {
 
         this.buffer.set(player.id, cell);
         this.addChild(cell);
-
       }
     });
 

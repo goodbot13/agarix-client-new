@@ -1,23 +1,23 @@
-import GameSettings from "../Settings/Settings";
-import Globals from "../Globals";
-import Controller from "../tabs/Contollers/TabsController";
-import World from "./World";
-import { Container } from "pixi.js";
-import Map from "../objects/Map/Map";
-import SpawnAnimation from "../objects/SpawnAnimation";
-import Cell from "../objects/Cell/index";
-import Virus from "../objects/Virus/Virus";
-import Food from "../objects/Food";
+import GameSettings from '../Settings/Settings';
+import Globals from '../Globals';
+import Controller from '../tabs/Contollers/TabsController';
+import World from './World';
+import { Container } from 'pixi.js';
+import Map from '../objects/Map/Map';
+import SpawnAnimation from '../objects/SpawnAnimation';
+import Cell from '../objects/Cell/index';
+import Virus from '../objects/Virus/Virus';
+import Food from '../objects/Food';
 import CellsRenderer from './Renderer/CellsRenderer';
 import FoodRenderer from './Renderer/FoodRenderer';
-import Minimap from "../Minimap/MinimapWEBGL";
+import Minimap from '../Minimap/MinimapWEBGL';
 import * as PIXI from 'pixi.js';
-import RemoveAnimation from "../objects/RemoveAnimation";
-import UICommunicationService from "../communication/FrontAPI";
-import SkinsLoader from "../utils/SkinsLoader";
-import WorldState from "../states/WorldState";
-import PlayerState from "../states/PlayerState";
-import Ogar from "../Ogar";
+import RemoveAnimation from '../objects/RemoveAnimation';
+import UICommunicationService from '../communication/FrontAPI';
+import SkinsLoader from '../utils/SkinsLoader';
+import WorldState from '../states/WorldState';
+import PlayerState from '../states/PlayerState';
+import Ogar from '../Ogar';
 
 export default class WorldLoop {
   private world: World;
@@ -49,7 +49,6 @@ export default class WorldLoop {
     }
 
     Ogar.firstTab.team.forEach((player) => {
-
       const { nick, color, alive } = player;
 
       if (!alive) {
@@ -58,19 +57,19 @@ export default class WorldLoop {
 
       const sameNick = nick === cell.nick;
       const sameColor = cell.colorHex[0] === color.cell || cell.colorHex[1] === color.cell;
-      const sameCustomColor = cell.colorHex[0] === color.custom || cell.colorHex[1] === color.custom;
+      const sameCustomColor =
+        cell.colorHex[0] === color.custom || cell.colorHex[1] === color.custom;
       const undefinedExtensionColor = color.custom === '#000000' || color.cell === '#000000';
 
       if (sameNick && (sameColor || sameCustomColor || undefinedExtensionColor)) {
         cell.setIsTeam(true, SkinsLoader.getTextureByUrl(player.skin));
       }
-
     });
   }
 
   private renderCells(): void {
     // check for isTeam every 1 second. isAlive may be changed only every 2 seconds
-    const canCheckForTeam = WorldState.ticks % 60 * PIXI.Ticker.shared.deltaTime === 0;
+    const canCheckForTeam = (WorldState.ticks % 60) * PIXI.Ticker.shared.deltaTime === 0;
 
     for (let i = 0; i < this.cells.children.length; i++) {
       const object = this.cells.children[i] as Cell | Virus | RemoveAnimation;
@@ -94,7 +93,7 @@ export default class WorldLoop {
   }
 
   private checkFoodContainerVisibility(): void {
-    const { deltaTime } =  PIXI.Ticker.shared;
+    const { deltaTime } = PIXI.Ticker.shared;
 
     if (GameSettings.all.settings.theming.food.enabled) {
       this.food.visible = this.food.renderable = true;
@@ -132,11 +131,11 @@ export default class WorldLoop {
     if (this.world.playerCells.firstTab.size === 0) {
       this.controller.firstTabSocket && (this.controller.firstTabSocket.playerSpawned = false);
       PlayerState.first.playing = false;
-      Ogar.connected && (Ogar.firstTab.death());
+      Ogar.connected && Ogar.firstTab.death();
 
       if (this.ftp !== false) {
         this.ftp = false;
-        
+
         if (!PlayerState.second.playing) {
           UICommunicationService.setIsPlayerPlaying(false);
         }
@@ -147,7 +146,7 @@ export default class WorldLoop {
       }
     } else {
       PlayerState.first.playing = true;
-      Ogar.connected && (Ogar.firstTab.spawn());
+      Ogar.connected && Ogar.firstTab.spawn();
 
       if (this.ftp !== true) {
         this.ftp = true;
@@ -165,11 +164,11 @@ export default class WorldLoop {
       if (this.world.playerCells.secondTab.size === 0) {
         this.controller.secondTabSocket.playerSpawned = false;
         PlayerState.second.playing = false;
-        Ogar.connected && (Ogar.secondTab.death());
+        Ogar.connected && Ogar.secondTab.death();
 
         if (this.stp !== false) {
           this.stp = false;
-          
+
           if (!PlayerState.first.playing) {
             UICommunicationService.setIsPlayerPlaying(false);
           }
@@ -180,7 +179,7 @@ export default class WorldLoop {
         }
       } else {
         PlayerState.second.playing = true;
-        Ogar.connected && (Ogar.secondTab.spawn());
+        Ogar.connected && Ogar.secondTab.spawn();
 
         if (this.stp !== true) {
           this.stp = true;

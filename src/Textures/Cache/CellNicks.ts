@@ -1,4 +1,4 @@
-import { Texture } from "pixi.js";
+import { Texture } from 'pixi.js';
 
 export default class CellNicksCache {
   private pool: Map<string, Texture | null> = new Map();

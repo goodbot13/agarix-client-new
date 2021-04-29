@@ -22,19 +22,19 @@ export default class AgarSkinsList {
   public parse(data: any, CFG_URL: string, latestId: number): void {
     const gameConfig = JSON.parse(data).gameConfig;
 
-    const GES = gameConfig["Gameplay - Equippable Skins"];
-    const GFS = gameConfig["Gameplay - Free Skins"];;
-    const VPSP = gameConfig["Visual - Prod. Spine Animations"];
-    
+    const GES = gameConfig['Gameplay - Equippable Skins'];
+    const GFS = gameConfig['Gameplay - Free Skins'];
+    const VPSP = gameConfig['Visual - Prod. Spine Animations'];
+
     this.list.clear();
     this.reservedSkinsByName.clear();
 
-		for (const skin of GES) {
+    for (const skin of GES) {
       const url = `${CFG_URL}/${latestId}/${(skin as ISkin).image}`;
       const name = (skin as ISkin).productId.slice(5);
 
       skin.url = url;
-      
+
       this.list.set(name, skin);
     }
 
@@ -43,7 +43,7 @@ export default class AgarSkinsList {
       const name = (skin as ISkin).productId.slice(5);
 
       skin.url = url;
-      
+
       this.list.set(name, skin);
     }
 
@@ -60,12 +60,12 @@ export default class AgarSkinsList {
 }
 
 interface ISkin {
-  cellColor: string,
-  gameplayId: number,
-  image: string,
-  productId: string,
-  skinType: string,
-  url: string,
-  id: string,
-  spineFileName: string
+  cellColor: string;
+  gameplayId: number;
+  image: string;
+  productId: string;
+  skinType: string;
+  url: string;
+  id: string;
+  spineFileName: string;
 }

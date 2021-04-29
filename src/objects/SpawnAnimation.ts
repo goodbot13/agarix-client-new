@@ -1,7 +1,7 @@
-import { Container, Sprite } from "pixi.js";
-import GameSettings from "../Settings/Settings";
-import TextureGenerator from "../Textures/TexturesGenerator";
-import { CellType, Location } from "./types";
+import { Container, Sprite } from 'pixi.js';
+import GameSettings from '../Settings/Settings';
+import TextureGenerator from '../Textures/TexturesGenerator';
+import { CellType, Location } from './types';
 import * as PIXI from 'pixi.js';
 
 class SpawnAnimation extends Container {
@@ -32,17 +32,17 @@ class SpawnAnimation extends Container {
 
     this.spriteBuffer.forEach((sprite) => {
       sprite.anchor.set(0.5);
-      sprite.tint = tint ? tint : 0xFFFFFF;
+      sprite.tint = tint ? tint : 0xffffff;
       sprite.width = 0;
       sprite.height = 0;
       sprite.alpha = 0;
     });
 
     this.addChild(...this.spriteBuffer);
-    
+
     this.type = 'SPAWN_ANIMATION';
     this.zIndex = 0;
-    this.x = location.x; 
+    this.x = location.x;
     this.y = location.y;
     this.r = 3500;
   }

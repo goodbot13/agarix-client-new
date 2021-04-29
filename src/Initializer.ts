@@ -22,7 +22,7 @@ export const initializeGame = async () => {
     await Master.init();
     await stage.init();
   }
-}
+};
 
 window.GameAPI.init = () => initializeGame();
 
@@ -32,7 +32,7 @@ if (window.location.hostname.includes('localhost')) {
 
 declare global {
   interface Window {
-    Game: Stage,
-    Master: typeof Master
+    Game: Stage;
+    Master: typeof Master;
   }
 }

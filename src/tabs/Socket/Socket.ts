@@ -7,24 +7,24 @@ import WorldState from '../../states/WorldState';
 import PlayerState from '../../states/PlayerState';
 import FacebookLogin from '../Login/FacebookLogin';
 import GoogleLogin from '../Login/GoogleLogin';
-import { 
-  ADD_OWN_CELL, 
-  COMPRESSED_MESSAGE, 
-  FLUSH, 
-  FREE_COINS, 
+import {
+  ADD_OWN_CELL,
+  COMPRESSED_MESSAGE,
+  FLUSH,
+  FREE_COINS,
   GENERATE_KEYS,
-  GHOST_CELLS, 
-  LEADERBOARD, 
-  LEADERBOARD2, 
-  OUTDATED_CLIENT_ERROR, 
-  PING_PONG, 
-  RECAPTCHA_V2, 
-  SEND_LOGIN, 
-  SERVER_DEATH, 
-  SOCKET_CONNECTING, 
-  SOCKET_OPENED, 
-  SPECTATE_MODE_IS_FULL, 
-  VIEWPORT_UPDATE 
+  GHOST_CELLS,
+  LEADERBOARD,
+  LEADERBOARD2,
+  OUTDATED_CLIENT_ERROR,
+  PING_PONG,
+  RECAPTCHA_V2,
+  SEND_LOGIN,
+  SERVER_DEATH,
+  SOCKET_CONNECTING,
+  SOCKET_OPENED,
+  SPECTATE_MODE_IS_FULL,
+  VIEWPORT_UPDATE,
 } from './Opcodes';
 import Master from '../../Master';
 import Logger from '../../utils/Logger';
@@ -92,7 +92,14 @@ export default class Socket {
         PlayerState.first.spawning = false;
         PlayerState.first.loggedIn = false;
         PlayerState.first.connected = false;
-        this.world.view.firstTab.bounds = { left: 0, right: 0, top: 0, bottom: 0, width: 0, height: 0 };
+        this.world.view.firstTab.bounds = {
+          left: 0,
+          right: 0,
+          top: 0,
+          bottom: 0,
+          width: 0,
+          height: 0,
+        };
         break;
 
       case 'SECOND_TAB':
@@ -100,11 +107,25 @@ export default class Socket {
         PlayerState.second.spawning = false;
         PlayerState.second.loggedIn = false;
         PlayerState.second.connected = false;
-        this.world.view.secondTab.bounds = { left: 0, right: 0, top: 0, bottom: 0, width: 0, height: 0 };
+        this.world.view.secondTab.bounds = {
+          left: 0,
+          right: 0,
+          top: 0,
+          bottom: 0,
+          width: 0,
+          height: 0,
+        };
         break;
 
       case 'TOP_ONE_TAB':
-        this.world.view.topOneTab.bounds = { left: 0, right: 0, top: 0, bottom: 0, width: 0, height: 0 };
+        this.world.view.topOneTab.bounds = {
+          left: 0,
+          right: 0,
+          top: 0,
+          bottom: 0,
+          width: 0,
+          height: 0,
+        };
         this.world.view.topOneTab.viewport = { x: 0, y: 0, scale: 1 };
     }
 
@@ -129,11 +150,11 @@ export default class Socket {
       this.socket.onmessage = (msg) => this.handleMessage(msg.data);
       this.socket.onclose = () => this.disconnect();
       this.socket.onerror = () => this.disconnect();
-      
+
       this.socketInitCallback = resolve;
-    }); 
+    });
   }
-  
+
   public destroy(): void {
     this.socket.close();
   }
@@ -160,15 +181,16 @@ export default class Socket {
     const opcode = this.receiver.reader.getUint8();
 
     switch (opcode) {
+      case 161:
+        break;
+      case 5:
+        break;
 
-      case 161: break;
-      case 5: break;
-
-      case VIEWPORT_UPDATE: 
+      case VIEWPORT_UPDATE:
         const viewport = this.receiver.handleViewportUpdate();
 
         switch (this.tabType) {
-          case 'FIRST_TAB': 
+          case 'FIRST_TAB':
             this.world.view.firstTab.viewportUpdate(viewport);
             break;
 
@@ -176,7 +198,7 @@ export default class Socket {
             this.world.view.secondTab.viewportUpdate(viewport);
             break;
 
-          case 'TOP_ONE_TAB': 
+          case 'TOP_ONE_TAB':
             this.world.view.topOneTab.viewportUpdate(viewport);
             break;
 
@@ -194,7 +216,7 @@ export default class Socket {
             }
         }
 
-      case FLUSH: 
+      case FLUSH:
         /* if (this.protocolKey) {
           this.protocolKey = shiftKey(this.protocolKey);
           this.disconnect();
@@ -202,25 +224,25 @@ export default class Socket {
         } */
         break;
 
-      case ADD_OWN_CELL: 
+      case ADD_OWN_CELL:
         this.receiver.handleAddOwnCell();
         break;
-      
+
       case LEADERBOARD:
-      case LEADERBOARD2: 
+      case LEADERBOARD2:
         if (this.tabType === 'FIRST_TAB') {
           opcode === 54 && this.receiver.reader.shiftOffset(2);
           UICommunicationService.updateLeaderboard(this.receiver.handleLeaderboardUpdate());
         }
-        break;     
+        break;
 
-      case GHOST_CELLS: 
+      case GHOST_CELLS:
         if (this.tabType === 'FIRST_TAB') {
           this.world.minimap.updateGhostCells(this.receiver.handleGhostCells());
         }
         break;
 
-      case RECAPTCHA_V2: 
+      case RECAPTCHA_V2:
         this.receiver.handleRecaptchaV2();
         break;
 
@@ -230,13 +252,13 @@ export default class Socket {
         }
 
         this.disconnect();
-        
+
         break;
 
-      case FREE_COINS: 
+      case FREE_COINS:
         break;
 
-      case PING_PONG: 
+      case PING_PONG:
         this.receiver.handlePingUpdate();
         break;
 
@@ -250,7 +272,7 @@ export default class Socket {
         UICommunicationService.sendChatGameMessage('Spectate error: slots are full.');
         break;
 
-      case GENERATE_KEYS: 
+      case GENERATE_KEYS:
         this.receiver.generateKeys();
         break;
 
@@ -261,10 +283,13 @@ export default class Socket {
         }
         break;
 
-      case COMPRESSED_MESSAGE: 
-      
+      case COMPRESSED_MESSAGE:
         // no need to decompress, reveice only viewport
-        if (this.tabType === 'TOP_ONE_TAB' && Settings.all.settings.game.gameplay.spectatorMode === 'Full map' && this.mapOffsetFixed) {
+        if (
+          this.tabType === 'TOP_ONE_TAB' &&
+          Settings.all.settings.game.gameplay.spectatorMode === 'Full map' &&
+          this.mapOffsetFixed
+        ) {
           return;
         }
 
@@ -306,22 +331,22 @@ export default class Socket {
       this.offsetsPositionMultiplier.x = 14142 / mapWidth;
       this.offsetsPositionMultiplier.y = 14142 / mapHeight;
     }
-  
-    // world is not created. set global offsets 
+
+    // world is not created. set global offsets
     if (!WorldState.gameJoined) {
       if (this.tabType === 'FIRST_TAB') {
         WorldState.mapOffsets = { minX, minY, maxX, maxY };
       }
     } else {
-      this.shiftOffsets.x = (WorldState.mapOffsets.minX - this.mapOffsets.minX);
-      this.shiftOffsets.y = (WorldState.mapOffsets.minY - this.mapOffsets.minY);
+      this.shiftOffsets.x = WorldState.mapOffsets.minX - this.mapOffsets.minX;
+      this.shiftOffsets.y = WorldState.mapOffsets.minY - this.mapOffsets.minY;
     }
 
     const viewport: IViewport = {
       x: (minX + maxX) / 2,
       y: (minY + maxY) / 2,
-      scale: 1 
-    }
+      scale: 1,
+    };
 
     if (this.tabType === 'FIRST_TAB') {
       this.world.view.firstTab.viewportUpdate(viewport);
@@ -357,16 +382,22 @@ export default class Socket {
     }
 
     this.stopSendingPosition();
-  
+
     switch (this.tabType) {
       case 'FIRST_TAB':
         const { firstTab } = this.world.view;
-        setTimeout(() => this.emitter.sendMousePosition(true, firstTab.viewport.x, firstTab.viewport.y), 40);
+        setTimeout(
+          () => this.emitter.sendMousePosition(true, firstTab.viewport.x, firstTab.viewport.y),
+          40,
+        );
         break;
 
       case 'SECOND_TAB':
         const { secondTab } = this.world.view;
-        setTimeout(() => this.emitter.sendMousePosition(true, secondTab.viewport.x, secondTab.viewport.y), 40);
+        setTimeout(
+          () => this.emitter.sendMousePosition(true, secondTab.viewport.x, secondTab.viewport.y),
+          40,
+        );
         break;
     }
   }
@@ -379,7 +410,6 @@ export default class Socket {
     this.startSendingPosition();
   }
 
-  
   public isPaused(): boolean {
     return this.sendMousePositionInterval === null;
   }
@@ -397,36 +427,36 @@ export default class Socket {
 }
 
 export interface ISocketData {
-  address: string,
-  protocolVersion: number,
-  clientVersionInt: number,
-  clientVersionString: string,
-  token?: string,
-  serverToken: string,
-  https?: string
+  address: string;
+  protocolVersion: number;
+  clientVersionInt: number;
+  clientVersionString: string;
+  token?: string;
+  serverToken: string;
+  https?: string;
 }
 
 export interface IMapOffsets {
-  minX: number,
-  minY: number,
-  maxX: number,
-  maxY: number
+  minX: number;
+  minY: number;
+  maxX: number;
+  maxY: number;
 }
 
 export interface IMapOffsetsShift {
-  x: number,
-  y: number,
+  x: number;
+  y: number;
 }
 
 export interface IMapOffsetsPositionMultiplier {
-  x: number,
-  y: number
+  x: number;
+  y: number;
 }
 
 export interface IViewport {
-  x: number,
-  y: number,
-  scale: number
+  x: number;
+  y: number;
+  scale: number;
 }
 
 export type TabType = 'FIRST_TAB' | 'SECOND_TAB' | 'SPEC_TABS' | 'TOP_ONE_TAB';

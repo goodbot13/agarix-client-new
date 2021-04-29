@@ -18,7 +18,7 @@ class Food extends Sprite {
   private SPEED: number = 0.0225;
   private realAlpha: number = 0;
 
-  constructor(location: Location, subtype: Subtype,) {
+  constructor(location: Location, subtype: Subtype) {
     super(TextureGenerator.food);
 
     const { x, y, r } = location;
@@ -35,7 +35,7 @@ class Food extends Sprite {
   }
 
   private getStep(): number {
-    return this.SIZE * this.SPEED *  PIXI.Ticker.shared.deltaTime;
+    return this.SIZE * this.SPEED * PIXI.Ticker.shared.deltaTime;
   }
 
   public hide(): void {
@@ -45,7 +45,7 @@ class Food extends Sprite {
 
   public show(fast?: boolean): void {
     this.visible = true;
-    
+
     if (fast) {
       this.alpha = 1;
       this.realAlpha = 1;
@@ -57,19 +57,19 @@ class Food extends Sprite {
   }
 
   public animate(): void {
-    const instantAnimation = PlayerState.first.playing && 
-                             PlayerState.second.playing && 
-                             GameSettings.all.settings.game.gameplay.spectatorMode !== 'Full map';
+    const instantAnimation =
+      PlayerState.first.playing &&
+      PlayerState.second.playing &&
+      GameSettings.all.settings.game.gameplay.spectatorMode !== 'Full map';
 
     if (this.removing) {
-
       if (this.culled) {
         this.destroy();
         this.isDestroyed = true;
         return;
       }
 
-      // instantly remove & destroy 
+      // instantly remove & destroy
       if (instantAnimation) {
         this.destroy();
         this.isDestroyed = true;
@@ -77,23 +77,18 @@ class Food extends Sprite {
       }
 
       if (this.width <= 40) {
-
         // food is ready to be removed & destroyed
         this.destroy();
         this.isDestroyed = true;
-
       } else {
-
-        // slowly decrease scale & alpha 
+        // slowly decrease scale & alpha
         const step = this.getStep();
 
         this.width -= step;
         this.height -= step;
         this.realAlpha = this.width / this.SIZE;
       }
-
     } else {
-
       if (this.culled) {
         this.width = this.height = this.SIZE;
         this.realAlpha = 1;
@@ -104,7 +99,7 @@ class Food extends Sprite {
         this.visible = true;
       }
 
-      // instantly set alpha & scale 
+      // instantly set alpha & scale
       if (instantAnimation) {
         this.realAlpha = 1;
         this.width = this.height = this.SIZE;
@@ -112,13 +107,10 @@ class Food extends Sprite {
       }
 
       if (this.width >= this.SIZE) {
-
         // set capped values - food is fully animated
         this.realAlpha = 1;
         this.width = this.height = this.SIZE;
-
       } else {
-
         // need to animate scale & opacity
         const step = this.getStep();
 
@@ -129,7 +121,7 @@ class Food extends Sprite {
     }
   }
 
-  public update(location: Location): void { }
+  public update(location: Location): void {}
 
   public remove(): void {
     this.removing = true;

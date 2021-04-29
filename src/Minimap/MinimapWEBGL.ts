@@ -12,7 +12,6 @@ import TeamPlayers from './TeamPlayers';
 import { getColor } from '../utils/helpers';
 
 export default class MinimapWEBGL extends Container {
-  
   private graphics: Graphics;
 
   public ghostCells: GhostCells;
@@ -20,7 +19,7 @@ export default class MinimapWEBGL extends Container {
   public staticPlayerCells: StaticPlayerCells;
   public viewports: Viewports;
   public teamPlayers: TeamPlayers;
-  
+
   constructor(public world: World) {
     super();
 
@@ -88,7 +87,15 @@ export default class MinimapWEBGL extends Container {
     this.ghostCells.reset();
   }
 
-  public addRealPlayerCell(id: number, location: Location, color: RGB, name: string, type: CellType, subtype: Subtype, skin?: string): void {
+  public addRealPlayerCell(
+    id: number,
+    location: Location,
+    color: RGB,
+    name: string,
+    type: CellType,
+    subtype: Subtype,
+    skin?: string,
+  ): void {
     this.realPlayersCells.add(id, location, color, name, type, subtype, skin);
   }
 
@@ -103,4 +110,4 @@ export default class MinimapWEBGL extends Container {
   public updateGhostCells(cells: Array<IGhostCell>): void {
     this.ghostCells.update(cells);
   }
-} 
+}

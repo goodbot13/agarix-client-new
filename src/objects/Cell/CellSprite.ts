@@ -1,5 +1,5 @@
-import { Sprite } from "pixi.js";
-import Cell from ".";
+import { Sprite } from 'pixi.js';
+import Cell from '.';
 import TextureGenerator from '../../Textures/TexturesGenerator';
 
 export default class CellSprite extends Sprite {

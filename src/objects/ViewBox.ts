@@ -1,5 +1,5 @@
-import { Sprite } from "pixi.js";
-import TextureGenerator from "../Textures/TexturesGenerator";
+import { Sprite } from 'pixi.js';
+import TextureGenerator from '../Textures/TexturesGenerator';
 import * as PIXI from 'pixi.js';
 
 class ViewBox extends Sprite {

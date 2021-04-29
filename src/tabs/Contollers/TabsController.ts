@@ -46,18 +46,17 @@ class Controller {
       let secondPlayerTabId: NodeJS.Timeout;
 
       mainId = setTimeout(() => {
-        this.connectFirstPlayerTab().then(mapOffsets => {
-
+        this.connectFirstPlayerTab().then((mapOffsets) => {
           if (GameSettings.all.settings.game.gameplay.spectatorMode === 'Full map') {
             fullMapId = setTimeout(() => this.enableFullMapView(), 400);
           } else if (GameSettings.all.settings.game.gameplay.spectatorMode === 'Top one') {
             topOneId = setTimeout(() => this.connectTopOneTab(), 400);
           }
-  
+
           if (GameSettings.all.settings.game.multibox.enabled) {
             secondPlayerTabId = setTimeout(() => this.connectSecondPlayerTab(), 600);
           }
-  
+
           resolve(mapOffsets);
         });
       }, 200);
@@ -79,24 +78,28 @@ class Controller {
     return new Promise((resolve: any, reject: any) => {
       if (!this.firstTabSocket) {
         this.logger.error('First player tab is not connected yet');
-        UICommunicationService.sendChatGameMessage('Could not connect second player tab. Main tab is not connected yet.');
+        UICommunicationService.sendChatGameMessage(
+          'Could not connect second player tab. Main tab is not connected yet.',
+        );
         return reject();
       }
 
       this.disconnectSecondTab();
       this.secondTabSocket = new Socket(this.socketData, 'SECOND_TAB', this.world);
       this.secondTabSocket.init().then(() => resolve());
-    })
+    });
   }
 
   public connectTopOneTab() {
     return new Promise((resolve: any, reject: any) => {
-      if (!this.firstTabSocket) { 
+      if (!this.firstTabSocket) {
         this.logger.error('First player tab is not connected yet');
-        UICommunicationService.sendChatGameMessage('Could not connect top 1 tab. Main tab is not connected yet.');
+        UICommunicationService.sendChatGameMessage(
+          'Could not connect top 1 tab. Main tab is not connected yet.',
+        );
         return reject();
       }
-  
+
       if (this.topOneViewEnabled) {
         this.logger.error('Top one (spectator) tab is already enabled');
         return reject();
@@ -107,8 +110,8 @@ class Controller {
       this.topOneTabSocket = new Socket(this.socketData, 'TOP_ONE_TAB', this.world);
       this.topOneTabSocket.subscribeOnDisconnect = () => {
         this.disconnectTopOneTab();
-      }
-      
+      };
+
       this.topOneTabSocket.init().then(() => {
         UICommunicationService.sendChatGameMessage('Top one view establised.');
         this.logger.info('Top one view establised');
@@ -173,12 +176,12 @@ class Controller {
 
   public spawnFirstTab(): Promise<boolean> {
     this.firstTabSocket.emitter.handleSpawnV3(GameSettings.all.profiles.leftProfileNick);
-    return new Promise((resolve) => this.firstTabSocket.onPlayerSpawn = resolve);
+    return new Promise((resolve) => (this.firstTabSocket.onPlayerSpawn = resolve));
   }
 
   public spawnSecondTab(): Promise<boolean> {
     this.secondTabSocket.emitter.handleSpawnV3(GameSettings.all.profiles.rightProfileNick);
-    return new Promise((resolve) => this.secondTabSocket.onPlayerSpawn = resolve);
+    return new Promise((resolve) => (this.secondTabSocket.onPlayerSpawn = resolve));
   }
 
   public enableFullMapView(): void {

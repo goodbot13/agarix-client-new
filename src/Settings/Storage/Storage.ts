@@ -1,6 +1,6 @@
-import { IState } from "./initState";
+import { IState } from './initState';
 
-export default new class Storage {
+export default new (class Storage {
   private readonly name: string = 'AGARIX:DATA';
 
   private swap(str: string): string {
@@ -19,7 +19,7 @@ export default new class Storage {
 
         // will throw exception if it has invalid format
         const decoded = JSON.parse(atob(swapped));
-        
+
         return decoded;
       } catch {
         // decoding failed, valid format
@@ -27,4 +27,4 @@ export default new class Storage {
       }
     }
   }
-}
+})();

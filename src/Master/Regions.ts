@@ -1,4 +1,4 @@
-import UICommunicationService from "../communication/FrontAPI";
+import UICommunicationService from '../communication/FrontAPI';
 
 export default class Regions {
   private selected: number = 0;
@@ -7,27 +7,43 @@ export default class Regions {
 
   private getName(region: string): GameServerLocationTypes {
     switch (region) {
-      case "EU-London": return "Europe";
-      case "US-Atlanta": return "North America";
-      case "RU-Russia": return "Russia";
-      case "BR-Brazil": return "South America";
-      case "TK-Turkey": return "Turkey";
-      case "JP-Tokyo": return "East Asia";
-      case "CN-China": return "China";
-      case "SG-Singapore": return "Oceania";
+      case 'EU-London':
+        return 'Europe';
+      case 'US-Atlanta':
+        return 'North America';
+      case 'RU-Russia':
+        return 'Russia';
+      case 'BR-Brazil':
+        return 'South America';
+      case 'TK-Turkey':
+        return 'Turkey';
+      case 'JP-Tokyo':
+        return 'East Asia';
+      case 'CN-China':
+        return 'China';
+      case 'SG-Singapore':
+        return 'Oceania';
     }
   }
 
   private unname(name: GameServerLocationTypes): GameServerOriginalLocationTypes {
     switch (name) {
-      case "Europe": return "EU-London";
-      case "North America": return "US-Atlanta";
-      case "Russia": return "RU-Russia";
-      case "South America": return "BR-Brazil";
-      case "Turkey": return "TK-Turkey";
-      case "East Asia": return "JP-Tokyo";
-      case "China": return "CN-China";
-      case "Oceania": return "SG-Singapore";
+      case 'Europe':
+        return 'EU-London';
+      case 'North America':
+        return 'US-Atlanta';
+      case 'Russia':
+        return 'RU-Russia';
+      case 'South America':
+        return 'BR-Brazil';
+      case 'Turkey':
+        return 'TK-Turkey';
+      case 'East Asia':
+        return 'JP-Tokyo';
+      case 'China':
+        return 'CN-China';
+      case 'Oceania':
+        return 'SG-Singapore';
     }
   }
 
@@ -38,9 +54,9 @@ export default class Regions {
       const displayedRegionName = this.getName(region);
       const { numPlayers } = regions[region];
 
-      this.data.push({ 
+      this.data.push({
         location: displayedRegionName,
-        playersAmount: numPlayers
+        playersAmount: numPlayers,
       });
     }
 
@@ -69,10 +85,26 @@ export default class Regions {
   }
 }
 
-export type GameServerLocationTypes = 'South America' | 'China' | 'Europe' | 'East Asia' | 'Russia' | 'Oceania' | 'Turkey' | 'North America';
-export type GameServerOriginalLocationTypes = 'EU-London' | 'US-Atlanta' | 'RU-Russia' | 'BR-Brazil' | 'TK-Turkey' | 'JP-Tokyo' | 'CN-China' | 'SG-Singapore';
+export type GameServerLocationTypes =
+  | 'South America'
+  | 'China'
+  | 'Europe'
+  | 'East Asia'
+  | 'Russia'
+  | 'Oceania'
+  | 'Turkey'
+  | 'North America';
+export type GameServerOriginalLocationTypes =
+  | 'EU-London'
+  | 'US-Atlanta'
+  | 'RU-Russia'
+  | 'BR-Brazil'
+  | 'TK-Turkey'
+  | 'JP-Tokyo'
+  | 'CN-China'
+  | 'SG-Singapore';
 
 export interface IGameServer {
-  location: GameServerLocationTypes,
-  playersAmount: number,
+  location: GameServerLocationTypes;
+  playersAmount: number;
 }

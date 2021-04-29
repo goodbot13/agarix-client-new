@@ -12,10 +12,10 @@ const generateRgbBorderLine = () => {
   canvas.width = canvas.height = renderSize;
 
   const ratio = 14142 / 2048;
-  const offset = (borderWidth * 2 / 2 / ratio);
+  const offset = (borderWidth * 2) / 2 / ratio;
 
   ctx.strokeStyle = rgbToStringHex(borderColor);
-  ctx.lineWidth = borderWidth * 2 / ratio;
+  ctx.lineWidth = (borderWidth * 2) / ratio;
 
   if (borderRoundness !== 0) {
     roundRect(ctx, offset, offset, renderSize - offset, renderSize - offset, borderRoundness / 4);
@@ -35,6 +35,6 @@ const generateRgbBorderLine = () => {
   texture.baseTexture.scaleMode = SCALE_MODES.LINEAR;
 
   return texture;
-}
+};
 
 export default generateRgbBorderLine;

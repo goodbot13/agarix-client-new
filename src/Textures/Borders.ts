@@ -12,7 +12,7 @@ const generateBorders = () => {
     borderGlowStrength,
     borderRoundness,
     borderColor,
-    borderWidth
+    borderWidth,
   } = GameSettings.all.settings.theming.map;
 
   const glowQuality = 0.0065;
@@ -24,9 +24,15 @@ const generateBorders = () => {
     const g = new Graphics();
 
     g.lineStyle(borderWidth, getColor(borderColor));
-    
+
     if (rounded) {
-      g.drawRoundedRect(offset, offset, bordersRenderSize * 1.5 - offset, bordersRenderSize * 1.5 - offset, borderRoundness);
+      g.drawRoundedRect(
+        offset,
+        offset,
+        bordersRenderSize * 1.5 - offset,
+        bordersRenderSize * 1.5 - offset,
+        borderRoundness,
+      );
     } else {
       g.lineTo(bordersRenderSize * 1.5 - offset, 0);
       g.lineTo(bordersRenderSize * 1.5 - offset, bordersRenderSize * 1.5 - offset);
@@ -35,12 +41,14 @@ const generateBorders = () => {
     }
 
     if (borderGlow) {
-      g.filters = [new GlowFilter({ 
-        quality: glowQuality, 
-        outerStrength: borderGlowStrength,
-        distance: borderGlowDistance, 
-        color: getColor(borderGlowColor)
-      })];
+      g.filters = [
+        new GlowFilter({
+          quality: glowQuality,
+          outerStrength: borderGlowStrength,
+          distance: borderGlowDistance,
+          color: getColor(borderGlowColor),
+        }),
+      ];
       g.y = g.x = borderWidth + borderGlowDistance;
     } else {
       g.y = g.x = borderWidth / 2;
@@ -49,13 +57,13 @@ const generateBorders = () => {
     const c = new Container();
     c.addChild(g);
 
-    const borderSize = borderGlow 
-      ? (bordersRenderSize * 1.5 + borderGlowDistance * 2 + borderWidth * 2) 
+    const borderSize = borderGlow
+      ? bordersRenderSize * 1.5 + borderGlowDistance * 2 + borderWidth * 2
       : bordersRenderSize * 1.5 + borderWidth;
 
     const area = new Rectangle(0, 0, borderSize, borderSize);
     const texture = Globals.app.renderer.generateTexture(c, SCALE_MODES.LINEAR, 1, area);
-    texture.baseTexture.mipmap = MIPMAP_MODES.ON; 
+    texture.baseTexture.mipmap = MIPMAP_MODES.ON;
 
     return texture;
   } else {
@@ -67,7 +75,7 @@ const generateBorders = () => {
 
     const ratio = 14142 / 2048;
     const _borderGlowDistance = borderGlow ? borderGlowDistance : 1;
-    const offset = ((_borderGlowDistance / ratio) + (borderWidth / 2 / ratio)) * 2;
+    const offset = (_borderGlowDistance / ratio + borderWidth / 2 / ratio) * 2;
 
     ctx.strokeStyle = rgbToStringHex(borderColor);
     ctx.lineWidth = borderWidth / ratio;
@@ -82,7 +90,7 @@ const generateBorders = () => {
     if (borderGlow) {
       ctx.shadowBlur = _borderGlowDistance / ratio / 1.5;
       ctx.shadowColor = rgbToStringHex(borderGlowColor);
-          
+
       for (let i = 0; i < borderGlowStrength; i++) {
         ctx.stroke();
       }
@@ -95,6 +103,6 @@ const generateBorders = () => {
 
     return texture;
   }
-}
+};
 
 export default generateBorders;

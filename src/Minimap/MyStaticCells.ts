@@ -1,11 +1,11 @@
-import { Container } from "pixi.js";
-import Cell from "../objects/Cell/index";
-import { Location } from "../objects/types";
-import SpawnAnimation from "../objects/SpawnAnimation";
-import World from "../render/World";
-import GameSettings from "../Settings/Settings";
-import { getColor, transformMinimapLocation } from "../utils/helpers";
-import PlayerState from "../states/PlayerState";
+import { Container } from 'pixi.js';
+import Cell from '../objects/Cell/index';
+import { Location } from '../objects/types';
+import SpawnAnimation from '../objects/SpawnAnimation';
+import World from '../render/World';
+import GameSettings from '../Settings/Settings';
+import { getColor, transformMinimapLocation } from '../utils/helpers';
+import PlayerState from '../states/PlayerState';
 
 export default class StaticPlayerCells extends Container {
   private firstTab: Cell;
@@ -28,7 +28,7 @@ export default class StaticPlayerCells extends Container {
     this.firstTab.cell.tint = getColor(playerColor);
     this.addChild(this.firstTab);
 
-    this.secondTab = new Cell('SECOND_TAB', { x: 0, y: 0, r: 0 }, playerColor, '', '', this.world); 
+    this.secondTab = new Cell('SECOND_TAB', { x: 0, y: 0, r: 0 }, playerColor, '', '', this.world);
     this.secondTab.setIsMinimapCell();
     this.secondTab.cell.tint = getColor(playerColor);
     this.addChild(this.secondTab);
@@ -40,15 +40,19 @@ export default class StaticPlayerCells extends Container {
     const { playerPosition } = GameSettings.all.settings.game.minimap;
 
     if (PlayerState.first.playing && playerPosition) {
-      const { x, y } = transformMinimapLocation({ 
-          x: firstTab.viewport.x, 
-          y: firstTab.viewport.y, 
-          r: 0 
+      const { x, y } = transformMinimapLocation(
+        {
+          x: firstTab.viewport.x,
+          y: firstTab.viewport.y,
+          r: 0,
         },
-        this.world.view.firstTab.mapOffsets
+        this.world.view.firstTab.mapOffsets,
       );
 
-      if (!this.firstTab.visible && GameSettings.all.settings.game.effects.spawnAnimation !== 'Disabled') {
+      if (
+        !this.firstTab.visible &&
+        GameSettings.all.settings.game.effects.spawnAnimation !== 'Disabled'
+      ) {
         const animation = new SpawnAnimation({ x, y, r: 0 }, this.firstTab.cell.tint);
         animation.setIsMinimap();
         this.addChild(animation);
@@ -69,7 +73,6 @@ export default class StaticPlayerCells extends Container {
       } else {
         this.playerCell.alpha = 1;
       } */
-
     } else {
       this.firstTab.visible = false;
     }
@@ -81,15 +84,19 @@ export default class StaticPlayerCells extends Container {
     const { playerPosition } = GameSettings.all.settings.game.minimap;
 
     if (PlayerState.second.playing && playerPosition) {
-      const { x, y } = transformMinimapLocation({ 
-          x: secondTab.viewport.x, 
-          y: secondTab.viewport.y, 
-          r: 0 
+      const { x, y } = transformMinimapLocation(
+        {
+          x: secondTab.viewport.x,
+          y: secondTab.viewport.y,
+          r: 0,
         },
-        this.world.view.secondTab.mapOffsets
+        this.world.view.secondTab.mapOffsets,
       );
 
-      if (!this.secondTab.visible && GameSettings.all.settings.game.effects.spawnAnimation !== 'Disabled') {
+      if (
+        !this.secondTab.visible &&
+        GameSettings.all.settings.game.effects.spawnAnimation !== 'Disabled'
+      ) {
         const animation = new SpawnAnimation({ x, y, r: 0 }, this.secondTab.cell.tint);
         animation.setIsMinimap();
         this.addChild(animation);
@@ -110,7 +117,6 @@ export default class StaticPlayerCells extends Container {
       } else {
         this.secondPlayerCell.alpha = 1;
       } */
-
     } else {
       this.secondTab.visible = false;
     }

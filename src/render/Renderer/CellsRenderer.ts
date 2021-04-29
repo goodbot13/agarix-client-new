@@ -8,8 +8,7 @@ import SettingsState from '../../states/SettingsState';
 import SpawnAnimation from '../../objects/SpawnAnimation';
 
 export default class CellsRenderer {
-
-  constructor(private world: World) { }
+  constructor(private world: World) {}
 
   private checkCellRender(cell: Cell | Virus, visible: boolean): Array<boolean> {
     const { firstTab, secondTab } = this.world.view;
@@ -18,18 +17,26 @@ export default class CellsRenderer {
 
     if (PlayerState.first.playing && firstTab.hasInViewBounds(x, y)) {
       visible = false;
-    } 
-    
+    }
+
     if (PlayerState.second.playing && secondTab.hasInViewBounds(x, y)) {
       visible = false;
     }
 
-    if (PlayerState.first.playing && type === 'CELL' && this.world.playerCells.isFirstTab(cell as Cell)) {
+    if (
+      PlayerState.first.playing &&
+      type === 'CELL' &&
+      this.world.playerCells.isFirstTab(cell as Cell)
+    ) {
       visible = false;
       isPlayerCell = true;
     }
-    
-    if (PlayerState.second.playing && type === 'CELL' && this.world.playerCells.isSecondTab(cell as Cell)) {
+
+    if (
+      PlayerState.second.playing &&
+      type === 'CELL' &&
+      this.world.playerCells.isSecondTab(cell as Cell)
+    ) {
       visible = false;
       isPlayerCell = true;
     }
@@ -57,7 +64,7 @@ export default class CellsRenderer {
       }
     }
     // if cell subtype is TOP_ONE_TAB or SPEC_TABS and it is a player cell
-    // its visibility should be immediately set to false 
+    // its visibility should be immediately set to false
     // (we dont have to wait until its opacity slowly goes down - it will make it look ugly)
 
     const fullMapViewEnabled = GameSettings.all.settings.game.gameplay.spectatorMode === 'Full map';
@@ -82,7 +89,7 @@ export default class CellsRenderer {
     if (subtype === 'SPEC_TABS') {
       if (type === 'CELL') {
         const [visible, isPlayerCell] = this.checkCellRender(cell as Cell | Virus, true);
-        cell.visible = isPlayerCell ? false : true;  
+        cell.visible = isPlayerCell ? false : true;
         cell.setIsVisible(visible);
 
         if (visible) {
@@ -103,7 +110,7 @@ export default class CellsRenderer {
       if (subtype === 'FIRST_TAB' && type === 'CELL') {
         if (this.world.playerCells.isSecondTab(cell as Cell)) {
           visible = false;
-        }/*  else if (!PlayerState.first.playing) {
+        } /*  else if (!PlayerState.first.playing) {
           visible = false;
         } */
       }
@@ -133,7 +140,7 @@ export default class CellsRenderer {
             if (subtype === 'FIRST_TAB') {
               visible = PlayerState.first.playing;
             }
-  
+
             if (subtype === 'SECOND_TAB') {
               visible = PlayerState.second.playing;
             }
@@ -149,7 +156,7 @@ export default class CellsRenderer {
         visible = false;
       }
 
-      cell.visible = visible; 
+      cell.visible = visible;
       cell.setIsVisible(visible);
     }
 
@@ -172,7 +179,7 @@ export default class CellsRenderer {
         if (subtype === 'FIRST_TAB') {
           visible = true;
         }
-      } 
+      }
 
       if (subtype === 'FIRST_TAB' && type === 'VIRUS') {
         visible = false;

@@ -1,7 +1,7 @@
-import { BitmapText, Text, Point, TextStyle } from "pixi.js";
-import Cell from ".";
-import GameSettings from "../../Settings/Settings";
-import WorldState from "../../states/WorldState";
+import { BitmapText, Text, Point, TextStyle } from 'pixi.js';
+import Cell from '.';
+import GameSettings from '../../Settings/Settings';
+import WorldState from '../../states/WorldState';
 import * as PIXI from 'pixi.js';
 
 export default class CellStats {
@@ -14,11 +14,11 @@ export default class CellStats {
   private readonly NICK_STYLE: TextStyle = new TextStyle({
     fontFamily: 'Lato',
     fontSize: 140,
-    fill: 0xFFFFFF,
+    fill: 0xffffff,
     stroke: 0x101010,
     strokeThickness: 5,
-    fontWeight: '600'
-  })
+    fontWeight: '600',
+  });
 
   constructor(private cell: Cell) {
     this.mass = new BitmapText('0', { fontName: 'MassLato' });
@@ -28,7 +28,7 @@ export default class CellStats {
 
     this.updateNick();
   }
-  
+
   private setMassAnchor(): void {
     if (GameSettings.all.settings.game.cells.nicks) {
       if (this.currentAnchor.y !== -0.75) {
@@ -44,7 +44,13 @@ export default class CellStats {
   }
 
   public update(): void {
-    const { mass, myMass, nicks, myNick, autoHideMassAndNicks } = GameSettings.all.settings.game.cells;
+    const {
+      mass,
+      myMass,
+      nicks,
+      myNick,
+      autoHideMassAndNicks,
+    } = GameSettings.all.settings.game.cells;
 
     const mNicks = GameSettings.all.settings.game.minimap.nicks;
     const mMass = GameSettings.all.settings.game.minimap.mass;
@@ -68,7 +74,9 @@ export default class CellStats {
         this.mass.visible = this.mass.renderable = false;
         this.nick.visible = this.nick.renderable = false;
       } else {
-        const visible = autoHideMassAndNicks ? this.cell.originalSize > (27 / this.cell.world.view.camera.scale) : true;
+        const visible = autoHideMassAndNicks
+          ? this.cell.originalSize > 27 / this.cell.world.view.camera.scale
+          : true;
         this.mass.visible = this.mass.renderable = visible && mass;
         this.nick.visible = this.nick.renderable = visible && nicks;
       }
@@ -96,9 +104,9 @@ export default class CellStats {
   public updateNick(): void {
     this.generateNick(this.cell.nick);
   }
-  
+
   private calculateMass(): void {
-    this.massValue = ~~(this.cell.originalSize * this.cell.originalSize / 100);
+    this.massValue = ~~((this.cell.originalSize * this.cell.originalSize) / 100);
     this.shortMassValue = Math.round(this.massValue / 100) / 10 + 'k';
   }
 
@@ -119,7 +127,7 @@ export default class CellStats {
       this.calculateMass();
     }
 
-    if (shortMass) {
+    if (shortMass && this.massValue > 999) {
       this.mass.text = this.shortMassValue;
     } else {
       this.mass.text = this.massValue.toString();

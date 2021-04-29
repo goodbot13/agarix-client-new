@@ -1,15 +1,15 @@
-import { ISocketData } from "../tabs/Socket/Socket";
+import { ISocketData } from '../tabs/Socket/Socket';
 import Regions from './Regions';
 import EnvConfig from './EnvConfig';
 import GameMode from './GameMode';
-import AgarSkinsList from "./Skins";
+import AgarSkinsList from './Skins';
 import GameSettings from '../Settings/Settings';
-import FacebookLogin from "../tabs/Login/FacebookLogin";
-import GoogleLogin from "../tabs/Login/GoogleLogin";
+import FacebookLogin from '../tabs/Login/FacebookLogin';
+import GoogleLogin from '../tabs/Login/GoogleLogin';
 
-export default new class Master {
-  private readonly AGAR_CORE: string = "https://agar.io/agario.core.js";
-  private readonly MC_CORE: string = "https://agar.io/mc/agario.js";
+export default new (class Master {
+  private readonly AGAR_CORE: string = 'https://agar.io/agario.core.js';
+  private readonly MC_CORE: string = 'https://agar.io/mc/agario.js';
 
   private clientVersionInt: number = 31009;
   private clientVersionString: string = '';
@@ -34,37 +34,37 @@ export default new class Master {
 
   private async send(url: string, payload: Uint8Array): Promise<any> {
     return await fetch(url, {
-      method: "POST",
+      method: 'POST',
       headers: {
-				"Accept": "text/plain, */*, q=0.01",
-				"Content-Type": `application/octet-stream`,
-				"x-support-proto-version": String(this.supportProtocolVersion),
-				"x-client-version": String(this.clientVersionInt),
+        Accept: 'text/plain, */*, q=0.01',
+        'Content-Type': `application/octet-stream`,
+        'x-support-proto-version': String(this.supportProtocolVersion),
+        'x-client-version': String(this.clientVersionInt),
       },
-      body: payload
+      body: payload,
     }).then((res: any) => res.json());
   }
 
   private async fetch(url: string): Promise<any> {
     return fetch(url, {
-      method: "GET",
+      method: 'GET',
       headers: {
         'Cache-Control': 'no-cache',
-      }
-    })
+      },
+    });
   }
 
   private async xhr(url: string): Promise<any> {
     return new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
-    
-      xhr.open("GET", url, true);
 
-      xhr.onreadystatechange = ()  => {
+      xhr.open('GET', url, true);
+
+      xhr.onreadystatechange = () => {
         if (xhr.readyState == XMLHttpRequest.DONE && xhr.status == 200) {
-          resolve(xhr.responseText);   
+          resolve(xhr.responseText);
         }
-      }
+      };
 
       xhr.send();
     });
@@ -75,22 +75,22 @@ export default new class Master {
     const region = this.regions.getCurrent();
     const arr = new Array(10, 4 + region.length, 10, region.length);
 
-		arr[4 + region.length] = 18;
-		arr[5 + region.length] = 0;
-		arr[6 + region.length] = 26;
-		arr[7 + region.length] = 8;
-		arr[8 + region.length] = 10;
+    arr[4 + region.length] = 18;
+    arr[5 + region.length] = 0;
+    arr[6 + region.length] = 26;
+    arr[7 + region.length] = 8;
+    arr[8 + region.length] = 10;
     arr[9 + region.length] = token.length;
-    
-		for (let i = 0; i < region.length; i++) { 
-      arr[4 + i] = region.charCodeAt(i); 
+
+    for (let i = 0; i < region.length; i++) {
+      arr[4 + i] = region.charCodeAt(i);
     }
 
-		for (let i = 0; i < token.length; i++) { 
-      arr[10 + region.length + i] = token.charCodeAt(i); 
+    for (let i = 0; i < token.length; i++) {
+      arr[10 + region.length + i] = token.charCodeAt(i);
     }
 
-		return this.send(GET_TOKEN_URL, new Uint8Array(arr));
+    return this.send(GET_TOKEN_URL, new Uint8Array(arr));
   }
 
   private async getRegionsInfo(): Promise<any> {
@@ -138,8 +138,8 @@ export default new class Master {
       protocolVersion: this.protocolVersion,
       clientVersionInt: this.clientVersionInt,
       clientVersionString: this.clientVersionString,
-      serverToken: token
-    }
+      serverToken: token,
+    };
   }
 
   public async connect(token?: string, serverToken?: boolean): Promise<ISocketData> {
@@ -166,7 +166,7 @@ export default new class Master {
     arr[5 + realm.length] = 0;
 
     for (let i = 0; i < realm.length; i++) {
-      arr[4 + i] = realm.charCodeAt(i); 
+      arr[4 + i] = realm.charCodeAt(i);
     }
 
     const { FIND_SERVER_URL } = this.envConfig;
@@ -184,9 +184,9 @@ export default new class Master {
       data = await this.getTokenIp(token);
     }
 
-    return this.assembleSocketData({ 
-      ...data, 
-      token: data.token ? data.token : token 
+    return this.assembleSocketData({
+      ...data,
+      token: data.token ? data.token : token,
     });
   }
 
@@ -195,13 +195,13 @@ export default new class Master {
     const mode = this.gameMode.get();
 
     let output = [10, 4 + region.length + mode.length, 10];
-        
-    const addCharCode = function(data: string) {
+
+    const addCharCode = function (data: string) {
       output.push(data.length);
       for (let i = 0; i < data.length; i++) {
         output.push(data.charCodeAt(i));
       }
-    }
+    };
 
     addCharCode(region);
     output.push(18);
@@ -211,47 +211,51 @@ export default new class Master {
   }
 
   private async setClientAndsupportProtocolVersion(): Promise<any> {
-    return this.fetch(this.MC_CORE).then((data: any) => data.text()).then((data) => {
-      this.clientVersionString = data.match(/versionString="(\d+\.\d+\.\d+)"/)[1]; // 3.10.9
+    return this.fetch(this.MC_CORE)
+      .then((data: any) => data.text())
+      .then((data) => {
+        this.clientVersionString = data.match(/versionString="(\d+\.\d+\.\d+)"/)[1]; // 3.10.9
 
-      this.clientVersionInt = 
-        10000 
-        * parseInt(this.clientVersionString.split(".")[0]) 
-        + 100 
-        * parseInt(this.clientVersionString.split(".")[1]) 
-        + parseInt(this.clientVersionString.split(".")[2]);
+        this.clientVersionInt =
+          10000 * parseInt(this.clientVersionString.split('.')[0]) +
+          100 * parseInt(this.clientVersionString.split('.')[1]) +
+          parseInt(this.clientVersionString.split('.')[2]);
 
-      this.supportProtocolVersion = data.match(/x-support-proto-version","(\d+\.\d+\.\d+)"/)[1]; // 15.0.3 
-    });
+        this.supportProtocolVersion = data.match(/x-support-proto-version","(\d+\.\d+\.\d+)"/)[1]; // 15.0.3
+      });
   }
 
   public async setProtocolVersion(): Promise<any> {
-    return this.fetch(this.AGAR_CORE).then((data: any) => data.text()).then((data) => {
-      this.protocolVersion = Number(data.match(/\w\[\w\+\d+>>\d\]=\w;\w+\(\w,(\d+)\);/)[1]); // 22
-    });
+    return this.fetch(this.AGAR_CORE)
+      .then((data: any) => data.text())
+      .then((data) => {
+        this.protocolVersion = Number(data.match(/\w\[\w\+\d+>>\d\]=\w;\w+\(\w,(\d+)\);/)[1]); // 22
+      });
   }
 
   private assembleSocketData(data: IResponseSocketData): ISocketData {
-    const address = data.token ? `wss://${data.endpoints.https}?party_id=${data.token}` : `wss://${data.endpoints.https}`;
+    const address = data.token
+      ? `wss://${data.endpoints.https}?party_id=${data.token}`
+      : `wss://${data.endpoints.https}`;
     const serverToken = data.endpoints.https.split('-')[2].split('.')[0]; // 'live-arena-1jkvvq9.agar.io:443' -> 1jkvvq9
-  
+
     return {
       address,
       token: data.token,
-      serverToken: serverToken, 
+      serverToken: serverToken,
       https: data.endpoints.https,
       protocolVersion: this.protocolVersion,
       clientVersionInt: this.clientVersionInt,
       clientVersionString: this.clientVersionString,
-    }
+    };
   }
-}
+})();
 
 interface IResponseSocketData {
-  token?: string,
-  status: string,
+  token?: string;
+  status: string;
   endpoints: {
-    https: string,
-    http: string
-  },
+    https: string;
+    http: string;
+  };
 }

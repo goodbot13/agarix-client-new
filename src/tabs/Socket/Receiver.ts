@@ -1,5 +1,5 @@
 import { createView, shiftKey, generateClientKey } from '../../utils/helpers';
-import Reader from '../../utils/Reader'
+import Reader from '../../utils/Reader';
 import { Location, RGB, CellType } from '../../objects/types';
 import Socket, { IMapOffsets, IViewport } from './Socket';
 import Logger from '../../utils/Logger';
@@ -9,17 +9,17 @@ import Captcha from '../Captcha';
 import PlayerState from '../../states/PlayerState';
 
 export interface ILeaderboardPlayer {
-  position: number,
-  nick: string,
-  accountId: number,
-  isMe: boolean
+  position: number;
+  nick: string;
+  accountId: number;
+  isMe: boolean;
 }
 
-export interface IGhostCell { 
-  playerX: number, 
-  playerY: number, 
-  totalMass: number, 
-  size: number
+export interface IGhostCell {
+  playerX: number;
+  playerY: number;
+  totalMass: number;
+  size: number;
 }
 
 export default class Receiver {
@@ -64,7 +64,7 @@ export default class Receiver {
     const y = this.reader.getFloat32();
     const scale = this.reader.getFloat32();
 
-    return { x, y, scale }
+    return { x, y, scale };
   }
 
   public shiftKey() {
@@ -74,7 +74,7 @@ export default class Receiver {
   public handleAddOwnCell() {
     if (!this.socket.playerSpawned) {
       this.socket.playerSpawned = true;
-      
+
       if (typeof this.socket.onPlayerSpawn === 'function') {
         this.socket.onPlayerSpawn();
       }
@@ -91,30 +91,30 @@ export default class Receiver {
       position++;
 
       const flags = this.reader.getUint8();
-			let accountId: number = null;
-			let nick: string = "An unnamed cell";
-			let isMe: boolean = false;
+      let accountId: number = null;
+      let nick: string = 'An unnamed cell';
+      let isMe: boolean = false;
       let isFriend: boolean = false;
-      
+
       if (1 & flags) {
         position = this.reader.getUint16();
       }
 
       if (2 & flags) {
         const tmp = this.reader.getStringUTF8();
-        
+
         if (tmp) {
           nick = tmp;
         }
       }
 
       if (4 & flags) {
-        accountId = this.reader.getUint32()
+        accountId = this.reader.getUint32();
       }
 
-			if (8 & flags) {
+      if (8 & flags) {
         isMe = true;
-        
+
         if (this.socket.tabType === 'FIRST_TAB') {
           nick = GameSettings.all.profiles.leftProfileNick;
         } else if (this.socket.tabType === 'SECOND_TAB') {
@@ -145,7 +145,7 @@ export default class Receiver {
       this.reader.shiftOffset(1);
 
       ghostCells.push({ playerX, playerY, totalMass, size });
-    } 
+    }
 
     return ghostCells;
   }
@@ -167,7 +167,10 @@ export default class Receiver {
   public generateKeys() {
     this.socket.protocolKey = this.reader.getUint32();
     this.socket.specialKey = this.socket.protocolKey ^ this.socket.socketData.clientVersionInt;
-    this.socket.clientKey = generateClientKey(this.socket.socketData.address, new Uint8Array(this.reader.view.buffer, 5));
+    this.socket.clientKey = generateClientKey(
+      this.socket.socketData.address,
+      new Uint8Array(this.reader.view.buffer, 5),
+    );
   }
 
   public handleServerTime() {
@@ -180,15 +183,16 @@ export default class Receiver {
     const opcode = this.reader.getUint8();
 
     switch (opcode) {
-      case 16: 
+      case 16:
         this.onWorldUpdate();
         break;
 
-      case 64: 
+      case 64:
         this.socket.setMapOffset(this.getMapOffset());
         break;
 
-      default: this.logger.error('Unknown decompress opcode');
+      default:
+        this.logger.error('Unknown decompress opcode');
     }
   }
 
@@ -200,7 +204,7 @@ export default class Receiver {
     const eatRecordsLen = this.reader.getUint16();
     for (let i = 0; i < eatRecordsLen; i++) {
       const eaterId = this.reader.getUint32();
-      const victimId = this.reader.getUint32(); 
+      const victimId = this.reader.getUint32();
 
       this.socket.world.removeEaten(victimId);
     }
@@ -208,7 +212,7 @@ export default class Receiver {
     let cellUpdate = false;
     let id: number;
 
-    while ((id = this.reader.getUint32()) !== 0) { 
+    while ((id = this.reader.getUint32()) !== 0) {
       let cellSkin: string;
       let name: string;
       let isVirus: number;
@@ -257,7 +261,7 @@ export default class Receiver {
         accountId = this.reader.getUint32();
       }
 
-      // for FIRST_TAB shifts === 0 
+      // for FIRST_TAB shifts === 0
       // only affects SECOND_TAB || TOP_ONE_TAB || SPEC_TABS
       x += this.socket.shiftOffsets.x * this.socket.offsetsPositionMultiplier.x;
       y += this.socket.shiftOffsets.y * this.socket.offsetsPositionMultiplier.y;
@@ -275,7 +279,7 @@ export default class Receiver {
       }
 
       this.socket.world.add(id, location, color, name, type, this.socket.tabType, cellSkin);
-    } 
+    }
 
     const removeLen = this.reader.getUint16();
     for (let i = 0; i < removeLen; i++) {

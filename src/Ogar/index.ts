@@ -1,6 +1,6 @@
-import Socket from "./Socket";
+import Socket from './Socket';
 
-export default new class Ogar {
+export default new (class Ogar {
   public firstTab: Socket;
   public secondTab: Socket;
   public connected = false;
@@ -16,4 +16,4 @@ export default new class Ogar {
     this.firstTab.isConnected() && this.firstTab.join(serverToken, partyToken);
     this.secondTab.isConnected() && this.secondTab.join(serverToken, partyToken);
   }
-}
+})();

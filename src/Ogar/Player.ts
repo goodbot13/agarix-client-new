@@ -1,11 +1,11 @@
 interface Position {
-  x: number, 
-  y: number
+  x: number;
+  y: number;
 }
 
 interface Color {
-  cell: string,
-  custom: string
+  cell: string;
+  custom: string;
 }
 
 export default class Player {

@@ -1,16 +1,16 @@
-import Globals from "../Globals";
-import GameSettings from "../Settings/Settings";
-import UICommunicationService from "../communication/FrontAPI";
-import Controller from "./Contollers/TabsController";
-import Emitter from "./Socket/Emitter";
-import PlayerState from "../states/PlayerState";
-import Ogar from "../Ogar";
-import SettingsState from "../states/SettingsState";
+import Globals from '../Globals';
+import GameSettings from '../Settings/Settings';
+import UICommunicationService from '../communication/FrontAPI';
+import Controller from './Contollers/TabsController';
+import Emitter from './Socket/Emitter';
+import PlayerState from '../states/PlayerState';
+import Ogar from '../Ogar';
+import SettingsState from '../states/SettingsState';
 
 class Hotkeys implements IGameAPIHotkeys {
   private macroFeedInterval: any;
   private controller: Controller;
-  
+
   constructor(controller: Controller) {
     this.controller = controller;
     (window as any).GameAPI.hotkeys = this;
@@ -43,7 +43,7 @@ class Hotkeys implements IGameAPIHotkeys {
         firstTabSocket.emitter.sendFeed();
       } else {
         secondTabSocket.emitter.sendFeed();
-      } 
+      }
 
       this.macroFeedInterval = setInterval(() => {
         if (currentFocusedTab === 'FIRST_TAB') {
@@ -129,9 +129,7 @@ class Hotkeys implements IGameAPIHotkeys {
     }
   }
 
-  public toggleCellHelpers(): void {
-    
-  }
+  public toggleCellHelpers(): void {}
 
   public toggleCellSkins(): void {
     SettingsState.allowSkins = !SettingsState.allowSkins;
@@ -152,7 +150,6 @@ class Hotkeys implements IGameAPIHotkeys {
     }
 
     if (PlayerState.first.playing && PlayerState.second.playing) {
-
       if (this.controller.currentFocusedTab === 'FIRST_TAB') {
         this.controller.setSecondTabActive();
 
@@ -173,20 +170,22 @@ class Hotkeys implements IGameAPIHotkeys {
     }
 
     if (PlayerState.first.playing) {
-
       if (!PlayerState.second.spawning) {
         PlayerState.second.spawning = true;
         UICommunicationService.sendChatGameMessage('Attempting to spawn second tab.');
-      
-        this.controller.spawnSecondTab().then(() => {
-          this.controller.setSecondTabActive();
-          PlayerState.second.spawning = false;
-          PlayerState.second.shouldBeReconnected = false;
-        }).catch(() => {
-          UICommunicationService.sendChatGameMessage('Second tab spawn failed.');
-          PlayerState.second.spawning = false;
-          PlayerState.second.shouldBeReconnected = false;
-        });
+
+        this.controller
+          .spawnSecondTab()
+          .then(() => {
+            this.controller.setSecondTabActive();
+            PlayerState.second.spawning = false;
+            PlayerState.second.shouldBeReconnected = false;
+          })
+          .catch(() => {
+            UICommunicationService.sendChatGameMessage('Second tab spawn failed.');
+            PlayerState.second.spawning = false;
+            PlayerState.second.shouldBeReconnected = false;
+          });
       } else {
         if (PlayerState.second.shouldBeReconnected) {
           UICommunicationService.sendChatGameMessage('Reconnecting second tab.');
@@ -203,28 +202,31 @@ class Hotkeys implements IGameAPIHotkeys {
             });
           });
         } else {
-          UICommunicationService.sendChatGameMessage('Second tab is already attempting to spawn. Press again to reconnect.');
+          UICommunicationService.sendChatGameMessage(
+            'Second tab is already attempting to spawn. Press again to reconnect.',
+          );
           PlayerState.second.shouldBeReconnected = true;
         }
       }
-
-    } 
+    }
 
     if (PlayerState.second.playing) {
-
       if (!PlayerState.first.spawning) {
         PlayerState.first.spawning = true;
         UICommunicationService.sendChatGameMessage('Attempting to spawn first tab.');
-      
-        this.controller.spawnFirstTab().then(() => {
-          this.controller.setFirstTabActive();
-          PlayerState.first.spawning = false;
-          PlayerState.first.shouldBeReconnected = false;
-        }).catch(() => {
-          UICommunicationService.sendChatGameMessage('First tab spawn failed.');
-          PlayerState.first.spawning = false;
-          PlayerState.first.shouldBeReconnected = false;
-        });
+
+        this.controller
+          .spawnFirstTab()
+          .then(() => {
+            this.controller.setFirstTabActive();
+            PlayerState.first.spawning = false;
+            PlayerState.first.shouldBeReconnected = false;
+          })
+          .catch(() => {
+            UICommunicationService.sendChatGameMessage('First tab spawn failed.');
+            PlayerState.first.spawning = false;
+            PlayerState.first.shouldBeReconnected = false;
+          });
       } else {
         if (PlayerState.first.shouldBeReconnected) {
           UICommunicationService.sendChatGameMessage('Reconnecting first tab.');
@@ -241,10 +243,11 @@ class Hotkeys implements IGameAPIHotkeys {
             });
           });
         } else {
-          UICommunicationService.sendChatGameMessage('First tab is already attempting to spawn. Press again to reconnect.');
+          UICommunicationService.sendChatGameMessage(
+            'First tab is already attempting to spawn. Press again to reconnect.',
+          );
           PlayerState.first.shouldBeReconnected = true;
         }
-        
       }
 
       return;
@@ -255,7 +258,7 @@ class Hotkeys implements IGameAPIHotkeys {
     SettingsState.fullMapViewRender = !SettingsState.fullMapViewRender;
   }
 
-  public sendCommand(text: string): void { 
+  public sendCommand(text: string): void {
     Ogar.firstTab.sendChatCommander(text);
   }
 }
@@ -263,20 +266,20 @@ class Hotkeys implements IGameAPIHotkeys {
 export default Hotkeys;
 
 interface IGameAPIHotkeys {
-  sendCommand(text: string): void,
-  toggleFullmapViewRender(): void,
-  switchTabs(): void,
-  toggleCellRings(): void,
-  toggleMyCellStats(): void,
-  toggleCellSkins(): void,
-  toggleCellHelpers(): void,
-  pauseCell(): void,
-  quickRespawn(): Promise<any>,
-  split16(): void,
-  tripleSplit(): void,
-  doubleSplit(): void,
-  split(): void,
-  stopFeed(): void,
-  macroFeed(): void,
-  feed(): void,
+  sendCommand(text: string): void;
+  toggleFullmapViewRender(): void;
+  switchTabs(): void;
+  toggleCellRings(): void;
+  toggleMyCellStats(): void;
+  toggleCellSkins(): void;
+  toggleCellHelpers(): void;
+  pauseCell(): void;
+  quickRespawn(): Promise<any>;
+  split16(): void;
+  tripleSplit(): void;
+  doubleSplit(): void;
+  split(): void;
+  stopFeed(): void;
+  macroFeed(): void;
+  feed(): void;
 }

@@ -13,13 +13,13 @@ const generateCell = () => {
   ctx.fill();
 
   utils.trimCanvas(canvas);
-  
+
   const texture = Texture.from(canvas);
 
   texture.baseTexture.mipmap = MIPMAP_MODES.POW2;
   texture.baseTexture.scaleMode = SCALE_MODES.LINEAR;
 
   return texture;
-}
+};
 
 export default generateCell;

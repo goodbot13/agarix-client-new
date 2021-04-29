@@ -17,15 +17,16 @@ export default class EnvCfg {
   public REGIONS_INFO_URL: string;
   public LATEST_ID_URL: string;
   public SKINS_URL: string;
- 
+
   private async receiveConfig(): Promise<string> {
-		return fetch(this.ENV_URL, {
-      method: "GET",
+    return fetch(this.ENV_URL, {
+      method: 'GET',
       headers: {
-        'Cache-Control': 'no-cache'
-      }
-    }).then((response) => response.text())
-			.then((text) => text.match(new RegExp(/EnvConfig\s+=\s+{([\s\S]+?)}/g))[0]);
+        'Cache-Control': 'no-cache',
+      },
+    })
+      .then((response) => response.text())
+      .then((text) => text.match(new RegExp(/EnvConfig\s+=\s+{([\s\S]+?)}/g))[0]);
   }
 
   private createUrl(request: string): string {
@@ -34,7 +35,7 @@ export default class EnvCfg {
 
   public async init(): Promise<void> {
     const strToEval = await this.receiveConfig();
-    
+
     eval('window.' + strToEval);
 
     this.MASTER_URL = EnvConfig.master_url;
@@ -51,7 +52,7 @@ export default class EnvCfg {
     this.FIND_SERVER_URL = this.createUrl('findServer');
 
     this.REGIONS_INFO_URL = this.MASTER_URL + '/info';
-    this.LATEST_ID_URL = this.MASTER_URL + '/getLatestID'; 
+    this.LATEST_ID_URL = this.MASTER_URL + '/getLatestID';
   }
 }
 

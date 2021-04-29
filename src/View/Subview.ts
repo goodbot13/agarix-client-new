@@ -1,8 +1,8 @@
-import Cell from "../objects/Cell/index";
-import { IViewport, IMapOffsets, IMapOffsetsShift } from "../tabs/Socket/Socket";
-import { View } from ".";
-import Virus from "../objects/Virus/Virus";
-import Food from "../objects/Food";
+import Cell from '../objects/Cell/index';
+import { IViewport, IMapOffsets, IMapOffsetsShift } from '../tabs/Socket/Socket';
+import { View } from '.';
+import Virus from '../objects/Virus/Virus';
+import Food from '../objects/Food';
 
 class Subview {
   public playerCells: Map<number, Cell>;
@@ -22,11 +22,11 @@ class Subview {
 
   public setMapOffsets(mapOffsets: IMapOffsets, mapOffsetsShift?: IMapOffsetsShift): void {
     this.mapOffsets = mapOffsets;
-    
+
     if (mapOffsetsShift) {
       this.mapOffsetsShift = mapOffsetsShift;
     }
-  } 
+  }
 
   public calcBounds(): void {
     const cells = [...this.socketCells.values()];
@@ -60,8 +60,8 @@ class Subview {
     const matchY = y + size >= top && y - size <= bottom;
 
     return matchX && matchY;
-	}
-  
+  }
+
   public viewportUpdate(viewport: IViewport): void {
     this.viewport = viewport;
   }
@@ -75,20 +75,20 @@ class Subview {
       minX: this.mapOffsets.minX + this.mapOffsetsShift.x,
       minY: this.mapOffsets.minY + this.mapOffsetsShift.y,
       maxX: this.mapOffsets.maxX + this.mapOffsetsShift.x,
-      maxY: this.mapOffsets.maxY + this.mapOffsetsShift.y
-    }
+      maxY: this.mapOffsets.maxY + this.mapOffsetsShift.y,
+    };
   }
 
   public getShiftedViewport(): IViewport {
     if (this.mapOffsetsShift.x === 0 && this.mapOffsetsShift.y === 0) {
       return this.viewport;
     }
-    
+
     return {
       x: this.viewport.x + this.mapOffsetsShift.x,
       y: this.viewport.y + this.mapOffsetsShift.y,
-      scale: this.viewport.scale
-    }
+      scale: this.viewport.scale,
+    };
   }
 
   calcPlayingStats() {
@@ -106,8 +106,8 @@ class Subview {
         this.viewport.y += (cell.y - this.mapOffsetsShift.y) / this.playerCells.size;
       });
 
-      this.viewport.scale = Math.pow(Math.min(64 / size, 1), 0.4000);
-      this.playerBox.mass = ~~(targetSize / 100); 
+      this.viewport.scale = Math.pow(Math.min(64 / size, 1), 0.4);
+      this.playerBox.mass = ~~(targetSize / 100);
     }
   }
 }

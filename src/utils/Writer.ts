@@ -23,7 +23,7 @@ export default class Writer {
     this.message.writeUInt8(value, this.offset++);
   }
 
-  public writeInt8(value: number): void{
+  public writeInt8(value: number): void {
     this.message.writeInt8(value, this.offset++);
   }
 
@@ -72,20 +72,20 @@ export default class Writer {
 
     this.writeUInt16(0);
   }
-  
-	public writeBytes(bytes: any): void {
-		this.message.push(...bytes);
+
+  public writeBytes(bytes: any): void {
+    this.message.push(...bytes);
   }
-  
-	public writeUint32InLEB128(value: number): void {
-		while (true) {
-			if ((value & 128) === 0) {
-				this.message.push(value);
-				break;
-			} else {
-				this.message.push(value & 127 | 128);
-				value >>>= 7;
-			}
-		}
-	}
+
+  public writeUint32InLEB128(value: number): void {
+    while (true) {
+      if ((value & 128) === 0) {
+        this.message.push(value);
+        break;
+      } else {
+        this.message.push((value & 127) | 128);
+        value >>>= 7;
+      }
+    }
+  }
 }

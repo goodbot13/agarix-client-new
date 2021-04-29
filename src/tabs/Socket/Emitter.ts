@@ -5,7 +5,7 @@ import Captcha from '../Captcha';
 import Socket from './Socket';
 
 export default class Emitter {
-  constructor(private socket: Socket) { }
+  constructor(private socket: Socket) {}
 
   public sendSpectate(): void {
     this.sendAction(1);
@@ -37,42 +37,47 @@ export default class Emitter {
 
   public sendSpawn(nick: string, token?: string): void {
     const ue = unescape(encodeURIComponent(nick));
-		const fe = ue.length;
-		let size = 2 + fe;
-		if (token) {
-			size += 10 + token.length;
-		}
-		const he = new DataView(new ArrayBuffer(size));
-		let offset = 0;
-		he.setUint8(offset++, 0);
-
-		for (let ke = 0; ke < fe; ke++) { he.setUint8(offset++, ue.charCodeAt(ke)); }
-		he.setUint8(offset++, 0);
-
-		if (token) {
-			for (let ke = 0; ke < token.length; ke++) { he.setUint8(offset++, token.charCodeAt(ke)); }
-			he.setUint8(offset++, 0);
+    const fe = ue.length;
+    let size = 2 + fe;
+    if (token) {
+      size += 10 + token.length;
     }
-    
+    const he = new DataView(new ArrayBuffer(size));
+    let offset = 0;
+    he.setUint8(offset++, 0);
+
+    for (let ke = 0; ke < fe; ke++) {
+      he.setUint8(offset++, ue.charCodeAt(ke));
+    }
+    he.setUint8(offset++, 0);
+
+    if (token) {
+      for (let ke = 0; ke < token.length; ke++) {
+        he.setUint8(offset++, token.charCodeAt(ke));
+      }
+      he.setUint8(offset++, 0);
+    }
+
     this.socket.sendMessage(he);
   }
 
   public handleSpawnV3(nick: string): void {
     Captcha.handleV3().then((token: string) => this.sendSpawn(nick, token));
   }
-  
-  public sendMousePosition(dirty?: boolean, x?: number, y?: number): void { 
-    const focused = (this.socket.tabType === 'FIRST_TAB' && PlayerState.first.focused) ||
-                    (this.socket.tabType === 'SECOND_TAB' && PlayerState.second.focused);
+
+  public sendMousePosition(dirty?: boolean, x?: number, y?: number): void {
+    const focused =
+      (this.socket.tabType === 'FIRST_TAB' && PlayerState.first.focused) ||
+      (this.socket.tabType === 'SECOND_TAB' && PlayerState.second.focused);
 
     if (!dirty && !focused && this.socket.tabType !== 'SPEC_TABS') {
       return;
-    } 
+    }
 
     let posX: number, posY: number;
 
     switch (this.socket.tabType) {
-      case 'SPEC_TABS': 
+      case 'SPEC_TABS':
         posX = this.socket.mapOffsets.minX + this.socket.spectateAtX;
         posY = this.socket.mapOffsets.minY + this.socket.spectateAtY;
         break;
@@ -87,15 +92,14 @@ export default class Emitter {
         posY = y ? y : this.socket.world.view.secondTab.cursor.y;
         break;
     }
-  
-    
+
     const view = createView(13);
     view.setUint8(0, 16);
     view.setInt32(1, posX, true);
     view.setInt32(5, posY, true);
     view.setUint32(9, this.socket.protocolKey, true);
 
-    this.socket.sendMessage(view); 
+    this.socket.sendMessage(view);
   }
 
   public sendLogin(token: string, type: 2 | 4): void {
@@ -103,18 +107,31 @@ export default class Emitter {
     const { clientVersionString } = this.socket.socketData;
 
     writer.setToArray();
-		writer.writeBytes([102, 8, 1, 18]);
-		writer.writeUint32InLEB128(token.length + clientVersionString.length + 23);
-		writer.writeBytes([8, 10, 82]);
-		writer.writeUint32InLEB128(token.length + clientVersionString.length + 18);
-    writer.writeBytes([8, type, 18, clientVersionString.length + 8, 8, 5, 18,
-      clientVersionString.length, ...Buffer.from(clientVersionString),
-      24, 0, 32, 0, 26]);
-		writer.writeUint32InLEB128(token.length + 3);
-		writer.writeBytes([10]);
-		writer.writeUint32InLEB128(token.length);
+    writer.writeBytes([102, 8, 1, 18]);
+    writer.writeUint32InLEB128(token.length + clientVersionString.length + 23);
+    writer.writeBytes([8, 10, 82]);
+    writer.writeUint32InLEB128(token.length + clientVersionString.length + 18);
+    writer.writeBytes([
+      8,
+      type,
+      18,
+      clientVersionString.length + 8,
+      8,
+      5,
+      18,
+      clientVersionString.length,
+      ...Buffer.from(clientVersionString),
+      24,
+      0,
+      32,
+      0,
+      26,
+    ]);
+    writer.writeUint32InLEB128(token.length + 3);
+    writer.writeBytes([10]);
+    writer.writeUint32InLEB128(token.length);
     writer.writeBytes(Buffer.from(token));
-    
-		this.socket.sendMessage(new DataView(new Uint8Array(Buffer.from(writer.message)).buffer));
-	}
+
+    this.socket.sendMessage(new DataView(new Uint8Array(Buffer.from(writer.message)).buffer));
+  }
 }

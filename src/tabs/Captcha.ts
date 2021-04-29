@@ -1,8 +1,8 @@
-import UICommunicationService from "../communication/FrontAPI";
-import Socket from "./Socket/Socket";
+import UICommunicationService from '../communication/FrontAPI';
+import Socket from './Socket/Socket';
 import { createView } from '../utils/helpers';
 
-export default new class Captcha {
+export default new (class Captcha {
   private readonly V2_KEY: string = '6LfjUBcUAAAAAF6y2yIZHgHIOO5Y3cU5osS2gbMl';
   private readonly V3_KEY: string = '6LcEt74UAAAAAIc_T6dWpsRufGCvvau5Fd7_G1tY';
   private v2_id: number = null;
@@ -43,9 +43,8 @@ export default new class Captcha {
     } else {
       this.v2_id = window.grecaptcha.render('ReCaptchaV2', {
         sitekey: this.V2_KEY,
-        theme: "dark",
+        theme: 'dark',
         callback: (token: string) => {
-
           let view = createView(2 + token.length);
 
           view.setUint8(0, 86);
@@ -59,44 +58,42 @@ export default new class Captcha {
 
           this.setVidgetVisibility(false, document.querySelector('#ReCaptchaV2'));
           window.grecaptcha.reset(this.v2_id);
-
-        }
+        },
       });
     }
   }
 
   public handleV3(): Promise<string> {
     /* const showVidgetTimeout = setTimeout(() => this.setVidgetVisibility(true, document.querySelector('#ReCaptchaV3')), 2200); */
-    
+
     if (this.v3_id !== null) {
       window.grecaptcha.reset(this.v3_id);
     } else {
       this.v3_id = window.grecaptcha.render('ReCaptchaV3', {
         sitekey: this.V3_KEY,
         badge: 'inline',
-        size: 'invisible'
+        size: 'invisible',
       });
     }
 
     return new Promise((resolve) => {
-      window.grecaptcha.execute(this.v3_id, { action: 'play' })
-        .then((token: string) => { 
-          resolve(token);
-          /* clearTimeout(showVidgetTimeout); */
-          this.setVidgetVisibility(false, document.querySelector('#ReCaptchaV3'));
-        });
+      window.grecaptcha.execute(this.v3_id, { action: 'play' }).then((token: string) => {
+        resolve(token);
+        /* clearTimeout(showVidgetTimeout); */
+        this.setVidgetVisibility(false, document.querySelector('#ReCaptchaV3'));
+      });
     });
   }
-}
+})();
 
 interface IGrecaptcha {
-  reset(id?: number): void,
-  execute(key: any, props: Object): Promise<string>,
+  reset(id?: number): void;
+  execute(key: any, props: Object): Promise<string>;
   render(DOMElementId: string | number, params: Object): number;
 }
 
 declare global {
   interface Window {
-    grecaptcha: IGrecaptcha
+    grecaptcha: IGrecaptcha;
   }
 }

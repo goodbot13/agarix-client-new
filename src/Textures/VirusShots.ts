@@ -14,13 +14,13 @@ const generateVirusShots = () => {
   ctx.arc(size / 2, size / 2, size / 2 - shadowSize, 0, Math.PI * 2);
   ctx.fill();
   ctx.fill();
-  
+
   const texture = Texture.from(canvas);
 
   texture.baseTexture.mipmap = MIPMAP_MODES.POW2;
   texture.baseTexture.scaleMode = SCALE_MODES.LINEAR;
 
   return texture;
-}
+};
 
 export default generateVirusShots;

@@ -1,7 +1,7 @@
-import Cell from "../objects/Cell/index";
-import Virus from "../objects/Virus/Virus";
-import { Subtype } from "../objects/types";
-import Food from "../objects/Food";
+import Cell from '../objects/Cell/index';
+import Virus from '../objects/Virus/Virus';
+import { Subtype } from '../objects/types';
+import Food from '../objects/Food';
 
 class SingleSocketCells {
   public data: Map<number, Cell | Virus | Food>;
@@ -39,7 +39,7 @@ export default class SocketCells {
       case 'FIRST_TAB':
         this.firstTab.add(id, cell);
         break;
-      
+
       case 'SECOND_TAB':
         this.secondTab.add(id, cell);
         break;

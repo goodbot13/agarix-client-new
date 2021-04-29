@@ -20,6 +20,6 @@ const generateRemoveEffect = () => {
   texture.baseTexture.scaleMode = SCALE_MODES.LINEAR;
 
   return texture;
-}
+};
 
 export default generateRemoveEffect;

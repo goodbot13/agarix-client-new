@@ -45,7 +45,7 @@ class Stage {
       backgroundColor: getColor(GameSettings.all.settings.theming.map.backgroundTint),
       antialias: GameSettings.all.settings.game.performance.antialiasing,
       powerPreference: 'high-performance',
-      forceCanvas: false
+      forceCanvas: false,
     });
 
     this.stageFilter = new KawaseBlurFilter(0, 8, false);
@@ -57,7 +57,9 @@ class Stage {
   }
 
   public updateRendererBackgroundColor(): void {
-    this.app.renderer.backgroundColor = getColor(GameSettings.all.settings.theming.map.backgroundTint);
+    this.app.renderer.backgroundColor = getColor(
+      GameSettings.all.settings.theming.map.backgroundTint,
+    );
   }
 
   async init() {
@@ -75,28 +77,24 @@ class Stage {
   public async play(): Promise<string> {
     return new Promise(async (resolve: any, reject: any) => {
       if (PlayerState.first.connected) {
-
         const tokens = createTokens(
           this.world.controller.firstTabSocket.socketData.token,
-          this.world.controller.firstTabSocket.socketData.serverToken
+          this.world.controller.firstTabSocket.socketData.serverToken,
         );
 
         if (PlayerState.first.playing || PlayerState.first.spawning) {
-
           this.unblurGameScene(true);
           resolve(tokens);
-
         } else {
-
-          await this.world.controller.spawnFirstTab().then(() => {
-            this.unblurGameScene(true);
-            PlayerState.first.focused = true;
-            resolve(tokens);
-          })
-          .catch(() => reject());
-
+          await this.world.controller
+            .spawnFirstTab()
+            .then(() => {
+              this.unblurGameScene(true);
+              PlayerState.first.focused = true;
+              resolve(tokens);
+            })
+            .catch(() => reject());
         }
-
       } else {
         reject();
       }
@@ -114,15 +112,14 @@ class Stage {
 
     const socketData = await Master.connect(token, serverToken);
 
-    return this.world.controller.init(socketData)
-      .then((mapOffsets) => {
-        this.join(mapOffsets);
-      
-        return createTokens(
-          this.world.controller.firstTabSocket.socketData.token, 
-          this.world.controller.firstTabSocket.socketData.serverToken
-        );
-      });
+    return this.world.controller.init(socketData).then((mapOffsets) => {
+      this.join(mapOffsets);
+
+      return createTokens(
+        this.world.controller.firstTabSocket.socketData.token,
+        this.world.controller.firstTabSocket.socketData.serverToken,
+      );
+    });
   }
 
   public async disconnect(): Promise<boolean> {
@@ -153,7 +150,7 @@ class Stage {
     this.foodVirusCellContainer.addChild(this.world.food, this.world.cells);
     this.mainContainer.addChild(this.world.map, this.foodVirusCellContainer);
 
-    let frameStart = performance.now(); 
+    let frameStart = performance.now();
 
     this.app.ticker.add(() => {
       FrontAPI.setEllapsedFrametime(performance.now() - frameStart);
@@ -169,7 +166,7 @@ class Stage {
       this.mainContainer.scale.set(scale);
       this.world.renderer.renderFrame();
     });
-    
+
     this.blurGameScene();
     this.world.map.setPosition(-7071, -7071);
     this.world.view.mouse.zoomValue = 0.25;
@@ -212,7 +209,7 @@ class Stage {
         const { fpsLockType } = GameSettings.all.settings.game.performance;
         this.app.ticker.maxFPS = fpsLockType !== 'Screen-hz' ? Number(fpsLockType) : 0;
       }
-    }
+    };
 
     this.app.ticker.add(this.blurStage);
   }
@@ -244,7 +241,7 @@ class Stage {
         const { fpsLockType } = GameSettings.all.settings.game.performance;
         this.app.ticker.maxFPS = fpsLockType !== 'Screen-hz' ? Number(fpsLockType) : 0;
       }
-    }
+    };
 
     this.app.ticker.add(this.unblurStage);
   }
@@ -265,7 +262,7 @@ class Stage {
       }
 
       this.foodVirusCellContainer.alpha += 0.033 * PIXI.Ticker.shared.deltaTime;
-    }
+    };
 
     this.app.ticker.add(this.showStageTicker);
   }
@@ -284,7 +281,7 @@ class Stage {
           this.app.ticker.remove(this.hideTicker);
           resolve();
         }
-      }
+      };
 
       this.app.ticker.add(this.hideTicker);
     });

@@ -1,5 +1,5 @@
-import { Sprite, Container, BitmapText, Point } from "pixi.js";
-import TextureGenerator from "../../Textures/TexturesGenerator";
+import { Sprite, Container, BitmapText, Point } from 'pixi.js';
+import TextureGenerator from '../../Textures/TexturesGenerator';
 import * as PIXI from 'pixi.js';
 import GameSettings from '../../Settings/Settings';
 
@@ -27,14 +27,22 @@ export default class VirusShots extends Container {
 
   private getShotsAmount(): string {
     switch (this.virusRadius) {
-      case 100: return '7';
-      case 106: return '6';
-      case 113: return '5';
-      case 119: return '4';
-      case 125: return '3';
-      case 131: return '2';
-      case 136: return '1';
-      case 141: return '0';
+      case 100:
+        return '7';
+      case 106:
+        return '6';
+      case 113:
+        return '5';
+      case 119:
+        return '4';
+      case 125:
+        return '3';
+      case 131:
+        return '2';
+      case 136:
+        return '1';
+      case 141:
+        return '0';
     }
   }
 
@@ -45,7 +53,8 @@ export default class VirusShots extends Container {
     this.shotsCircleSprite.scale.x += newScale;
     this.shotsCircleSprite.scale.y += newScale;
 
-    this.shotsCircleSprite.visible = GameSettings.all.settings.theming.viruses.massType === 'Fill circle';
+    this.shotsCircleSprite.visible =
+      GameSettings.all.settings.theming.viruses.massType === 'Fill circle';
   }
 
   private updateText(): void {
@@ -68,12 +77,14 @@ export default class VirusShots extends Container {
   }
 
   private getAnimationSpeed(): number {
-    return (GameSettings.all.settings.game.gameplay.animationSpeed / 1000) * PIXI.Ticker.shared.deltaTime;
+    return (
+      (GameSettings.all.settings.game.gameplay.animationSpeed / 1000) * PIXI.Ticker.shared.deltaTime
+    );
   }
 
   public update(virusRadius: number): void {
     this.virusRadius = virusRadius;
-  } 
+  }
 
   public animate() {
     this.updateShotsCircleSize();

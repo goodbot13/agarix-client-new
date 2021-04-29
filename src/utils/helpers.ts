@@ -1,20 +1,24 @@
-import { utils } from "pixi.js";
-import { Location, RGB } from "../objects/types";
-import Settings from "../Settings/Settings";
-import { IMapOffsets } from "../tabs/Socket/Socket";
+import { utils } from 'pixi.js';
+import { Location, RGB } from '../objects/types';
+import Settings from '../Settings/Settings';
+import { IMapOffsets } from '../tabs/Socket/Socket';
 
-export const transformMinimapLocation = (location: Location, mapOffsets: IMapOffsets, shift?: boolean): Location => {
+export const transformMinimapLocation = (
+  location: Location,
+  mapOffsets: IMapOffsets,
+  shift?: boolean,
+): Location => {
   const { size } = Settings.all.settings.theming.minimap;
 
   const offsetX = !shift ? mapOffsets.minX : -7071;
   const offsetY = !shift ? mapOffsets.minY : -7071;
 
   return {
-    x: (location.x - offsetX)  / 14142 * size,
-    y: (location.y - offsetY) / 14142 * size,
-    r: location.r / 14142 * size
-  }
-}
+    x: ((location.x - offsetX) / 14142) * size,
+    y: ((location.y - offsetY) / 14142) * size,
+    r: (location.r / 14142) * size,
+  };
+};
 
 export const createTokens = (party: string, server: string): string => {
   if (party) {
@@ -22,7 +26,7 @@ export const createTokens = (party: string, server: string): string => {
   } else {
     return `%${server}`;
   }
-}
+};
 
 export const getColorLighten = (lighten: number, { red, green, blue }: RGB): number => {
   const darkenR = lighten / red;
@@ -34,7 +38,7 @@ export const getColorLighten = (lighten: number, { red, green, blue }: RGB): num
   const b = darkenB > 1 ? 1 : darkenB;
 
   return utils.rgb2hex([r, g, b]);
-}
+};
 
 export const getColor = ({ red, green, blue }: RGB): number => {
   const r = red / 255;
@@ -42,23 +46,30 @@ export const getColor = ({ red, green, blue }: RGB): number => {
   const b = blue / 255;
 
   return utils.rgb2hex([r, g, b]);
-}
+};
 
 const componentToHex = (c: number): string => {
   const hex = c ? c.toString(16) : '';
-  return hex.length == 1 ? "0" + hex : hex;
-}
+  return hex.length == 1 ? '0' + hex : hex;
+};
 
 export const rgbToStringHex = ({ red, green, blue }: RGB): string => {
-  return "#" + componentToHex(red) + componentToHex(green) + componentToHex(blue);
-}
+  return '#' + componentToHex(red) + componentToHex(green) + componentToHex(blue);
+};
 
-export const roundRect = (ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, r: number): void => {
+export const roundRect = (
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  r: number,
+): void => {
   const radius = {
-    tl: r, 
-    tr: r, 
-    br: r, 
-    bl: r
+    tl: r,
+    tr: r,
+    br: r,
+    bl: r,
   };
 
   ctx.beginPath();
@@ -72,7 +83,7 @@ export const roundRect = (ctx: CanvasRenderingContext2D, x: number, y: number, w
   ctx.lineTo(x, y + radius.tl);
   ctx.quadraticCurveTo(x, y, x + radius.tl, y);
   ctx.closePath();
-}
+};
 
 /* eslint-disable */
 export const generateClientKey = (option, _relatedTarget) => {
@@ -91,22 +102,24 @@ export const generateClientKey = (option, _relatedTarget) => {
   data.set(_relatedTarget, constraints.length);
   const view = new DataView(data.buffer);
   let maxTextureAvailableSpace = framesize - 1;
-  const type = (maxTextureAvailableSpace - 4 & -4) + 4 | 0;
+  const type = (((maxTextureAvailableSpace - 4) & -4) + 4) | 0;
   let imulkeyValue = maxTextureAvailableSpace ^ 255;
   let offset = 0;
-  for (; maxTextureAvailableSpace > 3;) {
+  for (; maxTextureAvailableSpace > 3; ) {
     key = Math.imul(view.getInt32(offset, true), suggestedValue) | 0;
-    imulkeyValue = (Math.imul(key >>> 24 ^ key, suggestedValue) | 0) ^ (Math.imul(imulkeyValue, suggestedValue) | 0);
+    imulkeyValue =
+      (Math.imul((key >>> 24) ^ key, suggestedValue) | 0) ^
+      (Math.imul(imulkeyValue, suggestedValue) | 0);
     maxTextureAvailableSpace = maxTextureAvailableSpace - 4;
     offset = offset + 4;
   }
   switch (maxTextureAvailableSpace) {
     case 3:
-      imulkeyValue = data[type + 2] << 16 ^ imulkeyValue;
-      imulkeyValue = data[type + 1] << 8 ^ imulkeyValue;
+      imulkeyValue = (data[type + 2] << 16) ^ imulkeyValue;
+      imulkeyValue = (data[type + 1] << 8) ^ imulkeyValue;
       break;
     case 2:
-      imulkeyValue = data[type + 1] << 8 ^ imulkeyValue;
+      imulkeyValue = (data[type + 1] << 8) ^ imulkeyValue;
       break;
     case 1:
       break;
@@ -123,29 +136,29 @@ export const generateClientKey = (option, _relatedTarget) => {
   imulkeyValue = key >>> 15;
   key = imulkeyValue ^ key;
   return key;
-}
+};
 
 export const shiftKey = (key) => {
   const value = 1540483477;
   key = Math.imul(key, value) | 0;
-  key = (Math.imul(key >>> 24 ^ key, value) | 0) ^ 114296087;
-  key = Math.imul(key >>> 13 ^ key, value) | 0;
-  return key >>> 15 ^ key;
-}
+  key = (Math.imul((key >>> 24) ^ key, value) | 0) ^ 114296087;
+  key = Math.imul((key >>> 13) ^ key, value) | 0;
+  return (key >>> 15) ^ key;
+};
 
 export const shiftMessage = (view, key, write) => {
   if (!write) {
     for (var length = 0; length < view.byteLength; length++) {
-      view.setUint8(length, view.getUint8(length) ^ key >>> length % 4 * 8 & 255);
+      view.setUint8(length, view.getUint8(length) ^ ((key >>> ((length % 4) * 8)) & 255));
     }
   } else {
     for (var length = 0; length < view.length; length++) {
-      view.writeUInt8(view.readUInt8(length) ^ key >>> length % 4 * 8 & 255, length);
+      view.writeUInt8(view.readUInt8(length) ^ ((key >>> ((length % 4) * 8)) & 255), length);
     }
   }
   return view;
-}
+};
 
 export const createView = (value) => {
   return new DataView(new ArrayBuffer(value));
-}
+};

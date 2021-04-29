@@ -3,11 +3,9 @@ import GameSettings from '../../Settings/Settings';
 import World from '../World';
 
 export default class FoodRenderer {
-  
-  constructor(private world: World) { }
+  constructor(private world: World) {}
 
   public render(food: Food): void {
-
     if (GameSettings.all.settings.game.performance.culling) {
       if (this.world.view.shouldObjectBeCulled(food.x, food.y, food.width / 2)) {
         food.culled = true;
@@ -24,14 +22,17 @@ export default class FoodRenderer {
       return;
     }
 
-    const { firstTabEnabled, secondTabEnabled, topOneTabEnabled } = GameSettings.all.settings.theming.food;
+    const {
+      firstTabEnabled,
+      secondTabEnabled,
+      topOneTabEnabled,
+    } = GameSettings.all.settings.theming.food;
     const { firstTab, secondTab, topOneTab } = this.world.view;
     const { x, y, subtype } = food;
     let visible = false;
 
     // always render first tab
     if (subtype === 'FIRST_TAB' && firstTabEnabled) {
-
       // if first tabs food has collision with second tab, instantly animate it
       const secondTabHas = secondTab.hasInViewBounds(x, y) && secondTabEnabled;
       secondTabHas && food.show(true);
@@ -41,7 +42,6 @@ export default class FoodRenderer {
       topOneTabHas && food.show(true);
 
       visible = true;
-
     }
 
     // check second tab for collision with first tab

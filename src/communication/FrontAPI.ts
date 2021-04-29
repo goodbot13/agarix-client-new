@@ -2,7 +2,7 @@ import { IGameServer } from '../Master/Regions';
 import { ILeaderboardPlayer } from '../tabs/Socket/Receiver';
 import { LOADER_TEXT } from '../Versions';
 
-export default new class UICommunicationService {
+export default new (class UICommunicationService {
   sendChatMessage(nick: string, message: string, type: TChatMessageType) {
     window.FrontAPI?.addChatMessage(nick, message, type, Date.now());
   }
@@ -55,37 +55,37 @@ export default new class UICommunicationService {
   setEllapsedFrametime(ms: number) {
     window.FrontAPI?.setEllapsedFrametime(ms);
   }
-}
+})();
 
 declare global {
   interface Window {
     FrontAPI: {
-      setGameLoaderStatus: (version: string) => void,
-      setGameLoaderShown: (shown: boolean) => void,
-      setGameLoaded: (value: boolean) => void,
-      updateStats: (fps: number, loss: number) => void,
-      updateLeaderboard: (leaderboard: Array<ILeaderboardPlayer>) => void,
-      updateTopTeam: (players: Array<ITopTeamPlayer>) => void,
-      setRegions: (regions: Array<IGameServer>) => void,
-      setEllapsedFrametime: (ms: number) => void,
-      setIsPlayerPlaying: (value: boolean) => void,
-      setGoogleLoggedIn: (value: boolean) => void,
-      setFacebookLoggedIn: (value: boolean) => void,
-      addChatMessage: (nick: string, message: string, type: TChatMessageType, key: number) => void
-    }
+      setGameLoaderStatus: (version: string) => void;
+      setGameLoaderShown: (shown: boolean) => void;
+      setGameLoaded: (value: boolean) => void;
+      updateStats: (fps: number, loss: number) => void;
+      updateLeaderboard: (leaderboard: Array<ILeaderboardPlayer>) => void;
+      updateTopTeam: (players: Array<ITopTeamPlayer>) => void;
+      setRegions: (regions: Array<IGameServer>) => void;
+      setEllapsedFrametime: (ms: number) => void;
+      setIsPlayerPlaying: (value: boolean) => void;
+      setGoogleLoggedIn: (value: boolean) => void;
+      setFacebookLoggedIn: (value: boolean) => void;
+      addChatMessage: (nick: string, message: string, type: TChatMessageType, key: number) => void;
+    };
   }
 }
 
 export interface ITopTeamPlayer {
-  mass: number,
-  nick: string,
-  isAlive: boolean
+  mass: number;
+  nick: string;
+  isAlive: boolean;
 }
 
 export type TChatMessageType = 'GAME' | 'PLAYER' | 'COMMAND';
 export type IChatMessage = {
-  nick: string,
-  message: string,
-  type: TChatMessageType,
-  key: number
-}
+  nick: string;
+  message: string;
+  type: TChatMessageType;
+  key: number;
+};

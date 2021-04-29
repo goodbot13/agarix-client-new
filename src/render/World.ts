@@ -13,7 +13,7 @@ import Controller from '../tabs/Contollers/TabsController';
 import View from '../View';
 import Hotkeys from '../tabs/Hotkeys';
 import Stage from '../Stage/Stage';
-import Minimap from '../Minimap/MinimapWEBGL'
+import Minimap from '../Minimap/MinimapWEBGL';
 import GameSettings from '../Settings/Settings';
 import Logger from '../utils/Logger';
 import PlayerState from '../states/PlayerState';
@@ -26,8 +26,8 @@ export default class World {
   public cells: Container;
   public food: Container;
   public map: WorldMap;
-  public indexedCells: Map <number, Cell | Virus>;
-  public indexedFood: Map <number, Food>;
+  public indexedCells: Map<number, Cell | Virus>;
+  public indexedFood: Map<number, Food>;
   public created: boolean;
   public playerCells: PlayerCells;
   public renderer: WorldLoop;
@@ -43,12 +43,12 @@ export default class World {
   constructor(public scene: Stage) {
     this.cells = new Container();
     this.cells.sortableChildren = true;
-    
+
     if (GameSettings.all.settings.game.performance.foodPerformanceMode) {
       this.food = new ParticleContainer(4096);
     } else {
       this.food = new ParticleContainer(4096, {
-        vertices: true
+        vertices: true,
       });
     }
 
@@ -56,7 +56,10 @@ export default class World {
     this.indexedFood = new Map();
     this.playerCells = new PlayerCells();
     this.socketCells = new SocketCells();
-    this.view = new View({ playerCells: this.playerCells, socketCells: this.socketCells }, scene.app.view);
+    this.view = new View(
+      { playerCells: this.playerCells, socketCells: this.socketCells },
+      scene.app.view,
+    );
     this.map = new WorldMap(this);
     this.minimap = new Minimap(this);
     this.controller = new Controller(this);
@@ -65,13 +68,13 @@ export default class World {
     this.scene.hotkeys = this.hotkeys;
 
     this.renderer = new WorldLoop(this);
-    
+
     // load all available skins
     for (let i = 0; i < 10; i++) {
       SkinsLoader.load(GameSettings.all.profiles.leftProfiles[i].skinUrl);
       SkinsLoader.load(GameSettings.all.profiles.rightProfiles[i].skinUrl);
     }
-    
+
     this.logger = new Logger('World');
   }
 
@@ -86,7 +89,15 @@ export default class World {
     }
   }
 
-  public add(id: number, location: Location, color: RGB, name: string, type: CellType, subtype: Subtype, skin?: string): void {
+  public add(
+    id: number,
+    location: Location,
+    color: RGB,
+    name: string,
+    type: CellType,
+    subtype: Subtype,
+    skin?: string,
+  ): void {
     if (type === 'FOOD') {
       this.addFood(id, location, type, subtype);
       return;
@@ -96,9 +107,8 @@ export default class World {
       let cell: Cell;
 
       if (!this.indexedCells.has(id)) {
-
         name = name ? name.trim() : '';
-        
+
         if (Master.skins.skinsByNameHas(name)) {
           const url = Master.skins.get(name).url;
 
@@ -117,7 +127,6 @@ export default class World {
         this.minimap.addRealPlayerCell(id, location, color, name, type, subtype, skin);
 
         this.renderer.checkIsTeam(cell);
-
       } else {
         cell = this.indexedCells.get(id) as Cell;
         this.update(id, location, type);
@@ -126,7 +135,11 @@ export default class World {
       if (subtype === 'FIRST_TAB' && this.playerCells.firstTabIds.has(id)) {
         this.playerCells.addFirstTabCell(id, cell);
 
-        if (GameSettings.all.settings.game.multibox.enabled && PlayerState.second.playing && this.controller.currentFocusedTab === 'FIRST_TAB') {
+        if (
+          GameSettings.all.settings.game.multibox.enabled &&
+          PlayerState.second.playing &&
+          this.controller.currentFocusedTab === 'FIRST_TAB'
+        ) {
           cell.setIsFoucsedTab(true);
         }
       } else if (subtype === 'SECOND_TAB' && this.playerCells.secondTabIds.has(id)) {
@@ -177,21 +190,24 @@ export default class World {
   }
 
   private addRemoveAnimation(object: Cell | Virus): void {
+    const matchSize =
+      object.type === 'CELL'
+        ? (object as Cell).cell.width > 150
+        : object.type === 'VIRUS'
+        ? (object as Virus).virusSprite.width
+        : false;
 
-    const matchSize = object.type === 'CELL' 
-      ? (object as Cell).cell.width > 150 
-      : object.type === 'VIRUS' ? (object as Virus).virusSprite.width : false;
-
-    const removeAnimation = GameSettings.all.settings.game.effects.cellRemoveAnimation !== 'Disabled';
+    const removeAnimation =
+      GameSettings.all.settings.game.effects.cellRemoveAnimation !== 'Disabled';
 
     if (removeAnimation && matchSize) {
       const location: Location = {
         x: object.x,
         y: object.y,
-        r: object.width
-      }
+        r: object.width,
+      };
 
-      let tint = 0xFFFFFF;
+      let tint = 0xffffff;
 
       if (object.type == 'CELL') {
         tint = (object as Cell).cell.tint;
@@ -246,7 +262,7 @@ export default class World {
     this.remove(id, 'REMOVE_EATEN_CELL');
   }
 
-  public removeOutOfView(id: number): void {  
+  public removeOutOfView(id: number): void {
     this.remove(id, 'REMOVE_CELL_OUT_OF_VIEW');
   }
 
@@ -302,7 +318,7 @@ export default class World {
 
     if (cellsEntries || foodEntries) {
       this.logger.info(
-        `[${subtype}] cleanup due to socket disconnect. Buffer size: [food - ${foodEntries}] [cells - ${cellsEntries}]`
+        `[${subtype}] cleanup due to socket disconnect. Buffer size: [food - ${foodEntries}] [cells - ${cellsEntries}]`,
       );
     }
   }
