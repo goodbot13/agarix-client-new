@@ -123,6 +123,7 @@ export interface IGamePerformanceState {
 
 export interface IGameBotsState {
   enabled: boolean;
+  started: boolean;
   provider: BotsProviderType;
 }
 
