@@ -19,8 +19,6 @@ export default class VirusShots extends Container {
     this.addChild(this.shotsCircleSprite);
 
     this.text = new BitmapText('0', { fontName: 'MassLato', fontSize: 160 }); 
-    
-    //@ts-ignore
     this.text.anchor = new Point(0.5, 0.5);
 
     this.addChild(this.text);
