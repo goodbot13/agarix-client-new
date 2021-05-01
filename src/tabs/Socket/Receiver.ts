@@ -303,4 +303,75 @@ export default class Receiver {
 
     return { minX, minY, maxX, maxY };
   }
+
+  public handleDisconnectMessage(messageParam: number): void {
+    switch (messageParam) {
+      case 1:
+        this.logger.error(this.socket.tabType + ": User disconnected. Incompatible client");
+        break;
+
+      case 2:
+        this.logger.error(this.socket.tabType + ": User disconnected. Packet not authorized");
+        break;
+
+      case 3:
+        this.logger.error(this.socket.tabType + ": User disconnected. Login elsewhere");
+        break;
+
+      case 4:
+        this.logger.error(this.socket.tabType + ": User disconnected. Server offline");
+        break;
+
+      case 5:
+        this.logger.error(this.socket.tabType + ": User disconnected. User banned");
+        break;
+
+      case 6:
+        this.logger.error(this.socket.tabType + ": User disconnected. Ping error");
+        break;
+
+      case 7:
+        this.logger.error(this.socket.tabType + ": User disconnected. Unknown game type");
+        break;
+
+      case 8:
+        this.logger.error(this.socket.tabType + ": User disconnected. Too many operations");
+        break;
+
+      case 9:
+        this.logger.error(this.socket.tabType + ": User disconnected. Unreachable realm");
+        break;
+
+      case 10:
+        this.logger.error(this.socket.tabType + ": User disconnected. User deleted");
+        break;
+
+      case 11:
+        this.logger.error(this.socket.tabType + ": User disconnected. Not authorized by realm");
+        break;
+
+      case 12:
+        this.logger.error(this.socket.tabType + ": User disconnected. Bad request");
+        break;
+
+      case 13:
+        this.logger.error(this.socket.tabType + ": User disconnected. Reset by peer");
+        break;
+
+      case 14:
+        this.logger.error(this.socket.tabType + ": User disconnected. Invalid token");
+        break;
+
+      case 15:
+        this.logger.error(this.socket.tabType + ": User disconnected. Expired token");
+        break;
+
+      case 16:
+        this.logger.error(this.socket.tabType + ": User disconnected. State transfer error");
+        break;
+
+      default:
+        this.logger.error(this.socket.tabType + ": User disconnected. Unknown error: " + messageParam)
+    }
+  }
 }

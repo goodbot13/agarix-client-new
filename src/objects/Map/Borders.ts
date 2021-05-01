@@ -9,6 +9,7 @@ export default class Borders extends Container implements IMapObject {
   private rgbBorders: Sprite;
   private rgbBordersLine: Sprite;
 
+  // @ts-ignore
   private colorMatrixFilter: filters.ColorMatrixFilter;
   private colorMatrixFilterHue: number = 0;
 

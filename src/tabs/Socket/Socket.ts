@@ -19,7 +19,7 @@ import {
   OUTDATED_CLIENT_ERROR, 
   PING_PONG, 
   RECAPTCHA_V2, 
-  SEND_LOGIN, 
+  SERVER_TIME, 
   SERVER_DEATH, 
   SOCKET_CONNECTING, 
   SOCKET_OPENED, 
@@ -65,7 +65,9 @@ export default class Socket {
 
   public world: World;
   public id: number;
+
   private logger: Logger;
+  private loginTimeoutId: NodeJS.Timeout;
 
   constructor(socketData: ISocketData, tabType: TabType, world: World) {
     this.socketData = socketData;
@@ -110,6 +112,8 @@ export default class Socket {
 
     this.world.clearCellsByType(this.tabType);
     this.stopSendingPosition();
+
+    clearTimeout(this.loginTimeoutId);
 
     if (typeof this.onDisconnect === 'function') {
       this.onDisconnect();
@@ -254,10 +258,12 @@ export default class Socket {
         this.receiver.generateKeys();
         break;
 
-      case SEND_LOGIN:
+      case SERVER_TIME:
         if (this.tabType === 'FIRST_TAB' || this.tabType === 'SECOND_TAB') {
-          FacebookLogin.logIn(this);
-          GoogleLogin.logIn(this);
+          this.loginTimeoutId = setTimeout(() => {
+            FacebookLogin.logIn(this);
+            GoogleLogin.logIn(this);
+          }, 667);
         }
         break;
 

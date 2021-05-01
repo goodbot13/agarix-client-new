@@ -290,7 +290,6 @@ export default class GameAPI {
 
   /*************** Login ***************/
   public logInWithFb(): void {
-    FacebookLogin.checkSdkLoaded();
     FacebookLogin.prepareToken(this.stage.world.controller);
   }
 
