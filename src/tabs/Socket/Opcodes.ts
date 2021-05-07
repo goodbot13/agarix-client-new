@@ -9,6 +9,7 @@ export const LEADERBOARD: number = 53;
 export const LEADERBOARD2: number = 54;
 export const GHOST_CELLS: number = 69;
 export const RECAPTCHA_V2: number = 85;
+export const RECAPTCHA_V3: number = 87;
 export const MOBILE_DATA: number = 102;
 export const FREE_COINS: number = 103;
 export const SERVER_DEATH: number = 113;

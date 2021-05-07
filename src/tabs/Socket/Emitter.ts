@@ -23,6 +23,20 @@ export default class Emitter {
     this.sendAction(17);
   }
 
+  public sendCaptcha(token: string, version: number = 2 | 3) {
+    const view = createView(2 + token.length);
+    const code = version === 2 ? 86 : 88;
+
+    view.setUint8(0, code);
+
+    for (let length = 0; length < token.length; length++) {
+      view.setUint8(1 + length, token.charCodeAt(length));
+    }
+
+    view.setUint8(token.length + 1, 0);
+    this.socket.sendMessage(view);
+  }
+
   public sendAction(action: 1 | 17 | 18 | 21): void {
     const view = createView(1);
     view.setUint8(0, action);

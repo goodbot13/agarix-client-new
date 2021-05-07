@@ -1,5 +1,4 @@
 import { Sprite } from "pixi.js";
-import World from "../../render/World";
 import GameSettings from "../../Settings/Settings";
 import Cell from './index';
 import TextureGenerator from '../../Textures/TexturesGenerator';

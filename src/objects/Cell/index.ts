@@ -8,7 +8,6 @@ import Shadow from './Shadow';
 import CellSprite from './CellSprite';
 import GameSettings from '../../Settings/Settings';
 import { getColor, getColorLighten, rgbToStringHex } from '../../utils/helpers';
-import WorldState from '../../states/WorldState';
 import SkinsLoader from '../../utils/SkinsLoader';
 import Master from '../../Master';
 import TextureGenerator from '../../Textures/TexturesGenerator';

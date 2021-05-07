@@ -1,4 +1,4 @@
-import { createView, shiftKey, generateClientKey } from '../../utils/helpers';
+import { createView, shiftKey, murmur2 } from '../../utils/helpers';
 import Reader from '../../utils/Reader'
 import { Location, RGB, CellType } from '../../objects/types';
 import Socket, { IMapOffsets, IViewport } from './Socket';
@@ -64,11 +64,11 @@ export default class Receiver {
     const y = this.reader.getFloat32();
     const scale = this.reader.getFloat32();
 
-    return { x, y, scale }
-  }
-
-  public shiftKey() {
-    this.socket.protocolKey = shiftKey(this.socket.protocolKey);
+    return { 
+      x, 
+      y, 
+      scale 
+    }
   }
 
   public handleAddOwnCell() {
@@ -150,8 +150,12 @@ export default class Receiver {
     return ghostCells;
   }
 
-  public handleRecaptchaV2() {
+  public handleRecaptchaV2(): void {
     Captcha.handleV2(this.socket);
+  }
+
+  public handleRecaptchaV3(): void {
+    Captcha.handleV3(this.socket);
   }
 
   public handlePingUpdate() {
@@ -166,8 +170,20 @@ export default class Receiver {
 
   public generateKeys() {
     this.socket.protocolKey = this.reader.getUint32();
-    this.socket.specialKey = this.socket.protocolKey ^ this.socket.socketData.clientVersionInt;
-    this.socket.clientKey = generateClientKey(this.socket.socketData.address, new Uint8Array(this.reader.view.buffer, 5));
+
+    let serverVersion = '';
+    let index = 0;
+    
+    while(index = this.reader.getUint8()) {
+      serverVersion += String.fromCharCode(index);
+    }
+
+    const hashBuffer = this.socket.socketData.address.match(/(ws+:\/\/)([^:]*)(:\d+)?/)[2] + serverVersion;
+    const seed = 255;
+
+    this.socket.clientKey = murmur2(hashBuffer, seed);
+
+    this.logger.info(`Game server version: ${serverVersion}, clientKey: ${this.socket.clientKey}`);
   }
 
   public handleServerTime() {

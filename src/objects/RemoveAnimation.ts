@@ -9,6 +9,7 @@ class RemoveAnimation extends Container {
   public isDestroyed: boolean;
   public isVisible: boolean;
   public type: CellType;
+  public culled: boolean = false;
 
   private r: number;
   private spriteBuffer: Array<Sprite> = [];

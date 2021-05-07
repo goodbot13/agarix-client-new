@@ -24,7 +24,8 @@ import {
   SOCKET_CONNECTING, 
   SOCKET_OPENED, 
   SPECTATE_MODE_IS_FULL, 
-  VIEWPORT_UPDATE 
+  VIEWPORT_UPDATE, 
+  RECAPTCHA_V3
 } from './Opcodes';
 import Master from '../../Master';
 import Logger from '../../utils/Logger';
@@ -33,7 +34,6 @@ import Settings from '../../Settings/Settings';
 export default class Socket {
   public readonly socketData: ISocketData;
   public protocolKey: number;
-  public specialKey: number;
   public clientKey: number;
   public mapOffsetFixed: boolean;
   public isPlaying: boolean;
@@ -73,7 +73,6 @@ export default class Socket {
     this.socketData = socketData;
     this.tabType = tabType;
     this.protocolKey = null;
-    this.specialKey = null;
     this.clientKey = null;
     this.mapOffsetFixed = false;
     this.loggedIn = false;
@@ -153,11 +152,11 @@ export default class Socket {
     return reachedX && reachedY;
   }
 
-  private handleMessage(arrayBuffer: ArrayBuffer): void {
+  private handleMessage(arrayBuffer: ArrayBuffer): void { 
     let view = new DataView(arrayBuffer);
 
     if (this.protocolKey) {
-      view = shiftMessage(view, this.specialKey, false);
+      view = shiftMessage(view, this.protocolKey ^ this.socketData.clientVersionInt);
     }
 
     this.receiver.reader.setView(view);
@@ -224,8 +223,12 @@ export default class Socket {
         }
         break;
 
-      case RECAPTCHA_V2: 
+      case RECAPTCHA_V2:
         this.receiver.handleRecaptchaV2();
+        break;
+
+      case RECAPTCHA_V3:
+        this.receiver.handleRecaptchaV3();
         break;
 
       case SERVER_DEATH:
@@ -276,18 +279,18 @@ export default class Socket {
 
         this.receiver.handleCompressedMessage();
         break;
+
+      default:
+        this.logger.warning(`Unhandled opcode: ${opcode}`);
+        break;
     }
   }
 
   public sendMessage(message: DataView): void {
     if (this.socket.readyState === SOCKET_OPENED) {
-      message = shiftMessage(message, this.clientKey, false);
+      message = shiftMessage(message, this.clientKey);
       this.clientKey = shiftKey(this.clientKey);
       this.socket.send(message.buffer);
-    } else {
-      if (this.socket.readyState !== SOCKET_CONNECTING) {
-        this.destroy();
-      }
     }
   }
 

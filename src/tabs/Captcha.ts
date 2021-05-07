@@ -46,16 +46,7 @@ export default new class Captcha {
         theme: "dark",
         callback: (token: string) => {
 
-          let view = createView(2 + token.length);
-
-          view.setUint8(0, 86);
-
-          for (let length = 0; length < token.length; length++) {
-            view.setUint8(1 + length, token.charCodeAt(length));
-          }
-
-          view.setUint8(token.length + 1, 0);
-          socket.sendMessage(view);
+          socket.emitter.sendCaptcha(token, 2);
 
           this.setVidgetVisibility(false, document.querySelector('#ReCaptchaV2'));
           window.grecaptcha.reset(this.v2_id);
@@ -65,7 +56,7 @@ export default new class Captcha {
     }
   }
 
-  public handleV3(): Promise<string> {
+  public handleV3(socket?: Socket): Promise<string> {
     /* const showVidgetTimeout = setTimeout(() => this.setVidgetVisibility(true, document.querySelector('#ReCaptchaV3')), 2200); */
     
     if (this.v3_id !== null) {
@@ -81,6 +72,10 @@ export default new class Captcha {
     return new Promise((resolve) => {
       window.grecaptcha.execute(this.v3_id, { action: 'play' })
         .then((token: string) => { 
+          if (socket) {
+            socket.emitter.sendCaptcha(token, 3);
+          }
+          
           resolve(token);
           /* clearTimeout(showVidgetTimeout); */
           this.setVidgetVisibility(false, document.querySelector('#ReCaptchaV3'));

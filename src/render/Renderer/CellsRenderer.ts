@@ -38,29 +38,14 @@ export default class CellsRenderer {
   }
 
   public render(cell: Cell | Virus | RemoveAnimation): void {
-    if (GameSettings.all.settings.game.performance.culling) {
-      if (this.world.view.shouldObjectBeCulled(cell.x, cell.y, cell.width / 2)) {
-
-        if (cell.type === 'CELL') {
-          (cell as Cell).culled = true;
-          (cell as Cell).renderable = (cell as Cell).visible = false;
-
-          return;
-        } else if (cell.type === 'VIRUS') {
-          (cell as Virus).renderable = (cell as Cell).visible = false;
-
-          return;
-        } else if (cell.type === 'REMOVE_ANIMATION' || cell.type === 'SPAWN_ANIMATION') {
-          (cell as RemoveAnimation | SpawnAnimation).renderable = false;
-          (cell as RemoveAnimation | SpawnAnimation).visible = false;
-
-          return;
-        }
-        
-      } else {
-        (cell as Cell).culled = false;
-        (cell as Cell).renderable = (cell as Cell).visible = true;
-      }
+    if (this.world.view.shouldObjectBeCulled(cell.x, cell.y, cell.width / 2)) {
+      cell.renderable = cell.visible = false;
+      cell.culled = true;
+      
+      return;
+    } else {
+      cell.renderable = cell.visible = true;
+      cell.culled = false;
     }
     // if cell subtype is TOP_ONE_TAB or SPEC_TABS and it is a player cell
     // its visibility should be immediately set to false 

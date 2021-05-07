@@ -75,75 +75,32 @@ export const roundRect = (ctx: CanvasRenderingContext2D, x: number, y: number, w
 }
 
 /* eslint-disable */
-export const generateClientKey = (option, _relatedTarget) => {
-  if (!option.length || !_relatedTarget.byteLength) {
-    return null;
-  }
-  let key = null;
-  const suggestedValue = 1540483477;
-  const constraints = option.match(/(wss+:\/\/)([^:]*)(:\d+)/)[2];
-  const framesize = constraints.length + _relatedTarget.byteLength;
-  const data = new Uint8Array(framesize);
-  let value = 0;
-  for (; value < constraints.length; value++) {
-    data[value] = constraints.charCodeAt(value);
-  }
-  data.set(_relatedTarget, constraints.length);
-  const view = new DataView(data.buffer);
-  let maxTextureAvailableSpace = framesize - 1;
-  const type = (maxTextureAvailableSpace - 4 & -4) + 4 | 0;
-  let imulkeyValue = maxTextureAvailableSpace ^ 255;
-  let offset = 0;
-  for (; maxTextureAvailableSpace > 3;) {
-    key = Math.imul(view.getInt32(offset, true), suggestedValue) | 0;
-    imulkeyValue = (Math.imul(key >>> 24 ^ key, suggestedValue) | 0) ^ (Math.imul(imulkeyValue, suggestedValue) | 0);
-    maxTextureAvailableSpace = maxTextureAvailableSpace - 4;
-    offset = offset + 4;
-  }
-  switch (maxTextureAvailableSpace) {
-    case 3:
-      imulkeyValue = data[type + 2] << 16 ^ imulkeyValue;
-      imulkeyValue = data[type + 1] << 8 ^ imulkeyValue;
-      break;
-    case 2:
-      imulkeyValue = data[type + 1] << 8 ^ imulkeyValue;
-      break;
-    case 1:
-      break;
-    default:
-      key = imulkeyValue;
-      break;
-  }
-  if (key !== imulkeyValue) {
-    key = Math.imul(data[type] ^ imulkeyValue, suggestedValue) | 0;
-  }
-  imulkeyValue = key >>> 13;
-  key = imulkeyValue ^ key;
-  key = Math.imul(key, suggestedValue) | 0;
-  imulkeyValue = key >>> 15;
-  key = imulkeyValue ^ key;
-  return key;
-}
-
 export const shiftKey = (key) => {
-  const value = 1540483477;
-  key = Math.imul(key, value) | 0;
-  key = (Math.imul(key >>> 24 ^ key, value) | 0) ^ 114296087;
-  key = Math.imul(key >>> 13 ^ key, value) | 0;
-  return key >>> 15 ^ key;
+  return key = 0 | Math.imul(key, 1540483477), 
+         key = 114296087 ^ (0 | Math.imul(key >>> 24 ^ key, 1540483477)), 
+         (key = 0 | Math.imul(key >>> 13 ^ key, 1540483477)) >>> 15 ^ key;
 }
 
-export const shiftMessage = (view, key, write) => {
-  if (!write) {
-    for (var length = 0; length < view.byteLength; length++) {
-      view.setUint8(length, view.getUint8(length) ^ key >>> length % 4 * 8 & 255);
-    }
-  } else {
-    for (var length = 0; length < view.length; length++) {
-      view.writeUInt8(view.readUInt8(length) ^ key >>> length % 4 * 8 & 255, length);
-    }
+export const shiftMessage = (view, key) => {
+  for (var i = 0; i < view.byteLength; i++) 
+    view.setUint8(i, view.getUint8(i) ^ key >>> i % 4 * 8 & 255);
+  
+  return view
+}
+
+export const murmur2 = (e, t) => {
+  var i = e.length;
+  t ^= i;
+  for (var n, o = 0; 4 <= i;) n = 1540483477 * (65535 & (n = 255 & e.charCodeAt(o) | (255 & e.charCodeAt(++o)) << 8 | (255 & e.charCodeAt(++o)) << 16 | (255 & e.charCodeAt(++o)) << 24)) + ((1540483477 * (n >>> 16) & 65535) << 16), t = 1540483477 * (65535 & t) + ((1540483477 * (t >>> 16) & 65535) << 16) ^ (n = 1540483477 * (65535 & (n ^= n >>> 24)) + ((1540483477 * (n >>> 16) & 65535) << 16)), i -= 4, ++o;
+  switch (i) {
+      case 3:
+          t ^= (255 & e.charCodeAt(o + 2)) << 16;
+      case 2:
+          t ^= (255 & e.charCodeAt(o + 1)) << 8;
+      case 1:
+          t = 1540483477 * (65535 & (t ^= 255 & e.charCodeAt(o))) + ((1540483477 * (t >>> 16) & 65535) << 16)
   }
-  return view;
+  return ((t = 1540483477 * (65535 & (t ^= t >>> 13)) + ((1540483477 * (t >>> 16) & 65535) << 16)) ^ t >>> 15) >>> 0
 }
 
 export const createView = (value) => {

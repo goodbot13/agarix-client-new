@@ -18,6 +18,7 @@ export interface RGB {
 export interface IMainGameObject {
   type: CellType,
   subtype: Subtype,
+  culled: boolean,
   isVisible: boolean,
   isPlayerCell: boolean,
   isDestroyed: boolean,

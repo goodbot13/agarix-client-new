@@ -7,6 +7,8 @@ import * as PIXI from 'pixi.js';
 class SpawnAnimation extends Container {
   public isDestroyed: boolean;
   public type: CellType;
+  public culled: boolean = false;
+
   private r: number;
   private spriteBuffer: Array<Sprite> = [];
   private deltaStepMultiplier: number = 0.00425;

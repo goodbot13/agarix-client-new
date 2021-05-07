@@ -18,6 +18,7 @@ class Virus extends Container implements IMainGameObject {
   public virusSprite: Sprite;
   public isVisible: boolean;
   public type: CellType;
+  public culled: boolean = false;
 
   public shots: VirusShots;
   private isMinimap: boolean;
