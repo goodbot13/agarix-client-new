@@ -53,7 +53,7 @@ export default class Socket {
   private readonly receiver: Receiver;
   private sendMousePositionInterval: NodeJS.Timeout;
   private socketInitCallback: any;
-  private onDisconnect: any;
+  public onDisconnect: () => void;
   public loggedIn: boolean;
   public onServerDeath: any;
   public offsetsPositionMultiplier: IMapOffsetsPositionMultiplier;
@@ -114,13 +114,11 @@ export default class Socket {
 
     clearTimeout(this.loginTimeoutId);
 
-    if (typeof this.onDisconnect === 'function') {
+    if (typeof this.onDisconnect === 'function' && this.connectionOpened) {
       this.onDisconnect();
     }
-  }
 
-  public subscribeOnDisconnect(callback): void {
-    this.onDisconnect = callback;
+    this.connectionOpened = false;
   }
 
   public init(): Promise<IMapOffsets | void> {
@@ -262,12 +260,7 @@ export default class Socket {
         break;
 
       case SERVER_TIME:
-        if (this.tabType === 'FIRST_TAB' || this.tabType === 'SECOND_TAB') {
-          this.loginTimeoutId = setTimeout(() => {
-            FacebookLogin.logIn(this);
-            GoogleLogin.logIn(this);
-          }, 667);
-        }
+        this.tryLogin();
         break;
 
       case COMPRESSED_MESSAGE: 
@@ -283,6 +276,13 @@ export default class Socket {
       default:
         this.logger.warning(`Unhandled opcode: ${opcode}`);
         break;
+    }
+  }
+
+  public tryLogin(): void {
+    if (this.tabType === 'FIRST_TAB' || this.tabType === 'SECOND_TAB') {
+      FacebookLogin.logIn(this);
+      GoogleLogin.logIn(this);
     }
   }
 

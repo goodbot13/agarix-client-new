@@ -1,6 +1,7 @@
 import Socket, { IMapOffsets } from '../Socket/Socket';
 import Controller from './TabsController';
 import UICommunicationService from '../../communication/FrontAPI';
+import { ChatAuthor } from '../../communication/Chat';
 
 export interface ISpectateCoords {
   x: number,
@@ -56,8 +57,6 @@ export default class FullmapController {
         return;
       } 
 
-      UICommunicationService.sendChatGameMessage('Full map view is establishing.');
-
       this.establishBegin = Date.now();
       this.enabling = true;
 
@@ -76,12 +75,13 @@ export default class FullmapController {
       } else {
 
         this.sockets[i].onFullMapViewEnabled = () => {
+          this.enabling = false;
 
           const time = ~~((Date.now() - this.establishBegin) / 1000);
 
-          this.enabling = false;
+          const message = `Full map view is established. (${time}s)`;
 
-          UICommunicationService.sendChatGameMessage(`Full map view is established. (${time}s)`);
+          UICommunicationService.sendChatGameMessage(message, ChatAuthor.Spectator);
 
         };
       }

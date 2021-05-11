@@ -30,6 +30,8 @@ export default new class Master {
 
     this.gameMode.set(GameSettings.all.game.mode);
     this.regions.setCurrent(GameSettings.all.game.currentServerIndex);
+
+    (window as any).Master = this;
   }
 
   private async send(url: string, payload: Uint8Array): Promise<any> {

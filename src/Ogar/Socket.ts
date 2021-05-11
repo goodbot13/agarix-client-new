@@ -5,6 +5,7 @@ import Receiver from './Receiver';
 import UICommunicationService from '../communication/FrontAPI';
 import { SOCKET_OPENED } from '../tabs/Socket/Opcodes';
 import Logger from '../utils/Logger';
+import { ChatAuthor } from '../communication/Chat';
 
 export default class Socket {
 	private readonly ip: string = 'wss://snez.org:8080/ws?040';
@@ -48,14 +49,17 @@ export default class Socket {
 				this.emitter.sendHandshake();
 
 				const tab = this.second ? 'multibox tab' : 'main tab';
-				UICommunicationService.sendChatGameMessage(`Delta server connection established (${tab})`);
+				UICommunicationService.sendChatGameMessage(`Delta server connection established (${tab})`, ChatAuthor.Game);
 				this.logger.info(`Delta server connection established (${tab})`);
 
 				resolve(true);
 			};
 			
 			this.ws.onmessage = (msg) => this.handleMessage(msg.data);
-			this.ws.onerror = () => UICommunicationService.sendChatGameMessage('Ogar server connection lost');
+			this.ws.onerror = () => {
+				const tab = this.second ? 'Multibox tab' : 'Main tab';
+				UICommunicationService.sendChatGameMessage(`Delta server connection lost ${(tab)}`, ChatAuthor.Game)
+			};
 			
 			this.connected = true;
 			this.interval = setInterval(() => this.updateInterval(), 1000);
@@ -73,7 +77,7 @@ export default class Socket {
 		this.team.clear();
 		this.connected = false;
 
-		UICommunicationService.sendChatGameMessage('Ogar server connection disconnected');
+		UICommunicationService.sendChatGameMessage('Delta server connection lost.', ChatAuthor.Game);
 	}
 
   private handleMessage(arrayBuffer: ArrayBuffer): void {

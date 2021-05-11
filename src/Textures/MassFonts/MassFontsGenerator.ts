@@ -9,7 +9,7 @@ export default class MassFontsGenerator {
       fontFamily: 'Tajawal',
       fontWeight: '500',
       fill: 0xFFFFFF,
-      fontSize: 128,
+      fontSize: 132,
       align: 'center',
       stroke: 0x161616,
       strokeThickness: 5,

@@ -4,6 +4,7 @@ import Socket from "../Socket/Socket";
 import GameSettings from '../../Settings/Settings';
 import Logger from "../../utils/Logger";
 import PlayerState from "../../states/PlayerState";
+import { ChatAuthor } from "../../communication/Chat";
 
 export default new class GoogleLogin {
 	public loggedIn: boolean = false;
@@ -35,10 +36,10 @@ export default new class GoogleLogin {
         this.loggedIn = true;
         
         UICommunicationService.setGoogleLogged(true);
-        UICommunicationService.sendChatGameMessage(`Google logged in. Re-login required in ${expiresIn} minutes.`);
+        UICommunicationService.sendChatGameMessage(`Logged in. Re-login required in ${expiresIn} minutes.`, ChatAuthor.Google);
       } else {
         UICommunicationService.setGoogleLogged(false);
-        UICommunicationService.sendChatGameMessage('Google token expired. Please, log in again.');
+        UICommunicationService.sendChatGameMessage('Token expired. Please, log in again.', ChatAuthor.Google);
         this.logOut();
       }
     }
@@ -59,7 +60,7 @@ export default new class GoogleLogin {
 
       this.SDKLoaded = true;
     } else {
-      UICommunicationService.sendChatGameMessage("Google login error: SKD hasn't been loaded yet.");
+      UICommunicationService.sendChatGameMessage(`Login error: SKD hasn't been loaded yet.`, ChatAuthor.Google);
       UICommunicationService.setFacebookLogged(false);
       this.SDKLoaded = false;
     }
@@ -133,12 +134,12 @@ export default new class GoogleLogin {
         this.loggedIn = true;
         this.setToken(token, data.expires_at);
         
-        UICommunicationService.sendChatGameMessage('Google token received successfully.');
+        UICommunicationService.sendChatGameMessage('Token received successfully.', ChatAuthor.Google);
         UICommunicationService.setGoogleLogged(true);
 
         this.forceSendLogin(controller);
       } else {
-        UICommunicationService.sendChatGameMessage('Could not receive Google token.');
+        UICommunicationService.sendChatGameMessage('Could not receive token.', ChatAuthor.Google);
         UICommunicationService.setFacebookLogged(false);
       }
     })

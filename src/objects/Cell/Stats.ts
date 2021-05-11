@@ -1,43 +1,42 @@
-import { BitmapText, Text, Point, TextStyle } from "pixi.js";
+import { BitmapText, Sprite, Point, TextStyle, Texture, MIPMAP_MODES, SCALE_MODES } from "pixi.js";
 import Cell from ".";
 import GameSettings from "../../Settings/Settings";
 import WorldState from "../../states/WorldState";
 import * as PIXI from 'pixi.js';
+import TexturesGenerator from "../../Textures/TexturesGenerator";
 
 export default class CellStats {
-  public nick: Text;
+  public nick: Sprite;
   public mass: BitmapText;
 
+  private nick_text: string = '';
   private massValue: number = 0;
   private shortMassValue: string = '0';
   private currentAnchor: Point = new Point(0, 0);
-  private readonly NICK_STYLE: TextStyle = new TextStyle({
-    fontFamily: 'Lato',
-    fontSize: 140,
-    fill: 0xFFFFFF,
-    stroke: 0x101010,
-    strokeThickness: 5,
-    fontWeight: '600'
-  })
 
   constructor(private cell: Cell) {
-    this.mass = new BitmapText('0', { fontName: 'MassLato' });
-    this.mass.scale.set(0.58);
+    this.mass = new BitmapText('0', { 
+      fontName: 'MassLato' 
+    });
+
+    this.mass.scale.set(0.625);
     this.mass.zIndex = 5;
     this.setMassAnchor();
 
-    this.updateNick();
+    this.nick = new Sprite();
+    this.nick.anchor.set(0.45);
+    this.nick.scale.set(0.85);
+    this.nick.zIndex = 5;
   }
   
   private setMassAnchor(): void {
-    if (GameSettings.all.settings.game.cells.nicks) {
+    if (GameSettings.all.settings.game.cells.nicks && this.nick_text) {
       if (this.currentAnchor.y !== -0.75) {
         this.mass.anchor = new Point(0.5, -0.75);
         this.currentAnchor = this.mass.anchor;
       }
     } else {
       if (this.currentAnchor.y !== 0.5) {
-
         this.mass.anchor = new Point(0.5, 0.5);
         this.currentAnchor = this.mass.anchor;
       }
@@ -53,7 +52,7 @@ export default class CellStats {
     if (this.cell.isMinimap && this.cell.isTeam) {
       this.nick.visible = this.nick.renderable = mNicks;
       this.nick.scale.set(7);
-      this.nick.y = -512;
+      this.nick.y = -700;
       return;
     }
 
@@ -65,7 +64,7 @@ export default class CellStats {
         this.nick.visible = this.nick.renderable = mNicks;
         this.mass.visible = this.mass.renderable = mMass;
         this.nick.scale.set(1.5);
-      } else if (this.cell.originalSize <= 40) {
+      } else if (this.cell.originalSize <= 70) {
         this.mass.visible = this.mass.renderable = false;
         this.nick.visible = this.nick.renderable = false;
       } else {
@@ -81,21 +80,18 @@ export default class CellStats {
     this.mass.tint = tint;
   }
 
-  private generateNick(nick: string): void {
-    if (this.nick) {
-      this.nick.text = nick;
+  public updateNick(nick: string): void {
+    this.nick_text = nick;
+
+    let texture = TexturesGenerator.cellNicksCache.get(nick);
+
+    if (texture) {
+      this.nick.texture = texture;
     } else {
-      this.nick = new Text(nick, this.NICK_STYLE);
+      texture = this.createText(nick);
+      TexturesGenerator.cellNicksCache.set(nick, texture);
+      this.nick.texture = texture;
     }
-
-    this.nick.texture.baseTexture.mipmap = PIXI.MIPMAP_MODES.ON;
-    this.nick.scale.set(0.75);
-    this.nick.zIndex = 5;
-    this.nick.anchor.set(0.5, 0.5);
-  }
-
-  public updateNick(): void {
-    this.generateNick(this.cell.nick);
   }
   
   private calculateMass(): void {
@@ -127,5 +123,44 @@ export default class CellStats {
     }
 
     this.setMassAnchor();
+  }
+
+  public createText(text: string): Texture {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+
+    const drawText = text === '__undefined__' ? '' : text;
+    const font = 'bold 128px Lato';
+    const lineWidth = 5;
+
+    ctx.textAlign = 'center';
+    ctx.lineWidth = lineWidth;
+    ctx.font = font;
+    
+    let { width } = ctx.measureText(drawText);
+    width += lineWidth * 2;
+
+    if (width > 2048) {
+      width = 2048;
+    }
+
+    canvas.width = width;
+    canvas.height = width;
+
+    ctx.textAlign = 'center';
+    ctx.font = font;
+    ctx.lineWidth = lineWidth;
+    ctx.strokeStyle = '#606060';
+    ctx.fillStyle = '#FFF';
+    ctx.strokeText(drawText, canvas.width / 2, canvas.height / 2);
+    ctx.fillText(drawText, canvas.width / 2, canvas.height / 2);
+
+    PIXI.utils.trimCanvas(canvas);
+
+    const texture = Texture.from(canvas);
+    texture.baseTexture.mipmap = MIPMAP_MODES.ON;
+    texture.baseTexture.scaleMode = SCALE_MODES.LINEAR;
+
+    return texture;
   }
 }

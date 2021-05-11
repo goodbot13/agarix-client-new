@@ -4,10 +4,11 @@ import GameSettings from '../../Settings/Settings';
 import PlayerState from '../../states/PlayerState';
 import Logger from '../../utils/Logger';
 import Controller from '../Contollers/TabsController';
+import { ChatAuthor } from '../../communication/Chat';
 
 export default new class FacebookLogin {
   public loggedIn: boolean = false;
-  public token: string = '';
+  public token: string = null;
   public FB_APP_ID: number = 0;
 
   private expirationDate: number = 0;
@@ -33,7 +34,9 @@ export default new class FacebookLogin {
       if (response.status === 'connected') {
         this.logger.info('User is already logged in, handling successfull login..');
         this.handleSuccessfulLogin(response.authResponse.accessToken, response.authResponse.expiresIn);
-      } 
+      } else {
+        UICommunicationService.setFacebookLogged(false);
+      }
     }
   }
 
@@ -48,7 +51,8 @@ export default new class FacebookLogin {
       appId: this.FB_APP_ID,
       cookie: true,
       xfbml: true,
-      version: "v2.8",
+      status: true,
+      version: "v3.2",
     });
 
     this.logger.info('SDK successfully initialized');
@@ -73,7 +77,7 @@ export default new class FacebookLogin {
     const expires = ~~((this.expirationDate - Date.now()) / 1000 / 60); 
 
     UICommunicationService.setFacebookLogged(true);
-    UICommunicationService.sendChatGameMessage(`Facebook logged in. Re-login required in ${expires} minutes.`);
+    UICommunicationService.sendChatGameMessage(`Logged in. Re-login required in ${expires} minutes.`, ChatAuthor.Facebook);
 
     this.logger.info('Login handler received data of successful login');
   }
@@ -86,13 +90,9 @@ export default new class FacebookLogin {
     window.FB.login((response: Facebook.ILoginStatusResponse) => {
       if (response.status === 'connected') {
         this.handleSuccessfulLogin(response.authResponse.accessToken, response.authResponse.expiresIn);
-
-        UICommunicationService.sendChatGameMessage('Facebook token received successfully.');
-        UICommunicationService.setFacebookLogged(true);
-
         this.forceSendLogin(controller);
       } else {
-        UICommunicationService.sendChatGameMessage('Facebook login error.');
+        UICommunicationService.sendChatGameMessage('Login error.', ChatAuthor.Facebook);
         UICommunicationService.setFacebookLogged(false);
       }
     }, {
@@ -110,8 +110,8 @@ export default new class FacebookLogin {
   }
 
   public forceSendLogin(controller: Controller): void {
-    this.logIn(controller.firstTabSocket);
-    this.logIn(controller.secondTabSocket);
+    controller.firstTabSocket && this.logIn(controller.firstTabSocket);
+    controller.secondTabSocket && this.logIn(controller.secondTabSocket);
   }
 
   public logIn(socket: Socket): void {

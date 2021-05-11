@@ -78,6 +78,8 @@ export default class Receiver {
       if (typeof this.socket.onPlayerSpawn === 'function') {
         this.socket.onPlayerSpawn();
       }
+
+      this.socket.tryLogin();
     }
 
     this.socket.world.addPlayer(this.reader.getUint32(), this.socket.tabType);
@@ -183,7 +185,9 @@ export default class Receiver {
 
     this.socket.clientKey = murmur2(hashBuffer, seed);
 
-    this.logger.info(`Game server version: ${serverVersion}, clientKey: ${this.socket.clientKey}`);
+    if (this.socket.tabType === 'FIRST_TAB') {
+      this.logger.info(`Game server version: ${serverVersion}, clientKey: ${this.socket.clientKey}`);
+    }
   }
 
   public handleServerTime() {

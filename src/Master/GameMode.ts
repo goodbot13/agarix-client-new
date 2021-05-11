@@ -1,7 +1,7 @@
 export default class GameMode {
   private mode: TGameMode = ':party';
 
-  public set(mode: TGameMode): void {
+  public set(mode: TGameMode = ':party'): void {
     this.mode = mode;
   }
 
@@ -16,6 +16,8 @@ export default class GameMode {
       case ':experimental': return 'EXP';
       case ':battleroyale': return 'BTR';
       case ':teams': return 'TMS';
+      
+      default: return 'PTY';
     }
   }
 }

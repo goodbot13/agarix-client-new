@@ -1,6 +1,5 @@
 import Stage from "../Stage/Stage";
 import Logger from "../utils/Logger";
-import UICommunicationService from "./FrontAPI";
 import { TGameMode } from '../Master/GameMode';
 import GameSettings from '../Settings/Settings';
 import WorldState from "../states/WorldState";
@@ -31,7 +30,7 @@ export default class GameAPI {
 
   public setRegion(index: number): void {
     Master.regions.setCurrent(index);
-    this.logger.info(`Game mode changed to [name: ${Master.regions.getCurrent()}, index: ${index}]`);
+    this.logger.info(`Game region changed to [name: ${Master.regions.getCurrent()}, index: ${index}]`);
   }
 
 
@@ -74,23 +73,17 @@ export default class GameAPI {
       Ogar.firstTab.disconnect();
       Ogar.secondTab.disconnect();
       Ogar.connected = false;
-
-      this.logger.info('Ogar/Delta server disconnected');
     }
   }
 
   public setTag(): void {
     Ogar.firstTab.player.tag = GameSettings.all.profiles.tag;
     Ogar.firstTab.emitter.sendPlayerTag();
-
-    /* this.logger.info(`Tag changed: [${GameSettings.all.profiles.tag === '' ? 'no-tag' : GameSettings.all.profiles.tag}]`); */
   }
 
   public setFirstTabNick(): void {
     Ogar.firstTab.player.nick = GameSettings.all.profiles.leftProfileNick;
     Ogar.firstTab.emitter.sendPlayerNick();
-    
-    /* this.logger.info(`First tab nick changed: [${GameSettings.all.profiles.leftProfileNick}]`); */
   }
 
   public setFirstTabSkin(): void {
@@ -100,8 +93,6 @@ export default class GameAPI {
     Ogar.firstTab.emitter.sendPlayerSkin();
 
     SkinsLoader.load(leftProfileSkinUrl);
-
-    /* this.logger.info(`First tab skin changed: [${leftProfileSkinUrl}]`); */
   }
 
   public setSecondTabNick(): void {
@@ -109,8 +100,6 @@ export default class GameAPI {
     
     Ogar.secondTab.player.nick = rightProfileNick;
     Ogar.secondTab.emitter.sendPlayerNick();
-
-    /* this.logger.info(`Second tab nick changed: [${rightProfileNick}]`); */
   }
 
   public setSecondTabSkin(): void {
@@ -120,8 +109,6 @@ export default class GameAPI {
     Ogar.secondTab.emitter.sendPlayerSkin();
 
     SkinsLoader.load(rightProfileSkinUrl);
-
-    this.logger.info(`Second tab skin changed: [${rightProfileSkinUrl}]`);
   }
 
   public sendMessage(message: string): void {
@@ -151,8 +138,6 @@ export default class GameAPI {
     } else {
       this.stage.world.view.spectateTopOne(false);
     }
-    
-    this.logger.info('Spectate mode changed to TOP 1');
   }
 
   public spectateCenter(): void {
@@ -169,7 +154,6 @@ export default class GameAPI {
     }
 
     this.stage.world.view.center();
-    this.logger.info('Spectate mode changed to CENTER');
   }
 
   public spectateTarget(): void {
@@ -186,8 +170,6 @@ export default class GameAPI {
     if (WorldState.spectator.free) {
       this.stage.world.controller.stopFreeSpectate();
     }
-
-    this.logger.info('Spectate mode changed to TARGET');
   }
 
   public spectateFree(): void {
@@ -204,8 +186,6 @@ export default class GameAPI {
     }
 
     this.stage.world.view.freeSpectate();
-
-    this.logger.info('Spectate mode changed to FREE');
   }
 
 
@@ -290,6 +270,7 @@ export default class GameAPI {
 
   /*************** Login ***************/
   public logInWithFb(): void {
+    console.log('button', this.stage.world.controller);
     FacebookLogin.prepareToken(this.stage.world.controller);
   }
 

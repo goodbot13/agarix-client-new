@@ -126,9 +126,9 @@ class Stage {
   }
 
   public async disconnect(): Promise<boolean> {
-    WorldState.gameJoined = false;
-
     await this.hideGameScene();
+
+    WorldState.gameJoined = false;
 
     this.world.controller.disconnectAll();
     this.world.clear();
@@ -203,7 +203,7 @@ class Stage {
       this.hue += 6 * PIXI.Ticker.shared.deltaTime;
       this.colorFilter.hue(this.hue, false);
 
-      if (this.hue >= 120 * PIXI.Ticker.shared.deltaTime) {
+      if (this.hue >= 160 * PIXI.Ticker.shared.deltaTime) {
         this.app.ticker.remove(this.blurStage);
         Globals.gameBlured = true;
         Globals.gameBluring = false;
@@ -264,7 +264,7 @@ class Stage {
         return;
       }
 
-      this.foodVirusCellContainer.alpha += 0.033 * PIXI.Ticker.shared.deltaTime;
+      this.foodVirusCellContainer.alpha += 0.05 * PIXI.Ticker.shared.deltaTime;
     }
 
     this.app.ticker.add(this.showStageTicker);
@@ -278,7 +278,7 @@ class Stage {
       }
 
       this.hideTicker = () => {
-        this.foodVirusCellContainer.alpha -= 0.03 * PIXI.Ticker.shared.deltaTime;
+        this.foodVirusCellContainer.alpha -= 0.05 * PIXI.Ticker.shared.deltaTime;
 
         if (this.foodVirusCellContainer.alpha <= 0) {
           this.app.ticker.remove(this.hideTicker);

@@ -82,6 +82,7 @@ export default class Cell extends Container implements IMainGameObject {
     this.rings = new Rings(this);
 
     this.stats.updateMass(true);
+    this.stats.updateNick(nick);
 
     this.addChild(this.cell);
     this.addChild(this.shadow.sprite);
@@ -189,7 +190,7 @@ export default class Cell extends Container implements IMainGameObject {
 
     this.isPlayerCell = true;
     this.nick = nick && nick.trim();
-    this.stats.updateNick();
+    this.stats.updateNick(nick);
     this.customSkinTexture = skinTexture;
     this.shadow.applyPlayerShadow();
 

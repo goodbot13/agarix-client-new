@@ -15,6 +15,8 @@ export default class Regions {
       case "JP-Tokyo": return "East Asia";
       case "CN-China": return "China";
       case "SG-Singapore": return "Oceania";
+      
+      default: return "Europe";
     }
   }
 
@@ -28,6 +30,8 @@ export default class Regions {
       case "East Asia": return "JP-Tokyo";
       case "China": return "CN-China";
       case "Oceania": return "SG-Singapore";
+
+      default: return 'EU-London';
     }
   }
 

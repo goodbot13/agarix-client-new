@@ -6,6 +6,7 @@ import FullmapController from './FullmapController';
 import Logger from '../../utils/Logger';
 import PlayerState from '../../states/PlayerState';
 import Ogar from '../../Ogar';
+import { ChatAuthor } from '../../communication/Chat';
 
 class Controller {
   private topOneTabSocket: Socket;
@@ -72,6 +73,9 @@ class Controller {
 
       this.firstTabSocket = new Socket(this.socketData, 'FIRST_TAB', this.world);
       this.firstTabSocket.init().then(() => resolve(this.firstTabSocket.mapOffsets));
+      this.firstTabSocket.onDisconnect = () => {
+        UICommunicationService.sendChatGameMessage('Main player tab disconnected.', ChatAuthor.Game);
+      }
     });
   }
 
@@ -79,7 +83,7 @@ class Controller {
     return new Promise((resolve: any, reject: any) => {
       if (!this.firstTabSocket) {
         this.logger.error('First player tab is not connected yet');
-        UICommunicationService.sendChatGameMessage('Could not connect second player tab. Main tab is not connected yet.');
+        UICommunicationService.sendChatGameMessage('Could not connect second player tab: main tab is not connected yet.', ChatAuthor.Game);
         return reject();
       }
 
@@ -93,7 +97,7 @@ class Controller {
     return new Promise((resolve: any, reject: any) => {
       if (!this.firstTabSocket) { 
         this.logger.error('First player tab is not connected yet');
-        UICommunicationService.sendChatGameMessage('Could not connect top 1 tab. Main tab is not connected yet.');
+        UICommunicationService.sendChatGameMessage('Could not connect top 1 tab. Main tab is not connected yet.', ChatAuthor.Spectator);
         return reject();
       }
   
@@ -105,23 +109,25 @@ class Controller {
       this.disconnectTopOneTab();
 
       this.topOneTabSocket = new Socket(this.socketData, 'TOP_ONE_TAB', this.world);
-      this.topOneTabSocket.subscribeOnDisconnect = () => {
-        this.disconnectTopOneTab();
-      }
       
       this.topOneTabSocket.init().then(() => {
-        UICommunicationService.sendChatGameMessage('Top one view establised.');
-        this.logger.info('Top one view establised');
-
+        UICommunicationService.sendChatGameMessage('Top one view establised.', ChatAuthor.Spectator);
         this.topOneTabSocket.spectate();
         this.topOneViewEnabled = true;
+
         resolve();
       });
     });
   }
 
-  public disconnectFirstTab(): void {
-    this.firstTabSocket && this.firstTabSocket.destroy();
+  public disconnectFirstTab(disconnectMessage?: string): void {
+    if (this.firstTabSocket) {
+      this.firstTabSocket.destroy();
+
+      if (disconnectMessage) {
+        UICommunicationService.sendChatGameMessage(disconnectMessage, ChatAuthor.Game);
+      }
+    }
   }
 
   public disconnectSecondTab(): void {

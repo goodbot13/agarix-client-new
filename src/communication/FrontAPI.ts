@@ -7,8 +7,8 @@ export default new class UICommunicationService {
     window.FrontAPI?.addChatMessage(nick, message, type, Date.now());
   }
 
-  sendChatGameMessage(message: string) {
-    window.FrontAPI?.addChatMessage('', message, 'GAME', Date.now());
+  sendChatGameMessage(message: string, author: string = '') {
+    window.FrontAPI?.addChatMessage(author, message, 'GAME', Date.now());
   }
 
   setGameVersion() {

@@ -6,6 +6,13 @@ import Emitter from "./Socket/Emitter";
 import PlayerState from "../states/PlayerState";
 import Ogar from "../Ogar";
 import SettingsState from "../states/SettingsState";
+import { ChatAuthor } from "../communication/Chat";
+
+const timeout = (milliseconds: number): Promise<void> => {
+  return new Promise((resolve) => {
+    setTimeout(() => resolve(), milliseconds);
+  });
+}
 
 class Hotkeys implements IGameAPIHotkeys {
   private macroFeedInterval: any;
@@ -97,13 +104,25 @@ class Hotkeys implements IGameAPIHotkeys {
       this.controller.disconnectFirstTab();
 
       await this.controller.connectFirstPlayerTab();
+
+      const message = 'Main tab re-connected. Waiting 1 second until safe spawn.';
+      UICommunicationService.sendChatGameMessage(message, ChatAuthor.QuickRespawn);
+
+      await timeout(1000);
       await this.controller.spawnFirstTab();
+
       this.controller.setFirstTabActive();
     } else {
       this.controller.disconnectSecondTab();
 
       await this.controller.connectSecondPlayerTab();
+
+      const message = 'Second tab re-connected. Waiting 1 second until safe spawn.';
+      UICommunicationService.sendChatGameMessage(message, ChatAuthor.QuickRespawn);
+      
+      await timeout(1000);
       await this.controller.spawnSecondTab();
+
       this.controller.setSecondTabActive();
     }
   }
@@ -253,6 +272,9 @@ class Hotkeys implements IGameAPIHotkeys {
 
   public toggleFullmapViewRender(): void {
     SettingsState.fullMapViewRender = !SettingsState.fullMapViewRender;
+
+    const message = SettingsState.fullMapViewRender ? 'Is now shown' : 'Is now hidden';
+    UICommunicationService.sendChatGameMessage(message, ChatAuthor.Spectator);
   }
 
   public sendCommand(text: string): void { 
