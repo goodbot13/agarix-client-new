@@ -2,6 +2,7 @@ import Socket, { IMapOffsets } from '../Socket/Socket';
 import Controller from './TabsController';
 import UICommunicationService from '../../communication/FrontAPI';
 import { ChatAuthor } from '../../communication/Chat';
+import GameSettings from '../../Settings/Settings';
 
 export interface ISpectateCoords {
   x: number,
@@ -47,6 +48,8 @@ export default class FullmapController {
 
   public enable(i?: number): void {
 
+    UICommunicationService.setSpectatorTabStatus('CONNECTING');
+
     if (i === undefined) {
       if (!this.tabsController.topOneViewEnabled) {
         this.tabsController.connectTopOneTab().then(() => {
@@ -70,6 +73,12 @@ export default class FullmapController {
     this.sockets[i].init().then(() => {
       this.sockets[i].spectate(this.coordinates[i].x, this.coordinates[i].y);
 
+      this.sockets[i].onDisconnect(() => {
+        if (GameSettings.all.settings.game.gameplay.spectatorMode === 'Full map') {
+          UICommunicationService.setSpectatorTabStatus('DISCONNECTED');   
+        }
+      });
+
       if (i < 14) {
         this.enable(++i);
       } else {
@@ -82,8 +91,11 @@ export default class FullmapController {
           const message = `Full map view is established. (${time}s)`;
 
           UICommunicationService.sendChatGameMessage(message, ChatAuthor.Spectator);
+        }
 
-        };
+        if (GameSettings.all.settings.game.gameplay.spectatorMode === 'Full map') {
+          UICommunicationService.setSpectatorTabStatus('CONNECTED');   
+        }
       }
     });
 

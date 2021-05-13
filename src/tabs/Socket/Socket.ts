@@ -30,6 +30,7 @@ import {
 import Master from '../../Master';
 import Logger from '../../utils/Logger';
 import Settings from '../../Settings/Settings';
+import CallbacksHandler from './CallbacksHandler';
 
 export default class Socket {
   public readonly socketData: ISocketData;
@@ -49,23 +50,18 @@ export default class Socket {
   public shiftOffsets: IMapOffsetsShift;
   public reachedSpectatingPosition: boolean;
   public readonly emitter: Emitter;
-
-  private readonly receiver: Receiver;
-  private sendMousePositionInterval: NodeJS.Timeout;
-  private socketInitCallback: any;
-  public onDisconnect: () => void;
   public loggedIn: boolean;
   public onServerDeath: any;
   public offsetsPositionMultiplier: IMapOffsetsPositionMultiplier;
-
   public playerSpawned: boolean;
   public onFullMapViewEnabled: any;
   public onPlayerSpawn: any;
-  public index: number;
-
   public world: World;
-  public id: number;
 
+  private readonly receiver: Receiver;
+  private readonly disconnectHandler: CallbacksHandler;
+  private sendMousePositionInterval: NodeJS.Timeout;
+  private socketInitCallback: any;
   private logger: Logger;
   private loginTimeoutId: NodeJS.Timeout;
 
@@ -82,6 +78,7 @@ export default class Socket {
     this.shiftOffsets = { x: 0, y: 0 };
     this.world = world;
     this.receiver = new Receiver(this);
+    this.disconnectHandler = new CallbacksHandler();
     this.emitter = new Emitter(this);
     this.logger = new Logger('AgarSocket');
   }
@@ -112,13 +109,17 @@ export default class Socket {
     this.world.clearCellsByType(this.tabType);
     this.stopSendingPosition();
 
-    clearTimeout(this.loginTimeoutId);
-
-    if (typeof this.onDisconnect === 'function' && this.connectionOpened) {
-      this.onDisconnect();
+    if (this.connectionOpened) {
+      this.disconnectHandler.execute();
     }
 
+    clearTimeout(this.loginTimeoutId);
+
     this.connectionOpened = false;
+  }
+
+  public onDisconnect(callback: () => void): void {
+    this.disconnectHandler.pushCallback(callback);
   }
 
   public init(): Promise<IMapOffsets | void> {
@@ -137,10 +138,6 @@ export default class Socket {
   
   public destroy(): void {
     this.socket.close();
-  }
-
-  public sendLogin(token: string, type: 2 | 4 = 2) {
-    this.emitter.sendLogin(token, type);
   }
 
   private hasReachedSpectatingPosition(viewport: IViewport): boolean {

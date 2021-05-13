@@ -72,7 +72,7 @@ class Stage {
     return true;
   }
 
-  public async play(): Promise<string> {
+  public async play(): Promise<string | null> {
     return new Promise(async (resolve: any, reject: any) => {
       if (PlayerState.first.connected) {
 
@@ -93,12 +93,16 @@ class Stage {
             PlayerState.first.focused = true;
             resolve(tokens);
           })
-          .catch(() => reject());
+          .catch(() => {
+            console.log('rejected 1');
+            reject(null);
+          });
 
         }
 
       } else {
-        reject();
+        console.log('reject by client')
+        reject(null);
       }
     });
   }

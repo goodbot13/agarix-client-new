@@ -71,11 +71,20 @@ class Controller {
     return new Promise((resolve) => {
       this.disconnectFirstTab();
 
+      UICommunicationService.setFirstTabStatus('CONNECTING');
+
       this.firstTabSocket = new Socket(this.socketData, 'FIRST_TAB', this.world);
-      this.firstTabSocket.init().then(() => resolve(this.firstTabSocket.mapOffsets));
-      this.firstTabSocket.onDisconnect = () => {
+
+      this.firstTabSocket.init().then(() => {
+        UICommunicationService.setFirstTabStatus('CONNECTED');
+        UICommunicationService.sendChatGameMessage('Main player tab connected.', ChatAuthor.Game);
+        resolve(this.firstTabSocket.mapOffsets);
+      });
+
+      this.firstTabSocket.onDisconnect(() => {
         UICommunicationService.sendChatGameMessage('Main player tab disconnected.', ChatAuthor.Game);
-      }
+        UICommunicationService.setFirstTabStatus('DISCONNECTED');
+      });
     });
   }
 
@@ -88,8 +97,21 @@ class Controller {
       }
 
       this.disconnectSecondTab();
+      
       this.secondTabSocket = new Socket(this.socketData, 'SECOND_TAB', this.world);
-      this.secondTabSocket.init().then(() => resolve());
+
+      UICommunicationService.setSecondTabStatus('CONNECTING');
+
+      this.secondTabSocket.init().then(() => {
+        UICommunicationService.sendChatGameMessage('Second player tab connected.', ChatAuthor.Game);
+        UICommunicationService.setSecondTabStatus('CONNECTED');
+        resolve();
+      });
+
+      this.secondTabSocket.onDisconnect(() => {
+        UICommunicationService.sendChatGameMessage('Second player tab disconnected.', ChatAuthor.Game);
+        UICommunicationService.setSecondTabStatus('DISCONNECTED');
+      })
     })
   }
 
@@ -109,25 +131,33 @@ class Controller {
       this.disconnectTopOneTab();
 
       this.topOneTabSocket = new Socket(this.socketData, 'TOP_ONE_TAB', this.world);
+
+      if (GameSettings.all.settings.game.gameplay.spectatorMode === 'Top one') {
+        UICommunicationService.setSpectatorTabStatus('CONNECTING');
+      }
       
       this.topOneTabSocket.init().then(() => {
         UICommunicationService.sendChatGameMessage('Top one view establised.', ChatAuthor.Spectator);
         this.topOneTabSocket.spectate();
         this.topOneViewEnabled = true;
 
+        if (GameSettings.all.settings.game.gameplay.spectatorMode === 'Top one') {
+          UICommunicationService.setSpectatorTabStatus('CONNECTED');
+        }
+
         resolve();
+      });
+
+      this.topOneTabSocket.onDisconnect(() => {
+        if (GameSettings.all.settings.game.gameplay.spectatorMode === 'Top one') {
+          UICommunicationService.setSpectatorTabStatus('DISCONNECTED');
+        }
       });
     });
   }
 
-  public disconnectFirstTab(disconnectMessage?: string): void {
-    if (this.firstTabSocket) {
-      this.firstTabSocket.destroy();
-
-      if (disconnectMessage) {
-        UICommunicationService.sendChatGameMessage(disconnectMessage, ChatAuthor.Game);
-      }
-    }
+  public disconnectFirstTab(): void {
+    this.firstTabSocket && this.firstTabSocket.destroy();
   }
 
   public disconnectSecondTab(): void {
@@ -179,12 +209,20 @@ class Controller {
 
   public spawnFirstTab(): Promise<boolean> {
     this.firstTabSocket.emitter.handleSpawnV3(GameSettings.all.profiles.leftProfileNick);
-    return new Promise((resolve) => this.firstTabSocket.onPlayerSpawn = resolve);
+
+    return new Promise((resolve, reject) => {
+      this.firstTabSocket.onPlayerSpawn = resolve;
+      this.firstTabSocket.onDisconnect(() => reject());
+    });
   }
 
   public spawnSecondTab(): Promise<boolean> {
     this.secondTabSocket.emitter.handleSpawnV3(GameSettings.all.profiles.rightProfileNick);
-    return new Promise((resolve) => this.secondTabSocket.onPlayerSpawn = resolve);
+
+    return new Promise((resolve, reject) => {
+      this.secondTabSocket.onPlayerSpawn = resolve;
+      this.firstTabSocket.onDisconnect(() => reject());
+    });
   }
 
   public enableFullMapView(): void {

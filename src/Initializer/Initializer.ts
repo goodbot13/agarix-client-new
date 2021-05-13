@@ -1,22 +1,10 @@
-import Stage from './Stage/Stage';
-import TestCase from './TestCase';
-import UICommunicationService from './communication/FrontAPI';
-import Master from './Master';
-
-console.clear();
+import Stage from '../Stage/Stage';
+import TestCase from '../TestCase';
+import UICommunicationService from '../communication/FrontAPI';
+import Master from '../Master';
+import SocketInitializer from './SocketInitializer';
 
 const stage = new Stage();
-
-const tryConnect = () => {
-  let tries = 0;
-
-  stage.connect().then(() => {
-    setTimeout(() => UICommunicationService.setGameLoaderShown(false), 500);
-  }).catch(() => {
-    console.log('Error');
-    UICommunicationService.setServerStatus('Down');
-  });
-}
 
 export const initializeGame = async () => {
   window.Game = stage;
@@ -24,15 +12,22 @@ export const initializeGame = async () => {
 
   if (window.location.hostname.includes('localhost')) {
     await stage.init();
+
     stage.world.view.mouse.zoomValue = 0.1;
+
     const testCase = new TestCase(stage);
-    console.log(testCase);
+
     setTimeout(() => stage.unblurGameScene(true), 100);
   } else {
     UICommunicationService.setGameVersion();
+
     await Master.init();
     await stage.init();
-    tryConnect();
+    
+    SocketInitializer
+      .setStage(stage)
+      .try(5)
+      .start();
   }
 }
 

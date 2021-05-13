@@ -194,14 +194,31 @@ export default class GameAPI {
 
   /*************** Socket controller ***************/
 
-  // used to reconnect frist tab
-  public setFirstTabEnabled(enabled: boolean): void {
-    if (enabled) {
-      this.stage.world.controller.connectFirstPlayerTab().then((mapOffsets) => {
-        
-      });
-    } else {
-      this.stage.world.controller.disconnectFirstTab();
+  public reconnectFirstTab(): void {
+    this.stage.world.controller.disconnectFirstTab();
+    setTimeout(() => this.stage.world.controller.connectFirstPlayerTab(), 200);
+  }
+
+  public reconnectSecondTab(): void {
+    this.stage.world.controller.disconnectSecondTab();
+    setTimeout(() => this.stage.world.controller.connectSecondPlayerTab(), 200);
+  }
+
+  public reconnectSpectator(): void {
+    const { spectatorMode } = GameSettings.all.settings.game.gameplay;
+
+    if (spectatorMode === 'Disabled') {
+      return;
+    }
+
+    if (spectatorMode === 'Top one') {
+      this.stage.world.controller.disconnectTopOneTab();
+      setTimeout(() => this.stage.world.controller.connectTopOneTab(), 200);
+    }
+
+    if (spectatorMode === 'Full map') {
+      this.stage.world.controller.disconnectFullMapView();
+      setTimeout(() => this.stage.world.controller.enableFullMapView(), 200);
     }
   }
 
@@ -316,6 +333,10 @@ declare global {
       logOutWithFb(): void,
       logInWithGoogle(): void,
       logOutWithGoogle(): void,
+
+      reconnectFirstTab(): void,
+      reconnectSecondTab(): void,
+      reconnectSpectator(): void,
 
       init(): void
     }
