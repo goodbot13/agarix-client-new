@@ -9,7 +9,7 @@ import generateViewBox from './ViewBox';
 import generateCellShadow from './CellShadow';
 import generateVirusShots from './VirusShots';
 import generateMultiboxLinedRing from './MultiboxRing';
-import FrontAPI from '../communication/FrontAPI';
+import UICommunicationService from '../communication/FrontAPI';
 import GameSettings from '../Settings/Settings';
 import generateMyCellShadow from './MyCellShadow';
 import Logger from '../utils/Logger';
@@ -141,6 +141,8 @@ export default new class TextureGenerator {
   }
 
   private async load() {
+    UICommunicationService.setTextureName('0%');
+
     const mapBg = await this.loadImg(GameSettings.all.settings.theming.map.backgroundImageUrl); 
     const rgbBorder = await this.loadImg('https://i.imgur.com/7eDfixc.png'); 
     const bgDispl = await this.loadImg('https://res.cloudinary.com/dvxikybyi/image/upload/v1486634113/2yYayZk_vqsyzx.png'); 
@@ -153,15 +155,15 @@ export default new class TextureGenerator {
     await this.loadRemoveAnimationAcim();
     await this.loadRemoveAnimationYue();
 
-    this.mapBackgroundImage = this.generateNewTexture(2048, 2048, mapBg); 
-    this.rgbBorder = this.generateNewTexture(2048, 2048, rgbBorder); 
-    this.secondBackgroundImage = this.generateNewTexture(2048, 2048, sMapBg); 
-    this.globalDisplacement = this.generateNewTexture(512, 512, glDispl); 
-    this.backgroundDisplacement = this.generateNewTexture(512, 512, bgDispl); 
-    this.outerRing = this.generateNewTexture(512, 512, outerRing, true); 
-    this.innerRing = this.generateNewTexture(512, 512, innerRing, true); 
-    this.hsloRing = this.generateNewTexture(512, 512, hsloRing, true); 
-    this.removeAnimationHSLO3D = this.generateNewTexture(512, 512, rmAnimHslo);
+    this.mapBackgroundImage = this.generateNewTexture(2048, 2048, mapBg); UICommunicationService.setTextureName('4%');
+    this.rgbBorder = this.generateNewTexture(2048, 2048, rgbBorder); UICommunicationService.setTextureName('8%');
+    this.secondBackgroundImage = this.generateNewTexture(2048, 2048, sMapBg); UICommunicationService.setTextureName('12%');
+    this.globalDisplacement = this.generateNewTexture(512, 512, glDispl); UICommunicationService.setTextureName('15%');
+    this.backgroundDisplacement = this.generateNewTexture(512, 512, bgDispl); UICommunicationService.setTextureName('18%');
+    this.outerRing = this.generateNewTexture(512, 512, outerRing, true); UICommunicationService.setTextureName('25%');
+    this.innerRing = this.generateNewTexture(512, 512, innerRing, true); UICommunicationService.setTextureName('33%');
+    this.hsloRing = this.generateNewTexture(512, 512, hsloRing, true); UICommunicationService.setTextureName('35%');
+    this.removeAnimationHSLO3D = this.generateNewTexture(512, 512, rmAnimHslo); UICommunicationService.setTextureName('40%');
   }
 
   public async init(): Promise<any> {
@@ -171,19 +173,19 @@ export default new class TextureGenerator {
 
     this.massFontsGenerator.generateLatoBitmap();
 
-    await delay(); this.generateCell(); 
-    await delay(); this.generateFood(); 
-    await delay(); this.generateVirus(); 
-    await delay(); this.generateMultiboxLinedRing(); 
-    await delay(); this.generateMapBorders();
-    await delay(); this.generateCellShadow(); 
-    await delay(); this.generateRemoveEffect(); 
-    await delay(); this.generateViewBox();
-    await delay(); this.generateMyCellShadow();
-    await delay(); this.mapBordersRgbLine = generateRgbBorderLine();
-    await delay(); this.virusShots = generateVirusShots();
-
-    FrontAPI.setGameLoaderShown(false);
+    await delay(); this.generateCell(); UICommunicationService.setTextureName('45%');
+    await delay(); this.generateFood(); UICommunicationService.setTextureName('50%');
+    await delay(); this.generateVirus(); UICommunicationService.setTextureName('55%');
+    await delay(); this.generateMultiboxLinedRing(); UICommunicationService.setTextureName('65%');
+    await delay(); this.generateMapBorders(); UICommunicationService.setTextureName('70%');
+    await delay(); this.generateCellShadow(); UICommunicationService.setTextureName('74%');
+    await delay(); this.generateRemoveEffect(); UICommunicationService.setTextureName('78%');
+    await delay(); this.generateViewBox(); UICommunicationService.setTextureName('82%');
+    await delay(); this.generateMyCellShadow(); UICommunicationService.setTextureName('90%');
+    await delay(); this.mapBordersRgbLine = generateRgbBorderLine(); UICommunicationService.setTextureName('95%');
+    await delay(); this.virusShots = generateVirusShots(); UICommunicationService.setTextureName('100%');
+    await delay();  UICommunicationService.setTextureName('Done');
+    
   }
 
   public removeFromCache(texture: Texture): void {

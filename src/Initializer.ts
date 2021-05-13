@@ -7,6 +7,17 @@ console.clear();
 
 const stage = new Stage();
 
+const tryConnect = () => {
+  let tries = 0;
+
+  stage.connect().then(() => {
+    setTimeout(() => UICommunicationService.setGameLoaderShown(false), 500);
+  }).catch(() => {
+    console.log('Error');
+    UICommunicationService.setServerStatus('Down');
+  });
+}
+
 export const initializeGame = async () => {
   window.Game = stage;
   window.Master = Master;
@@ -21,6 +32,7 @@ export const initializeGame = async () => {
     UICommunicationService.setGameVersion();
     await Master.init();
     await stage.init();
+    tryConnect();
   }
 }
 

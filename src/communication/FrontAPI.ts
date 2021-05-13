@@ -55,6 +55,30 @@ export default new class UICommunicationService {
   setEllapsedFrametime(ms: number) {
     window.FrontAPI?.setEllapsedFrametime(ms);
   }
+
+  setClientVersion(value: number): void {
+    window.FrontAPI?.setClientVersion(value);
+  }
+
+  setProtocolVersion(value: number): void {
+    window.FrontAPI?.setProtocolVersion(value);
+  }
+
+  setSupportProtoVersion(value: string): void {
+    window.FrontAPI?.setSupportProtoVersion(value);
+  }
+
+  setServerStatus(value: string): void {
+    window.FrontAPI?.setServerStatus(value);
+  }
+
+  setServerVersion(value: string): void {
+    window.FrontAPI.setServerVersion(value);
+  }
+
+  setTextureName(value: string): void {
+    window.FrontAPI.setTextureName(value);
+  }
 }
 
 declare global {
@@ -71,7 +95,13 @@ declare global {
       setIsPlayerPlaying: (value: boolean) => void,
       setGoogleLoggedIn: (value: boolean) => void,
       setFacebookLoggedIn: (value: boolean) => void,
-      addChatMessage: (nick: string, message: string, type: TChatMessageType, key: number) => void
+      addChatMessage: (nick: string, message: string, type: TChatMessageType, key: number) => void,
+      setClientVersion: (value: number) => void,
+      setProtocolVersion: (value: number) => void,
+      setSupportProtoVersion: (value: string) => void,
+      setServerStatus: (value: string) => void,
+      setServerVersion: (value: string) => void,
+      setTextureName: (value: string) => void,
     }
   }
 }

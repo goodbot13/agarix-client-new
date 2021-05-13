@@ -6,6 +6,7 @@ import AgarSkinsList from "./Skins";
 import GameSettings from '../Settings/Settings';
 import FacebookLogin from "../tabs/Login/FacebookLogin";
 import GoogleLogin from "../tabs/Login/GoogleLogin";
+import UICommunicationService from '../communication/FrontAPI';
 
 export default new class Master {
   private readonly AGAR_CORE: string = "https://agar.io/agario.core.js";
@@ -224,12 +225,16 @@ export default new class Master {
         + parseInt(this.clientVersionString.split(".")[2]);
 
       this.supportProtocolVersion = data.match(/x-support-proto-version","(\d+\.\d+\.\d+)"/)[1]; // 15.0.3 
+
+      setTimeout(() => UICommunicationService.setClientVersion(this.clientVersionInt), 0);
+      setTimeout(() => UICommunicationService.setSupportProtoVersion(this.supportProtocolVersion), 100);
     });
   }
 
   public async setProtocolVersion(): Promise<any> {
     return this.fetch(this.AGAR_CORE).then((data: any) => data.text()).then((data) => {
       this.protocolVersion = Number(data.match(/\w\[\w\+\d+>>\d\]=\w;\w+\(\w,(\d+)\);/)[1]); // 22
+      setTimeout(() => UICommunicationService.setProtocolVersion(this.protocolVersion), 200);
     });
   }
 

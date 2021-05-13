@@ -1,4 +1,4 @@
-import { createView, shiftKey, murmur2 } from '../../utils/helpers';
+import { createView, murmur2 } from '../../utils/helpers';
 import Reader from '../../utils/Reader'
 import { Location, RGB, CellType } from '../../objects/types';
 import Socket, { IMapOffsets, IViewport } from './Socket';
@@ -7,6 +7,7 @@ import GameSettings from '../../Settings/Settings';
 import GamePerformance from '../../GamePerformance';
 import Captcha from '../Captcha';
 import PlayerState from '../../states/PlayerState';
+import UICommunicationService from '../../communication/FrontAPI';
 
 export interface ILeaderboardPlayer {
   position: number,
@@ -187,6 +188,8 @@ export default class Receiver {
 
     if (this.socket.tabType === 'FIRST_TAB') {
       this.logger.info(`Game server version: ${serverVersion}, clientKey: ${this.socket.clientKey}`);
+      setTimeout(() => UICommunicationService.setServerStatus('Healthy'), 0);
+      setTimeout(() => UICommunicationService.setServerVersion(serverVersion), 200);
     }
   }
 
