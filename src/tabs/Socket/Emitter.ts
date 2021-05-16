@@ -121,9 +121,11 @@ export default class Emitter {
 		writer.writeUint32InLEB128(token.length + clientVersionString.length + 23);
 		writer.writeBytes([8, 10, 82]);
 		writer.writeUint32InLEB128(token.length + clientVersionString.length + 18);
-    writer.writeBytes([8, type, 18, clientVersionString.length + 8, 8, 5, 18,
+    writer.writeBytes([
+      8, type, 18, clientVersionString.length + 8, 8, 5, 18,
       clientVersionString.length, ...Buffer.from(clientVersionString),
-      24, 0, 32, 0, 26]);
+      24, 0, 32, 0, 26
+    ]);
 		writer.writeUint32InLEB128(token.length + 3);
 		writer.writeBytes([10]);
 		writer.writeUint32InLEB128(token.length);

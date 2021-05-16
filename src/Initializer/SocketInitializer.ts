@@ -22,8 +22,8 @@ export default new class SocketInitializer {
     return this;
   }
 
-  public start(): void {
-    this.stage.connect().then((tokens) => {
+  public start(token?: string): void {
+    this.stage.connect(token).then((tokens) => {
       setTimeout(() => UICommunicationService.setGameLoaderShown(false), 1333);
 
       UICommunicationService.setToken(tokens.split('%')[0]);

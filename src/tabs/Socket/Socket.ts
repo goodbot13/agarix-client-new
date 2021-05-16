@@ -31,6 +31,7 @@ import Master from '../../Master';
 import Logger from '../../utils/Logger';
 import Settings from '../../Settings/Settings';
 import CallbacksHandler from './CallbacksHandler';
+import { ChatAuthor } from '../../communication/Chat';
 
 export default class Socket {
   public readonly socketData: ISocketData;
@@ -161,6 +162,7 @@ export default class Socket {
 
       case 161: break;
       case 5: break;
+      case FLUSH: break;
 
       case VIEWPORT_UPDATE: 
         const viewport = this.receiver.handleViewportUpdate();
@@ -190,14 +192,8 @@ export default class Socket {
                 }
               }
             }
+            break;
         }
-
-      case FLUSH: 
-        /* if (this.protocolKey) {
-          this.protocolKey = shiftKey(this.protocolKey);
-          this.disconnect();
-          this.logger.info(`${this.tabType} flush`);
-        } */
         break;
 
       case ADD_OWN_CELL: 
@@ -249,7 +245,7 @@ export default class Socket {
         break;
 
       case SPECTATE_MODE_IS_FULL:
-        UICommunicationService.sendChatGameMessage('Spectate error: slots are full.');
+        UICommunicationService.sendChatGameMessage('Spectate error: slots are full.', ChatAuthor.Spectator);
         break;
 
       case GENERATE_KEYS: 

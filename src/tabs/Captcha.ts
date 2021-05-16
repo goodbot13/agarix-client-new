@@ -1,6 +1,5 @@
 import UICommunicationService from "../communication/FrontAPI";
 import Socket from "./Socket/Socket";
-import { createView } from '../utils/helpers';
 
 export default new class Captcha {
   private readonly V2_KEY: string = '6LfjUBcUAAAAAF6y2yIZHgHIOO5Y3cU5osS2gbMl';

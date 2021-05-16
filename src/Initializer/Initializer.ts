@@ -3,6 +3,7 @@ import TestCase from '../TestCase';
 import UICommunicationService from '../communication/FrontAPI';
 import Master from '../Master';
 import SocketInitializer from './SocketInitializer';
+import GameSettings from '../Settings/Settings';
 
 const stage = new Stage();
 
@@ -27,7 +28,7 @@ export const initializeGame = async () => {
     SocketInitializer
       .setStage(stage)
       .try(5)
-      .start();
+      .start(GameSettings.all.game.token);
   }
 }
 

@@ -9,20 +9,6 @@ import Captcha from '../Captcha';
 import PlayerState from '../../states/PlayerState';
 import UICommunicationService from '../../communication/FrontAPI';
 
-export interface ILeaderboardPlayer {
-  position: number,
-  nick: string,
-  accountId: number,
-  isMe: boolean
-}
-
-export interface IGhostCell { 
-  playerX: number, 
-  playerY: number, 
-  totalMass: number, 
-  size: number
-}
-
 export default class Receiver {
   private socket: Socket;
   private logger: Logger;
@@ -397,4 +383,18 @@ export default class Receiver {
         this.logger.error(this.socket.tabType + ": User disconnected. Unknown error: " + messageParam)
     }
   }
+}
+
+export interface ILeaderboardPlayer {
+  position: number,
+  nick: string,
+  accountId: number,
+  isMe: boolean
+}
+
+export interface IGhostCell { 
+  playerX: number, 
+  playerY: number, 
+  totalMass: number, 
+  size: number
 }
