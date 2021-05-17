@@ -8,10 +8,10 @@ module.exports = {
     filename: 'bundle.js',
     publicPath: '/dist/'
   },
-  mode: "development", // development | production
+  mode: "production", // development | production
   watch: true,
-/*   optimization: {
+  optimization: {
     minimize: true,
     minimizer: [new TerserPlugin()],
-  }, */
+  },
 }

@@ -32,6 +32,7 @@ import Logger from '../../utils/Logger';
 import Settings from '../../Settings/Settings';
 import CallbacksHandler from './CallbacksHandler';
 import { ChatAuthor } from '../../communication/Chat';
+import Captcha from './Captcha/Captcha';
 
 export default class Socket {
   public readonly socketData: ISocketData;
@@ -84,6 +85,20 @@ export default class Socket {
     this.logger = new Logger('AgarSocket');
   }
 
+  public init(): Promise<IMapOffsets | void> {
+    return new Promise((resolve: () => void) => {
+      this.socket = new WebSocket(this.socketData.address);
+      this.socket.binaryType = 'arraybuffer';
+
+      this.socket.onopen = () => this.receiver.handleHandshake();
+      this.socket.onmessage = (msg) => this.handleMessage(msg.data);
+      this.socket.onclose = () => this.disconnect();
+      this.socket.onerror = () => this.disconnect();
+      
+      this.socketInitCallback = resolve;
+    }); 
+  }
+
   public disconnect(): void {
     switch (this.tabType) {
       case 'FIRST_TAB':
@@ -121,20 +136,6 @@ export default class Socket {
 
   public onDisconnect(callback: () => void): void {
     this.disconnectHandler.pushCallback(callback);
-  }
-
-  public init(): Promise<IMapOffsets | void> {
-    return new Promise((resolve: () => void) => {
-      this.socket = new WebSocket(this.socketData.address);
-      this.socket.binaryType = 'arraybuffer';
-
-      this.socket.onopen = () => this.receiver.handleHandshake();
-      this.socket.onmessage = (msg) => this.handleMessage(msg.data);
-      this.socket.onclose = () => this.disconnect();
-      this.socket.onerror = () => this.disconnect();
-      
-      this.socketInitCallback = resolve;
-    }); 
   }
   
   public destroy(): void {
@@ -215,11 +216,11 @@ export default class Socket {
         break;
 
       case RECAPTCHA_V2:
-        this.receiver.handleRecaptchaV2();
+        Captcha.V2.handle(this);
         break;
 
       case RECAPTCHA_V3:
-        this.receiver.handleRecaptchaV3();
+        Captcha.V3.handle(this);
         break;
 
       case SERVER_DEATH:
@@ -296,12 +297,13 @@ export default class Socket {
       return;
     }
 
-    const { minX, minY, maxX, maxY } = offsets;
-
     this.mapOffsetFixed = true;
-    this.mapOffsets = { minX, minY, maxX, maxY };
+    this.mapOffsets = offsets;
 
-    if (Master.gameMode.get() === ':ffa') {
+    const { minX, minY, maxX, maxY } = offsets;
+    const gameMode = Master.gameMode.get();
+
+    if (gameMode === ':ffa') {
       const mapWidth = Math.abs(minX) + Math.abs(maxX);
       const mapHeight = Math.abs(minY) + Math.abs(maxY);
 
@@ -312,7 +314,7 @@ export default class Socket {
     // world is not created. set global offsets 
     if (!WorldState.gameJoined) {
       if (this.tabType === 'FIRST_TAB') {
-        WorldState.mapOffsets = { minX, minY, maxX, maxY };
+        WorldState.mapOffsets = offsets;
       }
     } else {
       this.shiftOffsets.x = (WorldState.mapOffsets.minX - this.mapOffsets.minX);

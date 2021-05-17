@@ -287,7 +287,6 @@ export default class GameAPI {
 
   /*************** Login ***************/
   public logInWithFb(): void {
-    console.log('button', this.stage.world.controller);
     FacebookLogin.prepareToken(this.stage.world.controller);
   }
 
@@ -296,7 +295,6 @@ export default class GameAPI {
   }
 
   public logInWithGoogle(): void {
-    GoogleLogin.checkSdkLoaded();
     GoogleLogin.prepareToken(this.stage.world.controller);
   }
 

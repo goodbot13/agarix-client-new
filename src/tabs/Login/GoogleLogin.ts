@@ -15,10 +15,14 @@ export default new class GoogleLogin {
   private SDKLoaded: boolean = false;
   private googleAuth: any;
   private logger: Logger;
+  private initTries: number = 0;
+  private MAX_INIT_TRIES: number = 5;
+  private INIT_TIMEOUT: number = 1000;
 
 	constructor() {
 		this.token = null;
     this.checkLogin();
+    this.checkSdkLoaded();
     this.logger = new Logger('GoogleLogin');
   }
   
@@ -50,7 +54,7 @@ export default new class GoogleLogin {
       return;
     }
 
-    if (window.gapi) {
+    if (this.GOOGLE_CLIENT_ID && window.gapi) {
       this.googleAuth = window.gapi.auth2.init({
         client_id: this.GOOGLE_CLIENT_ID,
         cookie_policy: "single_host_origin",
@@ -59,10 +63,16 @@ export default new class GoogleLogin {
       });
 
       this.SDKLoaded = true;
+      this.logger.info('SDK succesfully initialized');
     } else {
-      UICommunicationService.sendChatGameMessage(`Login error: SKD hasn't been loaded yet.`, ChatAuthor.Google);
-      UICommunicationService.setFacebookLogged(false);
-      this.SDKLoaded = false;
+      if (this.initTries > this.MAX_INIT_TRIES) {
+        UICommunicationService.sendChatGameMessage(`Login error: SKD hasn't been loaded yet.`, ChatAuthor.Google);
+        UICommunicationService.setFacebookLogged(false);
+        this.SDKLoaded = false;
+      } else {
+        this.initTries++;
+        setTimeout(() => this.checkSdkLoaded(), this.INIT_TIMEOUT);
+      }
     }
   }
 

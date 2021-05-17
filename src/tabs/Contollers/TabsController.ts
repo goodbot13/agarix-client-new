@@ -208,7 +208,7 @@ class Controller {
   }
 
   public spawnFirstTab(): Promise<boolean> {
-    this.firstTabSocket.emitter.handleSpawnV3(GameSettings.all.profiles.leftProfileNick);
+    this.firstTabSocket.emitter.handleSpawn(GameSettings.all.profiles.leftProfileNick);
 
     return new Promise((resolve, reject) => {
       this.firstTabSocket.onPlayerSpawn = resolve;
@@ -217,7 +217,7 @@ class Controller {
   }
 
   public spawnSecondTab(): Promise<boolean> {
-    this.secondTabSocket.emitter.handleSpawnV3(GameSettings.all.profiles.rightProfileNick);
+    this.secondTabSocket.emitter.handleSpawn(GameSettings.all.profiles.rightProfileNick);
 
     return new Promise((resolve, reject) => {
       this.secondTabSocket.onPlayerSpawn = resolve;

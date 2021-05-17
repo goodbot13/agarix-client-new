@@ -1,7 +1,7 @@
 import PlayerState from '../../states/PlayerState';
 import { createView } from '../../utils/helpers';
 import Writer from '../../utils/Writer';
-import Captcha from '../Captcha';
+import Captcha from './Captcha/Captcha';
 import Socket from './Socket';
 
 export default class Emitter {
@@ -50,29 +50,37 @@ export default class Emitter {
   }
 
   public sendSpawn(nick: string, token?: string): void {
-    const ue = unescape(encodeURIComponent(nick));
-		const fe = ue.length;
-		let size = 2 + fe;
+    nick = unescape(encodeURIComponent(nick));
+
+		let size = 2 + nick.length;
+
 		if (token) {
 			size += 10 + token.length;
 		}
-		const he = new DataView(new ArrayBuffer(size));
-		let offset = 0;
-		he.setUint8(offset++, 0);
 
-		for (let ke = 0; ke < fe; ke++) { he.setUint8(offset++, ue.charCodeAt(ke)); }
-		he.setUint8(offset++, 0);
+		const view = new DataView(new ArrayBuffer(size));
+		let offset = 0;
+
+		view.setUint8(offset++, 0);
+
+		for (let i = 0; i < nick.length; i++) { 
+      view.setUint8(offset++, nick.charCodeAt(i)); 
+    }
+
+		view.setUint8(offset++, 0);
 
 		if (token) {
-			for (let ke = 0; ke < token.length; ke++) { he.setUint8(offset++, token.charCodeAt(ke)); }
-			he.setUint8(offset++, 0);
+			for (let i = 0; i < token.length; i++) { 
+        view.setUint8(offset++, token.charCodeAt(i)); 
+      }
+
+			view.setUint8(offset++, 0);
     }
     
-    this.socket.sendMessage(he);
+    this.socket.sendMessage(view);
   }
 
-  public handleSpawnV3(nick: string): void {
-    /* Captcha.handleV3().then((token: string) => this.sendSpawn(nick, token)); */
+  public handleSpawn(nick: string): void {
     this.sendSpawn(nick, "0");
   }
   

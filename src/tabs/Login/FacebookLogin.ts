@@ -14,17 +14,14 @@ export default new class FacebookLogin {
   private expirationDate: number = 0;
   private SDKLoaded: boolean = false;
   private logger: Logger;
+  private initTries: number = 0;
+  private MAX_INIT_TRIES: number = 5;
+  private INIT_TIMEOUT: number = 1000;
 
   constructor() {
-    window.fbAsyncInit = () => this.initLoginSystem();
     this.logger = new Logger('FacebookLogin');
 
-    setTimeout(() => {
-      if (!this.SDKLoaded) {
-        this.logger.info('Forced SDK load');
-        this.initLoginSystem();
-      }
-    }, 2000);
+    setTimeout(() => this.initLoginSystem(), this.INIT_TIMEOUT);
   }
 
   private async initLoginSystem(): Promise<any> {
@@ -32,10 +29,14 @@ export default new class FacebookLogin {
       const response = await this.getLoginStatus();
 
       if (response.status === 'connected') {
-        this.logger.info('User is already logged in, handling successfull login..');
         this.handleSuccessfulLogin(response.authResponse.accessToken, response.authResponse.expiresIn);
       } else {
         UICommunicationService.setFacebookLogged(false);
+      }
+    } else {
+      if (this.initTries < this.MAX_INIT_TRIES) {
+        this.initTries++;
+        setTimeout(() => this.initLoginSystem(), this.INIT_TIMEOUT);
       }
     }
   }
@@ -78,8 +79,6 @@ export default new class FacebookLogin {
 
     UICommunicationService.setFacebookLogged(true);
     UICommunicationService.sendChatGameMessage(`Logged in. Re-login required in ${expires} minutes.`, ChatAuthor.Facebook);
-
-    this.logger.info('Login handler received data of successful login');
   }
 
   public prepareToken(controller: Controller): void {
@@ -104,6 +103,8 @@ export default new class FacebookLogin {
     this.token = null;
     this.loggedIn = false;
 
+    window.FB.logout((response) => console.log(response));
+
     this.logger.info('Log out');
 
     UICommunicationService.setFacebookLogged(false);
@@ -116,7 +117,6 @@ export default new class FacebookLogin {
 
   public logIn(socket: Socket): void {
     if (!this.loggedIn || !this.token || !socket) {
-      this.logger.info(`Could not log in. loggedIn: ${this.loggedIn}, token: ${this.token}`);
       return;
     }
 
@@ -156,12 +156,22 @@ namespace Facebook {
     }
   }
 
+  export type TLoginParams = {
+    scope: string
+  }
+
   export interface SDK {
     init(args: Object): void,
     getLoginStatus(
       cb: (args: ILoginStatusResponse) => void
     ): void,
-    login: any,
+    login(
+      cb: (args: ILoginStatusResponse) => void,
+      params: TLoginParams
+    ): void,
+    logout(
+      cb: (args: any) => void
+    ): void
   }
 }
 

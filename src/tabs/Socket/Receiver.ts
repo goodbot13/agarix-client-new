@@ -5,7 +5,6 @@ import Socket, { IMapOffsets, IViewport } from './Socket';
 import Logger from '../../utils/Logger';
 import GameSettings from '../../Settings/Settings';
 import GamePerformance from '../../GamePerformance';
-import Captcha from '../Captcha';
 import PlayerState from '../../states/PlayerState';
 import UICommunicationService from '../../communication/FrontAPI';
 
@@ -138,14 +137,6 @@ export default class Receiver {
     return ghostCells;
   }
 
-  public handleRecaptchaV2(): void {
-    Captcha.handleV2(this.socket);
-  }
-
-  public handleRecaptchaV3(): void {
-    Captcha.handleV3(this.socket);
-  }
-
   public handlePingUpdate() {
     const ping = this.reader.getUint16();
     const view = createView(3);
@@ -172,7 +163,6 @@ export default class Receiver {
     this.socket.clientKey = murmur2(hashBuffer, seed);
 
     if (this.socket.tabType === 'FIRST_TAB') {
-      this.logger.info(`Game server version: ${serverVersion}, clientKey: ${this.socket.clientKey}`);
       setTimeout(() => UICommunicationService.setServerStatus('Healthy'), 0);
       setTimeout(() => UICommunicationService.setServerVersion(serverVersion), 100);
     }
@@ -196,7 +186,7 @@ export default class Receiver {
         this.socket.setMapOffset(this.getMapOffset());
         break;
 
-      default: this.logger.error('Unknown decompress opcode');
+      default: this.logger.error(`Unknown decompress opcode ${opcode}`);
     }
   }
 
