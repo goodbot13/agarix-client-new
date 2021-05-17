@@ -101,27 +101,33 @@ class Hotkeys implements IGameAPIHotkeys {
 
   public async quickRespawn(): Promise<any> {
     if (this.controller.currentFocusedTab === 'FIRST_TAB') {
-      this.controller.disconnectFirstTab();
-
       await this.controller.connectFirstPlayerTab();
 
       const message = 'Main tab re-connected. Waiting 1 second until safe spawn.';
       UICommunicationService.sendChatGameMessage(message, ChatAuthor.QuickRespawn);
 
       await timeout(1000);
-      await this.controller.spawnFirstTab();
+      
+      try {
+        await this.controller.spawnFirstTab();
+      } catch {
+        UICommunicationService.sendChatGameMessage('Could not spawn.', ChatAuthor.QuickRespawn);
+      }
 
       this.controller.setFirstTabActive();
     } else {
-      this.controller.disconnectSecondTab();
-
       await this.controller.connectSecondPlayerTab();
 
       const message = 'Second tab re-connected. Waiting 1 second until safe spawn.';
       UICommunicationService.sendChatGameMessage(message, ChatAuthor.QuickRespawn);
       
       await timeout(1000);
-      await this.controller.spawnSecondTab();
+      
+      try {
+        await this.controller.spawnSecondTab();
+      } catch {
+        UICommunicationService.sendChatGameMessage('Could not spawn.', ChatAuthor.QuickRespawn);
+      }
 
       this.controller.setSecondTabActive();
     }

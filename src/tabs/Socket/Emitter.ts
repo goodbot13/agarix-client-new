@@ -72,7 +72,8 @@ export default class Emitter {
   }
 
   public handleSpawnV3(nick: string): void {
-    Captcha.handleV3().then((token: string) => this.sendSpawn(nick, token));
+    /* Captcha.handleV3().then((token: string) => this.sendSpawn(nick, token)); */
+    this.sendSpawn(nick, "0");
   }
   
   public sendMousePosition(dirty?: boolean, x?: number, y?: number): void { 

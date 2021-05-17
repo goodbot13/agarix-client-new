@@ -10,11 +10,10 @@ import PlayerState from '../../states/PlayerState';
 import UICommunicationService from '../../communication/FrontAPI';
 
 export default class Receiver {
-  private socket: Socket;
   private logger: Logger;
   public reader: Reader;
 
-  constructor(socket: Socket) {
+  constructor(private socket: Socket) {
     this.socket = socket;
     this.reader = new Reader();
     this.logger = new Logger('SocketReceiver');
@@ -175,7 +174,7 @@ export default class Receiver {
     if (this.socket.tabType === 'FIRST_TAB') {
       this.logger.info(`Game server version: ${serverVersion}, clientKey: ${this.socket.clientKey}`);
       setTimeout(() => UICommunicationService.setServerStatus('Healthy'), 0);
-      setTimeout(() => UICommunicationService.setServerVersion(serverVersion), 200);
+      setTimeout(() => UICommunicationService.setServerVersion(serverVersion), 100);
     }
   }
 

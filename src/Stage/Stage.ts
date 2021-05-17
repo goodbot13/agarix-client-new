@@ -94,14 +94,12 @@ class Stage {
             resolve(tokens);
           })
           .catch(() => {
-            console.log('rejected 1');
             reject(null);
           });
 
         }
 
       } else {
-        console.log('reject by client')
         reject(null);
       }
     });
