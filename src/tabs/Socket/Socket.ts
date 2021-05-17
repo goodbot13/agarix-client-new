@@ -11,7 +11,6 @@ import {
   ADD_OWN_CELL, 
   COMPRESSED_MESSAGE, 
   FLUSH, 
-  FREE_COINS, 
   GENERATE_KEYS,
   GHOST_CELLS, 
   LEADERBOARD, 
@@ -25,7 +24,9 @@ import {
   SOCKET_OPENED, 
   SPECTATE_MODE_IS_FULL, 
   VIEWPORT_UPDATE, 
-  RECAPTCHA_V3
+  RECAPTCHA_V3,
+  TOKEN_ACCEPTED,
+  MOBILE_DATA
 } from './Opcodes';
 import Master from '../../Master';
 import Logger from '../../utils/Logger';
@@ -52,7 +53,6 @@ export default class Socket {
   public shiftOffsets: IMapOffsetsShift;
   public reachedSpectatingPosition: boolean;
   public readonly emitter: Emitter;
-  public loggedIn: boolean;
   public onServerDeath: any;
   public offsetsPositionMultiplier: IMapOffsetsPositionMultiplier;
   public playerSpawned: boolean;
@@ -73,7 +73,6 @@ export default class Socket {
     this.protocolKey = null;
     this.clientKey = null;
     this.mapOffsetFixed = false;
-    this.loggedIn = false;
     this.mapOffsets = { minX: 0, minY: 0, maxX: 0, maxY: 0 };
     this.offsetsPositionMultiplier = { x: 1, y: 1 };
     this.playerSpawned = false;
@@ -232,8 +231,21 @@ export default class Socket {
         
         break;
 
-      case FREE_COINS: 
+      case TOKEN_ACCEPTED: 
         break;
+
+/*       case MOBILE_DATA:
+        if (this.emit("mobiledata", new Uint8Array(e.buffer.slice(1))), 1 == (a = (i = new L(e, o)).readFlag()) && i.setContentType(), 2 == (a = i.readFlag()) && i.setUncompressedSize(), 1 == (a = i.readFlag())) switch (a = i.readUint32(), i.readFlag(), i.readUint32(), a) {
+          case 20:
+            Array.from(new Uint8Array(e.buffer)).map((function (e) {
+              return String.fromCharCode(e)
+            })).join(""), i = e.getUint8(e.byteLength - 1), console.log("Disconnected by server"), this.disconnectMessage(i), this.loggedIn = !1, this.parent.emit("logout", this), this.emit("logout", this);
+            break;
+          case 62:
+            Array.from(new Uint8Array(e.buffer)).map((function (e) {
+              return String.fromCharCode(e)
+            })).join("")
+        } */
 
       case PING_PONG: 
         this.receiver.handlePingUpdate();

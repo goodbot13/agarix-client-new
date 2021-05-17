@@ -4,7 +4,6 @@ import { CellType, Location, RemoveType, RGB, Subtype } from "../objects/types";
 import Virus from "../objects/Virus/Virus";
 import World from "../render/World";
 import GameSettings from "../Settings/Settings";
-import TextureGenerator from '../Textures/TexturesGenerator';
 import { transformMinimapLocation } from "../utils/helpers";
 
 export default class RealPlayersCells extends Container {
@@ -55,31 +54,28 @@ export default class RealPlayersCells extends Container {
       return;
     }
 
-    if (subtype === 'TOP_ONE_TAB') {
+    if (subtype === 'FIRST_TAB' || subtype === 'SECOND_TAB') {
+      return;
+    }
 
-      if (type === 'CELL') {
+    if (type === 'CELL') {
+      const loc = transformMinimapLocation(location, this.world.view.firstTab.getShiftedMapOffsets());
+      const cell = new Cell(subtype, loc, color, name, skin, this.world);
 
-        const loc = transformMinimapLocation(location, this.world.view.firstTab.getShiftedMapOffsets());
-        const cell = new Cell(subtype, loc, color, name, skin, this.world);
+      cell.setIsVisible(true);
+      cell.setIsMinimapCell();
 
-        cell.setIsVisible(true);
-        cell.setIsMinimapCell();
+      this.buffer.set(id, cell);
+      this.addChild(cell);
+    } else if (type === 'VIRUS') {
+      location = transformMinimapLocation(location, this.world.view.firstTab.getShiftedMapOffsets());
 
-        this.buffer.set(id, cell);
-        this.addChild(cell);
+      const virus = new Virus(location, subtype);
 
-      } else if (type === 'VIRUS') {
+      virus.setIsMinimap(location.r);
 
-        location = transformMinimapLocation(location, this.world.view.firstTab.getShiftedMapOffsets());
-
-        const virus = new Virus(location, subtype);
-
-        virus.setIsMinimap(location.r);
-
-        this.buffer.set(id, virus);
-        this.addChild(virus);
-
-      }
+      this.buffer.set(id, virus);
+      this.addChild(virus);
     }
   }
   

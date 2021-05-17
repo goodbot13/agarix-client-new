@@ -60,10 +60,10 @@ export default class CellStats {
       this.mass.visible = this.mass.renderable = myMass;
       this.nick.visible = this.nick.renderable = myNick;
     } else {
-      if (this.cell.isMinimap && this.cell.originalSize >= 22) {
+      if (this.cell.isMinimap && this.cell.originalSize >= 15) {
         this.nick.visible = this.nick.renderable = mNicks;
         this.mass.visible = this.mass.renderable = mMass;
-        this.nick.scale.set(1.5);
+        this.nick.scale.set(1.33);
       } else if (this.cell.originalSize <= 70) {
         this.mass.visible = this.mass.renderable = false;
         this.nick.visible = this.nick.renderable = false;

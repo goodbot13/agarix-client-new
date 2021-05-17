@@ -6,7 +6,7 @@ import World from '../render/World';
 import { KawaseBlurFilter } from '@pixi/filter-kawase-blur';
 import Master from '../Master';
 import { IMapOffsets } from '../tabs/Socket/Socket';
-import Hotkeys from '../tabs/Hotkeys';
+import Hotkeys from '../tabs/Hotkeys/Hotkeys';
 import GameAPI from '../communication/GameAPI';
 import GameSettings from '../Settings/Settings';
 import FrontAPI from '../communication/FrontAPI';
@@ -72,35 +72,48 @@ class Stage {
     return true;
   }
 
+  private async tryToConnectAndSpawn(): Promise<any> {
+    if (PlayerState.first.connected) {
+      try {
+        await this.world.controller.spawnFirstTab();
+        this.unblurGameScene(true);
+        this.world.controller.setFirstTabActive();
+
+        return Promise.resolve();
+      } catch {
+        this.tryToConnectAndSpawn();
+      }
+    } else {
+      try {
+        await this.world.controller.connectFirstPlayerTab();
+        await this.world.controller.spawnFirstTab();
+        this.world.controller.setFirstTabActive();
+
+        return Promise.resolve();
+      } catch {
+        this.tryToConnectAndSpawn();
+      }
+    }
+  } 
+
   public async play(): Promise<string | null> {
     return new Promise(async (resolve: any, reject: any) => {
+      const tokens = createTokens(
+        this.world.controller.firstTabSocket.socketData.token,
+        this.world.controller.firstTabSocket.socketData.serverToken
+      );
+
       if (PlayerState.first.connected) {
-
-        const tokens = createTokens(
-          this.world.controller.firstTabSocket.socketData.token,
-          this.world.controller.firstTabSocket.socketData.serverToken
-        );
-
         if (PlayerState.first.playing || PlayerState.first.spawning) {
-
           this.unblurGameScene(true);
           resolve(tokens);
-
         } else {
-
-          await this.world.controller.spawnFirstTab().then(() => {
-            this.unblurGameScene(true);
-            PlayerState.first.focused = true;
-            resolve(tokens);
-          })
-          .catch(() => {
-            reject(null);
-          });
-
+          await this.tryToConnectAndSpawn();
+          resolve(tokens);
         }
-
       } else {
-        reject(null);
+        await this.tryToConnectAndSpawn();
+        resolve(tokens);
       }
     });
   }

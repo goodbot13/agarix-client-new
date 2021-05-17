@@ -122,7 +122,7 @@ export default class Emitter {
   }
 
   public sendLogin(token: string, type: 2 | 4): void {
-    const writer = new Writer(8192);
+    const writer = new Writer(2048);
     const { clientVersionString } = this.socket.socketData;
 
     writer.setToArray();

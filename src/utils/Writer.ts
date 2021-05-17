@@ -79,7 +79,7 @@ export default class Writer {
   
 	public writeUint32InLEB128(value: number): void {
 		while (true) {
-			if ((value & 128) === 0) {
+			if ((value & -128) === 0) {
 				this.message.push(value);
 				break;
 			} else {

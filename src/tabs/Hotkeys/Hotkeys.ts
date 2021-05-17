@@ -1,25 +1,21 @@
-import Globals from "../Globals";
-import GameSettings from "../Settings/Settings";
-import UICommunicationService from "../communication/FrontAPI";
-import Controller from "./Contollers/TabsController";
-import Emitter from "./Socket/Emitter";
-import PlayerState from "../states/PlayerState";
-import Ogar from "../Ogar";
-import SettingsState from "../states/SettingsState";
-import { ChatAuthor } from "../communication/Chat";
-
-const timeout = (milliseconds: number): Promise<void> => {
-  return new Promise((resolve) => {
-    setTimeout(() => resolve(), milliseconds);
-  });
-}
+import GameSettings from "../../Settings/Settings";
+import UICommunicationService from "../../communication/FrontAPI";
+import Controller from "../Contollers/TabsController";
+import Emitter from "../Socket/Emitter";
+import PlayerState from "../../states/PlayerState";
+import Ogar from "../../Ogar";
+import SettingsState from "../../states/SettingsState";
+import { ChatAuthor } from "../../communication/Chat";
+import QuickRespawn from "./QuickRespawn";
 
 class Hotkeys implements IGameAPIHotkeys {
   private macroFeedInterval: any;
   private controller: Controller;
+  private quickRespawnHandler: QuickRespawn;
   
   constructor(controller: Controller) {
     this.controller = controller;
+    this.quickRespawnHandler = new QuickRespawn(controller);
     (window as any).GameAPI.hotkeys = this;
   }
 
@@ -100,31 +96,7 @@ class Hotkeys implements IGameAPIHotkeys {
   }
 
   public async quickRespawn(): Promise<any> {
-    if (this.controller.currentFocusedTab === 'FIRST_TAB') {
-      await this.controller.connectFirstPlayerTab();
-
-      await timeout(250);
-      
-      try {
-        await this.controller.spawnFirstTab();
-      } catch {
-        UICommunicationService.sendChatGameMessage('Could not spawn.', ChatAuthor.QuickRespawn);
-      }
-
-      this.controller.setFirstTabActive();
-    } else {
-      await this.controller.connectSecondPlayerTab();
-      
-      await timeout(250);
-      
-      try {
-        await this.controller.spawnSecondTab();
-      } catch {
-        UICommunicationService.sendChatGameMessage('Could not spawn.', ChatAuthor.QuickRespawn);
-      }
-
-      this.controller.setSecondTabActive();
-    }
+    this.quickRespawnHandler.handle();
   }
 
   // toggle

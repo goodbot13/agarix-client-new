@@ -46,6 +46,9 @@ export default new class GoogleLogin {
         UICommunicationService.sendChatGameMessage('Token expired. Please, log in again.', ChatAuthor.Google);
         this.logOut();
       }
+    } else {
+      UICommunicationService.setGoogleLogged(false);
+      this.logOut();
     }
 	}
 

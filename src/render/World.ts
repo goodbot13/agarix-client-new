@@ -11,7 +11,7 @@ import SocketCells from './SocketCells';
 import { TabType } from '../tabs/Socket/Socket';
 import Controller from '../tabs/Contollers/TabsController';
 import View from '../View';
-import Hotkeys from '../tabs/Hotkeys';
+import Hotkeys from '../tabs/Hotkeys/Hotkeys';
 import Stage from '../Stage/Stage';
 import Minimap from '../Minimap/MinimapWEBGL'
 import GameSettings from '../Settings/Settings';
