@@ -43,8 +43,6 @@ export default class Socket {
   public isPlaying: boolean;
   public spectateAtX: number;
   public spectateAtY: number;
-  public connectionOpened: boolean;
-  public connectionOpenedTime: number;
   public serverTime: number;
   public serverTimeDiff: number;
   public socket: WebSocket;
@@ -66,6 +64,7 @@ export default class Socket {
   private socketInitCallback: any;
   private logger: Logger;
   private loginTimeoutId: NodeJS.Timeout;
+  private connectionOpened: boolean;
 
   constructor(socketData: ISocketData, tabType: TabType, world: World) {
     this.socketData = socketData;
@@ -85,6 +84,12 @@ export default class Socket {
   }
 
   public init(): Promise<IMapOffsets | void> {
+    setTimeout(() => {
+      if (!this.connectionOpened) {
+        this.disconnectHandler.execute();
+      }
+    }, 3000);
+
     return new Promise((resolve: () => void) => {
       this.socket = new WebSocket(this.socketData.address);
       this.socket.binaryType = 'arraybuffer';
@@ -149,6 +154,8 @@ export default class Socket {
   }
 
   private handleMessage(arrayBuffer: ArrayBuffer): void { 
+    this.connectionOpened = true;
+
     let view = new DataView(arrayBuffer);
 
     if (this.protocolKey) {

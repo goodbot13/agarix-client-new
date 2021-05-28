@@ -22,22 +22,24 @@ export default new class SocketInitializer {
     return this;
   }
 
+  private reconnect(): void {
+    if (this.timesDone >= this.times) {
+      setTimeout(() => UICommunicationService.setGameLoaderShown(false), 1333);
+
+      UICommunicationService.setServerStatus('Down');
+      UICommunicationService.setServerVersion('Unavailable');
+    } else {
+      this.timesDone++;
+      this.start();
+    }
+  }
+
   public start(token?: string): void {
     this.stage.connect(token).then((tokens) => {
       setTimeout(() => UICommunicationService.setGameLoaderShown(false), 1333);
 
       UICommunicationService.setToken(tokens.split('%')[0]);
       UICommunicationService.setServerToken(tokens.split('%')[1]);
-    }).catch(() => {
-      if (this.timesDone >= this.times) {
-        setTimeout(() => UICommunicationService.setGameLoaderShown(false), 1333);
-
-        UICommunicationService.setServerStatus('Down');
-        UICommunicationService.setServerVersion('Unavailable');
-      } else {
-        this.timesDone++;
-        this.start();
-      }
-    });
+    }).catch(() => this.reconnect());
   }
 }

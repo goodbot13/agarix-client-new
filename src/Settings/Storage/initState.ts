@@ -80,6 +80,7 @@ export interface IGameGameplayState {
   cameraStyle: CameraStyleType,
   spectatorMode: SpectatorModeType,
   viewport: ViewportType,
+  autoRespawnOnFail: boolean
 }
 
 export interface IGameMinimapState {

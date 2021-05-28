@@ -1,6 +1,7 @@
 import Controller from "../Contollers/TabsController";
 import UICommunicationService from "../../communication/FrontAPI";
 import { ChatAuthor } from "../../communication/Chat";
+import GameSettings from '../../Settings/Settings';
 
 const timeout = (milliseconds: number): Promise<void> => {
   return new Promise((resolve) => {
@@ -9,11 +10,11 @@ const timeout = (milliseconds: number): Promise<void> => {
 }
 
 export default class QuickRespawn {
-  private firstTabTries: number = 0;
-  private secondTabTries: number = 0;
   constructor(private controller: Controller) { }
 
   public async handle() {
+    const { autoRespawnOnFail } = GameSettings.all.settings.game.gameplay;
+
     if (this.controller.currentFocusedTab === 'FIRST_TAB') {
       await this.controller.connectFirstPlayerTab();
 
@@ -21,11 +22,12 @@ export default class QuickRespawn {
       
       try {
         await this.controller.spawnFirstTab();
-        this.firstTabTries = 0;
       } catch {
-        UICommunicationService.sendChatGameMessage(`Could not spawn (main attempt #${this.firstTabTries})`, ChatAuthor.QuickRespawn);
-        this.firstTabTries++;
-        this.handle();
+        UICommunicationService.sendChatGameMessage(`Could not spawn (main)`, ChatAuthor.QuickRespawn);
+
+        if (autoRespawnOnFail) {
+          this.handle();
+        }
       }
 
       this.controller.setFirstTabActive();
@@ -36,11 +38,12 @@ export default class QuickRespawn {
       
       try {
         await this.controller.spawnSecondTab();
-        this.secondTabTries = 0;
       } catch {
-        this.secondTabTries++;
-        UICommunicationService.sendChatGameMessage(`Could not spawn (multi attempt #${this.secondTabTries})`, ChatAuthor.QuickRespawn);
-        this.handle();
+        UICommunicationService.sendChatGameMessage(`Could not spawn (multi)`, ChatAuthor.QuickRespawn);
+        
+        if (autoRespawnOnFail) {
+          this.handle();
+        }
       }
 
       this.controller.setSecondTabActive();
