@@ -26,21 +26,21 @@ class Controller {
   }
 
   public init(socketData?: ISocketData): Promise<IMapOffsets> {
-    this.disconnectAll();
+    return new Promise((resolve: any, reject: (reason: string) => void) => {
+      this.disconnectAll();
 
-    if (socketData) {
-      this.socketData = socketData;
-
-      const reg = socketData.https.match(/live-arena-([\w\d]+)\.agar\.io:\d+/)[1];
-
-      if (!Ogar.connected) {
-        window.GameAPI.connectOgar().then(() => Ogar.join(reg, socketData.token));
-      } else {
-        Ogar.join(reg, socketData.token);
+      if (socketData) {
+        this.socketData = socketData;
+  
+        const reg = socketData.https.match(/live-arena-([\w\d]+)\.agar\.io:\d+/)[1];
+  
+        if (!Ogar.connected) {
+          window.GameAPI.connectOgar().then(() => Ogar.join(reg, socketData.token));
+        } else {
+          Ogar.join(reg, socketData.token);
+        }
       }
-    }
 
-    return new Promise((resolve: any) => {
       let mainId: NodeJS.Timeout;
       let fullMapId: NodeJS.Timeout;
       let topOneId: NodeJS.Timeout;
@@ -51,24 +51,27 @@ class Controller {
 
           if (GameSettings.all.settings.game.gameplay.spectatorMode === 'Full map') {
             fullMapId = setTimeout(() => this.enableFullMapView(), 400);
+            this.connectionTimeoutsIds.push(fullMapId);
           } else if (GameSettings.all.settings.game.gameplay.spectatorMode === 'Top one') {
             topOneId = setTimeout(() => this.connectTopOneTab(), 400);
+            this.connectionTimeoutsIds.push(topOneId);
           }
   
           if (GameSettings.all.settings.game.multibox.enabled) {
             secondPlayerTabId = setTimeout(() => this.connectSecondPlayerTab(), 600);
+            this.connectionTimeoutsIds.push(secondPlayerTabId);
           }
   
           resolve(mapOffsets);
-        });
+        }).catch((reason) => reject(reason));
       }, 200);
 
-      this.connectionTimeoutsIds.push(mainId, fullMapId, topOneId, secondPlayerTabId);
+      this.connectionTimeoutsIds.push(mainId);
     });
   }
 
   public connectFirstPlayerTab(): Promise<IMapOffsets> {
-    return new Promise((resolve) => {
+    return new Promise((resolve: any, reject: (reason: string) => any) => {
       this.disconnectFirstTab();
 
       UICommunicationService.setFirstTabStatus('CONNECTING');
@@ -79,7 +82,7 @@ class Controller {
         UICommunicationService.setFirstTabStatus('CONNECTED');
         UICommunicationService.sendChatGameMessage('Main player tab connected.', ChatAuthor.Game);
         resolve(this.firstTabSocket.mapOffsets);
-      });
+      }).catch((reason) => reject(reason));
 
       this.firstTabSocket.onDisconnect(() => {
         UICommunicationService.sendChatGameMessage('Main player tab disconnected.', ChatAuthor.Game);

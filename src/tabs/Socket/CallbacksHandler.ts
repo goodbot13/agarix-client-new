@@ -7,6 +7,7 @@ export default class CallbacksHandler {
 
   public execute(): void {
     this.callbacksArray.forEach((callback) => callback());
+    this.clear();
   }
 
   public clear(): void {

@@ -5,6 +5,7 @@ export default new class PlayerState {
     focused: false,
     loggedIn: false,
     connected: false,
+    connecting: false,
     shouldBeReconnected: false,
   }
 
@@ -14,6 +15,7 @@ export default new class PlayerState {
     focused: false,
     loggedIn: false,
     connected: false,
+    connecting: false,
     shouldBeReconnected: false,
   }
 }
@@ -24,5 +26,6 @@ interface IPlayerState {
   focused: boolean,
   loggedIn: boolean,
   connected: boolean,
+  connecting: boolean,
   shouldBeReconnected: boolean
 }

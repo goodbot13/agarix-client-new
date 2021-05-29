@@ -34,6 +34,7 @@ import Settings from '../../Settings/Settings';
 import CallbacksHandler from './CallbacksHandler';
 import { ChatAuthor } from '../../communication/Chat';
 import Captcha from './Captcha/Captcha';
+import { SOCKET_CONNECTION_REJECT } from './types';
 
 export default class Socket {
   public readonly socketData: ISocketData;
@@ -64,7 +65,8 @@ export default class Socket {
   private socketInitCallback: any;
   private logger: Logger;
   private loginTimeoutId: NodeJS.Timeout;
-  private connectionOpened: boolean;
+
+  public connectionOpened: boolean;
 
   constructor(socketData: ISocketData, tabType: TabType, world: World) {
     this.socketData = socketData;
@@ -84,13 +86,17 @@ export default class Socket {
   }
 
   public init(): Promise<IMapOffsets | void> {
-    setTimeout(() => {
-      if (!this.connectionOpened) {
-        this.disconnectHandler.execute();
-      }
-    }, 3000);
+    switch (this.tabType) {
+      case 'FIRST_TAB': 
+        PlayerState.first.connecting = true;
+        break;
 
-    return new Promise((resolve: () => void) => {
+      case 'SECOND_TAB': 
+        PlayerState.second.connecting = true;
+        break;
+    }
+
+    return new Promise((resolve: () => void, reject: (reason: string) => void) => {
       this.socket = new WebSocket(this.socketData.address);
       this.socket.binaryType = 'arraybuffer';
 
@@ -100,6 +106,13 @@ export default class Socket {
       this.socket.onerror = () => this.disconnect();
       
       this.socketInitCallback = resolve;
+
+      setTimeout(() => {
+        if (!this.connectionOpened) {
+          this.disconnectHandler.execute();
+          reject(SOCKET_CONNECTION_REJECT.NO_RESPONSE_FROM_SERVER);
+        }
+      }, 500);
     }); 
   }
 
@@ -110,6 +123,7 @@ export default class Socket {
         PlayerState.first.spawning = false;
         PlayerState.first.loggedIn = false;
         PlayerState.first.connected = false;
+        PlayerState.first.connecting = false;
         this.world.view.firstTab.bounds = { left: 0, right: 0, top: 0, bottom: 0, width: 0, height: 0 };
         break;
 
@@ -118,6 +132,7 @@ export default class Socket {
         PlayerState.second.spawning = false;
         PlayerState.second.loggedIn = false;
         PlayerState.second.connected = false;
+        PlayerState.second.connecting = false;
         this.world.view.secondTab.bounds = { left: 0, right: 0, top: 0, bottom: 0, width: 0, height: 0 };
         break;
 
@@ -154,8 +169,6 @@ export default class Socket {
   }
 
   private handleMessage(arrayBuffer: ArrayBuffer): void { 
-    this.connectionOpened = true;
-
     let view = new DataView(arrayBuffer);
 
     if (this.protocolKey) {

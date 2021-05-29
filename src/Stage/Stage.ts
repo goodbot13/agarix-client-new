@@ -15,6 +15,8 @@ import { createTokens, getColor } from '../utils/helpers';
 import PlayerState from '../states/PlayerState';
 import GamePerformance from '../GamePerformance';
 import { GAME_VERSION } from '../Versions';
+import Logger from '../utils/Logger';
+import { SOCKET_CONNECTION_REJECT } from '../tabs/Socket/types';
 
 class Stage {
   public app: Application;
@@ -30,6 +32,8 @@ class Stage {
   public showStageTicker: () => void;
   public hideTicker: () => void;
   public hotkeys: Hotkeys;
+
+  private logger: Logger = new Logger('Stage');
 
   constructor() {
     utils.sayHello(GAME_VERSION);
@@ -72,7 +76,9 @@ class Stage {
     return true;
   }
 
-  private async tryToConnectAndSpawn(): Promise<any> {
+  private async tryToConnectAndSpawn(): Promise<void> {
+    const { autoRespawnOnFail } = GameSettings.all.settings.game.gameplay;
+
     if (PlayerState.first.connected) {
       try {
         await this.world.controller.spawnFirstTab();
@@ -80,18 +86,30 @@ class Stage {
         this.world.controller.setFirstTabActive();
 
         return Promise.resolve();
-      } catch {
-        this.tryToConnectAndSpawn();
+      } catch (reason) {
+        if (reason === SOCKET_CONNECTION_REJECT.NO_RESPONSE_FROM_SERVER) {
+          this.logger.error(`Could not connect to server. Reason: ${reason}`);
+        } else {
+          if (autoRespawnOnFail) {
+            this.tryToConnectAndSpawn();
+          }
+        }
       }
-    } else {
+    } else if (!PlayerState.first.connecting) {
       try {
         await this.world.controller.connectFirstPlayerTab();
         await this.world.controller.spawnFirstTab();
         this.world.controller.setFirstTabActive();
 
         return Promise.resolve();
-      } catch {
-        this.tryToConnectAndSpawn();
+      } catch (reason) {
+        if (reason === SOCKET_CONNECTION_REJECT.NO_RESPONSE_FROM_SERVER) {
+          this.logger.error(`Could not connect to server. Reason: ${reason}`);
+        } else {
+          if (autoRespawnOnFail) {
+            this.tryToConnectAndSpawn();
+          }
+        }
       }
     }
   } 
@@ -112,13 +130,25 @@ class Stage {
           resolve(tokens);
         }
       } else {
-        await this.tryToConnectAndSpawn();
-        resolve(tokens);
+        
+        if (tokens) {
+          await this.tryToConnectAndSpawn();
+          resolve(tokens);
+        } else {
+          try {
+            const newTokens = await this.connect();
+            resolve(newTokens);
+          } catch (reason) {
+            this.logger.error(`Could not connect to server. Reason: ${reason}`);
+            resolve('');
+          }
+        }
+
       }
     });
   }
 
-  public async connect(token?: string, serverToken?: boolean): Promise<string> {
+  public async connect(token?: string, serverToken?: boolean, isInit?: boolean): Promise<string> {
     if (WorldState.gameJoined) {
       await this.disconnect();
 
@@ -129,15 +159,35 @@ class Stage {
 
     const socketData = await Master.connect(token, serverToken);
 
-    return this.world.controller.init(socketData)
-      .then((mapOffsets) => {
-        this.join(mapOffsets);
-      
-        return createTokens(
-          this.world.controller.firstTabSocket.socketData.token, 
-          this.world.controller.firstTabSocket.socketData.serverToken
-        );
-      });
+    return new Promise((
+      resolve: (tokens: string) => void, 
+      reject: (reason: string) => void
+    ) => {
+      this.world.controller.init(socketData)
+        .then((mapOffsets) => {
+          this.join(mapOffsets);
+        
+          return resolve(createTokens(
+            this.world.controller.firstTabSocket.socketData.token, 
+            this.world.controller.firstTabSocket.socketData.serverToken
+          ));
+        }).catch((reason) => {
+          if (!token && !serverToken) {
+
+            // do not display message in console - init mode
+            if (isInit) {
+              reject(reason);
+              return;
+            }
+
+            this.logger.error(`Could not connect to server. Reason: ${reason}`);
+            reject(reason);
+            
+          } else {
+            reject(reason);
+          }
+        });
+    });
   }
 
   public async disconnect(): Promise<boolean> {

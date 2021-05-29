@@ -22,15 +22,16 @@ export default class Receiver {
     switch (this.socket.tabType) {
       case 'FIRST_TAB':
         PlayerState.first.connected = true;
+        PlayerState.second.connecting = false;
         break;
 
       case 'SECOND_TAB':
         PlayerState.second.connected = true;
+        PlayerState.second.connecting = false;
         break;
     }
 
     this.socket.connectionOpened = true;
-    this.socket.connectionOpenedTime = Date.now();
 
     let view = createView(5);
 

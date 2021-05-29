@@ -3,6 +3,7 @@ import Controller from './TabsController';
 import UICommunicationService from '../../communication/FrontAPI';
 import { ChatAuthor } from '../../communication/Chat';
 import GameSettings from '../../Settings/Settings';
+import Logger from '../../utils/Logger';
 
 export interface ISpectateCoords {
   x: number,
@@ -13,6 +14,7 @@ export default class FullmapController {
   private coordinates: Array<ISpectateCoords> = [];
   private sockets: Array<Socket> = [];
   private establishBegin: number = 0;
+  private logger: Logger = new Logger('FullMapController');
 
   public enabling: boolean = false;
 
@@ -48,8 +50,6 @@ export default class FullmapController {
 
   public enable(i?: number): void {
 
-    UICommunicationService.setSpectatorTabStatus('CONNECTING');
-
     if (i === undefined) {
       if (!this.tabsController.topOneViewEnabled) {
         this.tabsController.connectTopOneTab().then(() => {
@@ -64,6 +64,8 @@ export default class FullmapController {
       this.enabling = true;
 
       i = 0;
+
+      UICommunicationService.setSpectatorTabStatus('CONNECTING');
     }
 
     const { socketData, world } = this.tabsController;
@@ -97,6 +99,9 @@ export default class FullmapController {
           UICommunicationService.setSpectatorTabStatus('CONNECTED');   
         }
       }
+    }).catch((reason) => {
+      this.logger.error(`Could not connect to server. Reason: ${reason}`);
+      UICommunicationService.setSpectatorTabStatus('CONNECTED');  
     });
 
   }
