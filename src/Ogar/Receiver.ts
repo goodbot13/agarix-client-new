@@ -43,15 +43,6 @@ export default class Receiver {
 		};
 
 		SkinsLoader.load(player.skin);
-
-		FrontAPI.updateTopTeam([...this.socket.team.values()].map((player) => {
-			return {
-				nick: player.nick,
-				mass: player.mass,
-				isAlive: player.alive,
-				id: player.id
-			} as ITopTeamPlayer;
-		}));
 	}
 
 	public updateTeamPlayerPosition(reader: Reader) {
@@ -70,14 +61,5 @@ export default class Receiver {
     player.mass = reader.getUint32();
 		player.alive = true;
 		player.updateTime = Date.now();
-
-		FrontAPI.updateTopTeam([...this.socket.team.values()].map((player) => {
-			return {
-				nick: player.nick,
-				mass: player.mass,
-				isAlive: player.alive,
-				id: player.id
-			} as ITopTeamPlayer;
-		}));
 	}
 }

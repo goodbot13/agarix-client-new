@@ -79,6 +79,11 @@ export default class GameAPI {
   public setTag(): void {
     Ogar.firstTab.player.tag = GameSettings.all.profiles.tag;
     Ogar.firstTab.emitter.sendPlayerTag();
+
+    if (Ogar.secondTab) {
+      Ogar.secondTab.player.tag = GameSettings.all.profiles.tag;
+      Ogar.secondTab.emitter.sendPlayerTag();
+    }
   }
 
   public setFirstTabNick(): void {
@@ -113,6 +118,10 @@ export default class GameAPI {
 
   public sendMessage(message: string): void {
     Ogar.firstTab.sendChat(message);
+  }
+
+  public sendCommand(message: string): void {
+    Ogar.firstTab.sendChatCommander(message);
   }
 
 
@@ -317,7 +326,10 @@ declare global {
       spectateTarget(): void,
       spectateCenter(): void,
       spectateTopOne(): void,
+
       sendMessage(message: string): void,
+      sendCommand(message: string): void,
+
       setSecondTabSkin(): void,
       setSecondTabNick(): void,
       setFirstTabSkin(): void,

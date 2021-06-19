@@ -78,9 +78,12 @@ export default class Emitter {
 
 	public sendPlayerTag(): void {
 		this.sendString(TAG_OPCODE, GameSettings.all.profiles.tag);
+
 		this.socket.team.clear();
-		
-		FrontAPI.updateTopTeam([]);
+
+		if (!this.socket.second) {
+			FrontAPI.updateTopTeam([]);
+		}
 	}
 
 	public sendPartyToken(token: string): void {

@@ -1,6 +1,19 @@
 const path = require('path');
 const TerserPlugin = require('terser-webpack-plugin');
 
+const dev = false;
+
+let mode = 'development';
+let optimization = { }
+
+if (!dev) {
+  mode = 'production';
+  optimization = {
+    minimize: true,
+    minimizer: [new TerserPlugin()],
+  }
+}
+
 module.exports = {
   entry: './built/Initializer/Initializer.js',
   output: {
@@ -8,10 +21,7 @@ module.exports = {
     filename: 'bundle.js',
     publicPath: '/dist/'
   },
-  mode: "development", // development | production
+  mode,
   watch: true,
-/*   optimization: {
-    minimize: true,
-    minimizer: [new TerserPlugin()],
-  }, */
+  optimization
 }

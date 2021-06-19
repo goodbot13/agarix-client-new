@@ -50,7 +50,7 @@ export default new class SkinsLoader {
       }
 
       img.onerror = () => {
-        throw Error();
+        throw new Error('');
       }
     })
     .catch(() => this.logger.error(`Could not load skin. URL: ${url}`));

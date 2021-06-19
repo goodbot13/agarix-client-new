@@ -27,7 +27,7 @@ export const initializeGame = async () => {
     
     SocketInitializer
       .setStage(stage)
-      .try(3)
+      .try(1)
       .start(GameSettings.all.game.token);
   }
 }

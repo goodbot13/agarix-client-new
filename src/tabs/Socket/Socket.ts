@@ -112,7 +112,7 @@ export default class Socket {
           this.disconnectHandler.execute();
           reject(SOCKET_CONNECTION_REJECT.NO_RESPONSE_FROM_SERVER);
         }
-      }, 500);
+      }, 2000);
     }); 
   }
 

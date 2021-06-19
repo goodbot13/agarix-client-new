@@ -6,22 +6,22 @@ import UICommunicationService from '../communication/FrontAPI';
 import { SOCKET_OPENED } from '../tabs/Socket/Opcodes';
 import Logger from '../utils/Logger';
 import { ChatAuthor } from '../communication/Chat';
+import FrontAPI from '../communication/FrontAPI';
 
 export default class Socket {
 	private readonly ip: string = 'wss://snez.org:8080/ws?040';
-	public readonly handshakeKey: number;
-
 	private receiver: Receiver;
 	private ws: WebSocket;
 	private interval: NodeJS.Timer;
 	private connected: boolean;
+	private logger: Logger;
+	private topTeamsUpdateInterval: NodeJS.Timeout;
 
+	public readonly handshakeKey: number;
 	public emitter: Emitter;
 	public player: Player;
 	public team: Map<number, Player>;
 	public second: boolean;
-
-	private logger: Logger;
 
   constructor(second: boolean) {
 		this.handshakeKey = 401;
@@ -46,24 +46,42 @@ export default class Socket {
 			this.ws.binaryType = 'arraybuffer';
 
 			this.ws.onopen = () => {
-				this.emitter.sendHandshake();
-
-				const tab = this.second ? 'multibox tab' : 'main tab';
-				UICommunicationService.sendChatGameMessage(`Delta server connection established (${tab})`, ChatAuthor.Game);
-				this.logger.info(`Delta server connection established (${tab})`);
-
+				this.onOpen();
 				resolve(true);
 			};
 			
 			this.ws.onmessage = (msg) => this.handleMessage(msg.data);
-			this.ws.onerror = () => {
-				const tab = this.second ? 'Multibox tab' : 'Main tab';
-				UICommunicationService.sendChatGameMessage(`Delta server connection lost ${(tab)}`, ChatAuthor.Game)
-			};
+			this.ws.onerror = () => this.onError();
+			this.ws.onclose = () => this.onClose();
 			
 			this.connected = true;
 			this.interval = setInterval(() => this.updateInterval(), 1000);
 		});
+	}
+
+	private onOpen(): void {
+		this.emitter.sendHandshake();
+
+		const tab = this.second ? 'multibox tab' : 'main tab';
+		UICommunicationService.sendChatGameMessage(`Delta server connection established (${tab})`, ChatAuthor.Game);
+		this.logger.info(`Delta server connection established (${tab})`);
+
+		this.startTopTeamsUpdateInterval();
+	}
+
+	private onClose(): void {
+		const tab = this.second ? 'Multibox tab' : 'Main tab';
+		UICommunicationService.sendChatGameMessage(`Delta server connection lost ${(tab)}`, ChatAuthor.Game);
+		
+		clearInterval(this.interval);
+
+		this.stopTopTeamsUpdateInterval();
+		this.team.clear();
+		this.connected = false;
+	}
+
+	private onError(): void {
+		this.logger.warning('Closed due to error');
 	}
 
 	public isConnected(): boolean {
@@ -71,13 +89,7 @@ export default class Socket {
 	}
 	
 	public disconnect(): void {
-		clearInterval(this.interval);
-
 		this.ws.close();
-		this.team.clear();
-		this.connected = false;
-
-		UICommunicationService.sendChatGameMessage('Delta server connection lost.', ChatAuthor.Game);
 	}
 
   private handleMessage(arrayBuffer: ArrayBuffer): void {
@@ -150,9 +162,9 @@ export default class Socket {
 			return;
 		}
 		
-/* 		this.emitter.sendPlayerNick();
-		this.emitter.sendPlayerTag();
-		this.emitter.sendPlayerJoin(); */
+		// this.emitter.sendPlayerNick();
+		// this.emitter.sendPlayerTag();
+		// this.emitter.sendPlayerJoin();
 		this.emitter.sendPlayerSpawn();
 	}
 
@@ -181,5 +193,32 @@ export default class Socket {
 		this.emitter.sendPlayerSkin();
 		this.emitter.sendPlayerDeath()
 		this.emitter.sendPlayerJoin();
+	}
+
+	private startTopTeamsUpdateInterval(): void {
+		if (this.second) {
+			return;
+		}
+
+		this.topTeamsUpdateInterval = setInterval(() => {
+			const players = [...this.team.values()].map((player) => {
+				return {
+					...player, 
+					isAlive: player.alive 
+				}
+			});
+
+			console.log(players);
+	
+			FrontAPI.updateTopTeam(players);
+		}, 1000);
+	}
+
+	private stopTopTeamsUpdateInterval(): void {
+		if (this.second) {
+			return;
+		}
+		
+		clearInterval(this.topTeamsUpdateInterval);
 	}
 }

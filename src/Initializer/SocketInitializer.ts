@@ -4,7 +4,7 @@ import Logger from "../utils/Logger";
 
 export default new class SocketInitializer {
   private stage: Stage = null;
-  private times: number = 2;
+  private times: number = 1;
   private timesDone: number = 0;
   private logger: Logger = new Logger('SocketInitializer');
 
@@ -31,7 +31,6 @@ export default new class SocketInitializer {
       UICommunicationService.setServerStatus('Down');
       UICommunicationService.setServerVersion('Unavailable');
     } else {
-      this.timesDone++;
       this.start();
       this.logger.error(`Could not connect to server. Reason: ${reason} (attempt ${this.timesDone} of ${this.times})`);
     }
@@ -44,6 +43,7 @@ export default new class SocketInitializer {
       UICommunicationService.setToken(tokens.split('%')[0]);
       UICommunicationService.setServerToken(tokens.split('%')[1]);
     }).catch((reason) => {
+      this.timesDone++;
       this.reconnect(reason);
     });
   }
