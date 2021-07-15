@@ -3,6 +3,7 @@ import GameSettings from "../../Settings/Settings";
 import TextureGenerator from "../../Textures/TexturesGenerator";
 import * as PIXI from 'pixi.js';
 import IMapObject from "./interfaces";
+import Map from "./Map";
 
 export default class Borders extends Container implements IMapObject {
   private bordersSprite: NineSlicePlane;
@@ -13,7 +14,7 @@ export default class Borders extends Container implements IMapObject {
   private colorMatrixFilter: filters.ColorMatrixFilter;
   private colorMatrixFilterHue: number = 0;
 
-  constructor() {
+  constructor(private map: Map) {
     super();
 
     this.zIndex = 10;
@@ -21,6 +22,18 @@ export default class Borders extends Container implements IMapObject {
     this.create();
     this.createRgb();
     this.applyFilter();
+
+    this.map.listen('sizechange', () => {
+      let borderWidth = 20;
+      let size = 20;
+
+      this.rgbBorders.width = this.map.size.width + size;
+      this.rgbBorders.height = this.map.size.height + size;
+      this.rgbBordersLine.width = this.map.size.width + borderWidth * 2;
+      this.rgbBordersLine.height = this.map.size.height + borderWidth * 2;
+
+      this.create();
+    });
   }
 
   private applyFilter(): void {
@@ -63,15 +76,15 @@ export default class Borders extends Container implements IMapObject {
   public create(): void {
     const { borderGlow, borderWidth, borderGlowDistance } = GameSettings.all.settings.theming.map;
     const { glowFilterShaderType } = GameSettings.all.settings.game.performance;
-    const MAP_RATIO = 14142 / 2048;
+    const MAP_RATIO = this.map.size.width / 2048;
     
     if (this.bordersSprite) {
-      TextureGenerator.generateMapBorders();
+      // TextureGenerator.generateMapBorders();
       this.removeChild(this.bordersSprite);
       this.bordersSprite.destroy();
     }
 
-    let bordersSize = 14142;
+    let bordersSize = this.map.size.width;
     let pos = 0;
 
     if (borderGlow) {
@@ -109,14 +122,14 @@ export default class Borders extends Container implements IMapObject {
     const borderWidth = 20;
 
     this.rgbBorders = new Sprite(TextureGenerator.rgbBorder);
-    this.rgbBorders.width = 14142 + size;
-    this.rgbBorders.height = 14142 + size;
+    this.rgbBorders.width = this.map.size.width + size;
+    this.rgbBorders.height = this.map.size.height + size;
     this.rgbBorders.x = -size / 2;
     this.rgbBorders.y = -size / 2;
 
     this.rgbBordersLine = new Sprite(TextureGenerator.mapBordersRgbLine);
-    this.rgbBordersLine.width = 14142 + borderWidth * 2;
-    this.rgbBordersLine.height = 14142 + borderWidth * 2;
+    this.rgbBordersLine.width = this.map.size.width + borderWidth * 2;
+    this.rgbBordersLine.height = this.map.size.height + borderWidth * 2;
     this.rgbBordersLine.x = -borderWidth;
     this.rgbBordersLine.y = -borderWidth;
 

@@ -39,7 +39,7 @@ import { SOCKET_CONNECTION_REJECT } from './types';
 export default class Socket {
   public readonly socketData: ISocketData;
   public protocolKey: number;
-  public clientKey: number;
+  public clientKey: number = -1;
   public mapOffsetFixed: boolean;
   public isPlaying: boolean;
   public spectateAtX: number;
@@ -180,6 +180,10 @@ export default class Socket {
 
     switch (opcode) {
 
+      case 64: case 16:
+        this.receiver.handlePrivateServerMessage(opcode);
+        break;
+
       case 161: break;
       case 5: break;
       case FLUSH: break;
@@ -314,8 +318,12 @@ export default class Socket {
 
   public sendMessage(message: DataView): void {
     if (this.socket.readyState === SOCKET_OPENED) {
-      message = shiftMessage(message, this.clientKey);
-      this.clientKey = shiftKey(this.clientKey);
+
+      if (this.clientKey !== -1) {
+        message = shiftMessage(message, this.clientKey);
+        this.clientKey = shiftKey(this.clientKey);
+      } 
+
       this.socket.send(message.buffer);
     }
   }
@@ -434,11 +442,11 @@ export default class Socket {
 
 export interface ISocketData {
   address: string,
-  protocolVersion: number,
-  clientVersionInt: number,
-  clientVersionString: string,
+  protocolVersion?: number,
+  clientVersionInt?: number,
+  clientVersionString?: string,
   token?: string,
-  serverToken: string,
+  serverToken?: string,
   https?: string
 }
 

@@ -148,6 +148,26 @@ class Stage {
     });
   }
 
+  public async connectPrivate(token?: string, serverToken?: boolean): Promise<string> {
+    if (WorldState.gameJoined) {
+      await this.disconnect();
+
+      this.world.view.center();
+
+      WorldState.gameJoined = false;
+    }
+
+    const socketData = await Master.connectPrivate({ ws: 'wss://imsolo.pro:2109/' });
+
+    return new Promise((resolve, reject) => {
+      this.world.controller.init(socketData).then((mapOffsets) => {
+        this.join(mapOffsets);
+
+        return resolve('connected!');
+      });
+    });
+  }
+
   public async connect(token?: string, serverToken?: boolean, isInit?: boolean): Promise<string> {
     if (WorldState.gameJoined) {
       await this.disconnect();

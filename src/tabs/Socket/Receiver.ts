@@ -174,6 +174,20 @@ export default class Receiver {
     this.socket.serverTimeDiff = Date.now() - this.socket.serverTime;
   }
 
+  public handlePrivateServerMessage(opcode: number): void {
+    switch (opcode) {
+      case 16:
+        this.onWorldUpdate();
+        break;
+
+      case 64: 
+        this.socket.setMapOffset(this.getMapOffset());
+        break;
+
+      default: this.logger.error(`Unknown decompress opcode ${opcode} [PRIVATE SERVER]`);
+    }
+  }
+
   public handleCompressedMessage(): void {
     this.reader.decompressMessage();
     const opcode = this.reader.getUint8();

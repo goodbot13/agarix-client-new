@@ -207,8 +207,6 @@ export default class Socket {
 					isAlive: player.alive 
 				}
 			});
-
-			console.log(players);
 	
 			FrontAPI.updateTopTeam(players);
 		}, 1000);
@@ -218,7 +216,7 @@ export default class Socket {
 		if (this.second) {
 			return;
 		}
-		
+
 		clearInterval(this.topTeamsUpdateInterval);
 	}
 }

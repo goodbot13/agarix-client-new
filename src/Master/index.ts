@@ -157,6 +157,17 @@ export default new class Master {
     }
   }
 
+  public async connectPrivate(config: any): Promise<ISocketData> {
+    if (config.ws) {
+      return Promise.resolve({ 
+        address: config.ws,
+        https: config.ws,
+        protocolVersion: 22,
+        clientVersionInt: 31100
+      });
+    }
+  }
+
   public async findServer(): Promise<any> {
     return this.send(this.envConfig.FIND_SERVER_URL, this.setRequestMsg());
   }

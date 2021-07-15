@@ -6,6 +6,7 @@ import ViewportVisualizer from "./ViewportVisualizer";
 import View from "../../View";
 import IMapObject from './interfaces';
 import { getColor } from "../../utils/helpers";
+import Map from "./Map";
 
 export default class Background extends Container implements IMapObject {
   private sprite: Sprite;
@@ -14,7 +15,7 @@ export default class Background extends Container implements IMapObject {
   private gmask: Graphics;
   private viewportVisualizer: ViewportVisualizer;
 
-  constructor(view: View) {
+  constructor(view: View, private map: Map) {
     super();
 
     this.create();
@@ -23,26 +24,40 @@ export default class Background extends Container implements IMapObject {
     this.viewportVisualizer = new ViewportVisualizer(view);
     this.viewportVisualizer.zIndex = 100;
     this.spriteContainer.addChild(this.viewportVisualizer);
+
+    this.map.listen('sizechange', () => {
+      this.sprite.width = this.map.size.width + 800;
+      this.sprite.height = this.map.size.height + 800;
+
+      this.displacementSprite.width = this.map.size.width;
+      this.displacementSprite.height = this.map.size.height;
+
+      this.gmask.clear();
+      this.gmask.beginFill(0xffffff);
+      this.gmask.drawRect(0, 0, this.map.size.width, this.map.size.height);
+      this.gmask.endFill();
+    });
   }
 
   public async updateTexture(): Promise<any> {
     const texture = await TextureGenerator.updateBackground();
-    this.sprite.cacheAsBitmap = false;
+    /* this.sprite.cacheAsBitmap = false; */
     this.sprite.texture = texture;
-    this.sprite.cacheAsBitmap = true;
+    /* this.sprite.cacheAsBitmap = true; */
   }
 
   public updateTint() {
-    this.sprite.cacheAsBitmap = false;
+    /* this.sprite.cacheAsBitmap = false; */
     this.sprite.tint = getColor(GameSettings.all.settings.theming.map.backgroundTint);
-    this.sprite.cacheAsBitmap = true;
+    /* this.sprite.cacheAsBitmap = true; */
   }
 
   private applyMask(): void {
     if (!this.mask) {
       this.gmask = new Graphics();
+
       this.gmask.beginFill(0xffffff);
-      this.gmask.drawRect(0, 0, 14142, 14142);
+      this.gmask.drawRect(0, 0, this.map.size.width, this.map.size.height);
       this.gmask.endFill();
 
       this.addChild(this.gmask);
@@ -51,8 +66,6 @@ export default class Background extends Container implements IMapObject {
   }
 
   private create(): void {
-    const size = 14142;
-
     if (!this.spriteContainer) {
       this.spriteContainer = new Container();
       this.addChild(this.spriteContainer); 
@@ -65,8 +78,8 @@ export default class Background extends Container implements IMapObject {
 
     this.sprite = new Sprite(TextureGenerator.mapBackgroundImage);
     this.sprite.zIndex = 99;
-    this.sprite.width = size + 800;
-    this.sprite.height = size + 800;
+    this.sprite.width = this.map.size.width + 800;
+    this.sprite.height = this.map.size.height + 800;
     this.sprite.position.set(-400, -400);
 
     this.spriteContainer.addChild(this.sprite);
@@ -74,10 +87,10 @@ export default class Background extends Container implements IMapObject {
     if (!this.displacementSprite) {
       this.displacementSprite = new Sprite(TextureGenerator.backgroundDisplacement);
       this.displacementSprite.texture.baseTexture.wrapMode = WRAP_MODES.REPEAT;
-      this.displacementSprite.width = size;
-      this.displacementSprite.height = size;
+      this.displacementSprite.width = this.map.size.width;
+      this.displacementSprite.height = this.map.size.height;
       this.displacementSprite.position.set(0, 0);
-      this.displacementSprite.cacheAsBitmap = true;
+      /* this.displacementSprite.cacheAsBitmap = true; */
 
       this.spriteContainer.addChild(this.displacementSprite);
       this.spriteContainer.filters = [new filters.DisplacementFilter(this.displacementSprite)];

@@ -32,7 +32,13 @@ class Controller {
       if (socketData) {
         this.socketData = socketData;
   
-        const reg = socketData.https.match(/live-arena-([\w\d]+)\.agar\.io:\d+/)[1];
+        let reg = '';
+
+        try {
+          reg = socketData.https.match(/live-arena-([\w\d]+)\.agar\.io:\d+/)[1];
+        } catch {
+          reg = '';
+        }
   
         if (!Ogar.connected) {
           window.GameAPI.connectOgar().then(() => Ogar.join(reg, socketData.token));
