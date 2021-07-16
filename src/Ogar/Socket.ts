@@ -25,9 +25,9 @@ export default class Socket {
 
   constructor(second: boolean) {
 		this.handshakeKey = 401;
-    this.emitter = new Emitter(this);
+    	this.emitter = new Emitter(this);
 		this.receiver = new Receiver(this);
-    this.player = new Player();
+    	this.player = new Player();
 		this.team = new Map();
 		this.connected = false;
 		this.second = second;
@@ -35,8 +35,8 @@ export default class Socket {
 		this.logger = new Logger('Delta Socket');
 	}
 
-  public connect(): Promise<boolean> {
-    return new Promise((resolve: any) => {
+  	public connect(): Promise<boolean> {
+		return new Promise((resolve: any) => {
 			if (this.connected) {
 				resolve(true);
 				return;
