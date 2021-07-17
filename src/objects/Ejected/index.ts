@@ -58,33 +58,7 @@ export default class Ejected extends Sprite implements IMainGameObject {
     this.isVisible = value;
   }
 
-  private getAnimationSpeed(): number {
-    return (GameSettings.all.settings.game.gameplay.animationSpeed / 1000) * PIXI.Ticker.shared.deltaTime;
-  }
-
-  private getFadeSpeed(): number {
-    const { fadeSpeed } = GameSettings.all.settings.game.cells;
-
-    if (fadeSpeed === 0) {
-      return 0;
-    }
-
-    return ((250 - fadeSpeed) / 1000) * PIXI.Ticker.shared.deltaTime;
-  }
-
-  private getSoakSpeed(): number {
-    const { soakSpeed } = GameSettings.all.settings.game.cells;
-
-    if (soakSpeed === 0) {
-      return 0;
-    }
-
-    return ((250 - soakSpeed) / 1000) * PIXI.Ticker.shared.deltaTime;
-  }
-
-  private animateOutOfView(): void {
-    const fadeSpeed = this.getFadeSpeed();
-
+  private animateOutOfView(fadeSpeed: number): void {
     if (this.alpha <= 0 || fadeSpeed === 0) {
       this.isDestroyed = true;
     } else {
@@ -96,10 +70,7 @@ export default class Ejected extends Sprite implements IMainGameObject {
     this.isDestroyed = true;
   }
 
-  private animateEaten(speed: number): void {
-    const fadeSpeed = this.getFadeSpeed();
-    const soakSpeed = this.getSoakSpeed();
-
+  private animateEaten(fadeSpeed: number, soakSpeed: number): void {
     if (!this.isVisible) {
       this.fullDestroy();
       return;
@@ -130,13 +101,11 @@ export default class Ejected extends Sprite implements IMainGameObject {
     }
   }
 
-  private animateMove(speed: number): void { 
+  private animateMove(animationSpeed: number, fadeSpeed: number): void { 
     const { transparency } = GameSettings.all.settings.theming.cells;
 
-    const fadeSpeed = this.getFadeSpeed();
-
-    const x = (this.newLocation.x - this.x) * speed;
-    const y = (this.newLocation.y - this.y) * speed;
+    const x = (this.newLocation.x - this.x) * animationSpeed;
+    const y = (this.newLocation.y - this.y) * animationSpeed;
 
     this.x += x;
     this.y += y;
@@ -161,14 +130,12 @@ export default class Ejected extends Sprite implements IMainGameObject {
     }
   }
 
-  public animate(): void {
-    const speed = this.getAnimationSpeed();
-
+  public animate(animationSpeed: number, fadeSpeed: number, soakSpeed: number): void {
     if (this.removing) {
       if (this.removeType === 'REMOVE_CELL_OUT_OF_VIEW') {
-        this.animateOutOfView();
+        this.animateOutOfView(fadeSpeed);
       } else if (this.removeType === 'REMOVE_EATEN_CELL') {
-        this.animateEaten(speed);
+        this.animateEaten(fadeSpeed, soakSpeed);
       }
     } else { 
       if (this.culled) {
@@ -177,7 +144,7 @@ export default class Ejected extends Sprite implements IMainGameObject {
         this.x = this.newLocation.x;
         this.y = this.newLocation.y;
       } else {
-        this.animateMove(speed);
+        this.animateMove(animationSpeed, fadeSpeed);
       }
     }
   }

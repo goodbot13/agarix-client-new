@@ -20,6 +20,7 @@ import PlayerState from "../states/PlayerState";
 import Ogar from "../Ogar";
 import Ejected from '../objects/Ejected';
 import CachedObjects from '../utils/CachedObjects';
+import { getAnimationSpeed, getFadeSpeed, getSoakSpeed } from './Renderer/AnimationDataProvider';
 
 export default class WorldLoop {
   private world: World;
@@ -73,9 +74,13 @@ export default class WorldLoop {
   }
 
   private renderEjected(): void {
+    const animationSpeed = getAnimationSpeed();
+    const fadeSpeed = getFadeSpeed();
+    const soakSpeed = getSoakSpeed();
+
     for (let i = 0; i < this.ejected.children.length; i++) {
       const ejected = this.ejected.children[i] as Ejected;
-      ejected.animate();
+      ejected.animate(animationSpeed, fadeSpeed, soakSpeed);
 
       if (ejected.isDestroyed) {
         this.ejected.removeChild(ejected);
@@ -92,9 +97,13 @@ export default class WorldLoop {
     // check for isTeam every 1 second. isAlive may be changed only every 2 seconds
     const canCheckForTeam = WorldState.ticks % 60 * PIXI.Ticker.shared.deltaTime === 0;
 
+    const animationSpeed = getAnimationSpeed();
+    const fadeSpeed = getFadeSpeed();
+    const soakSpeed = getSoakSpeed();
+
     for (let i = 0; i < this.cells.children.length; i++) {
       const object = this.cells.children[i] as Cell | Virus | RemoveAnimation;
-      object.animate();
+      object.animate(animationSpeed, fadeSpeed, soakSpeed);
 
       if (object.isDestroyed) {
         this.cells.removeChild(object);

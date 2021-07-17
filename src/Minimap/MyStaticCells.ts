@@ -6,6 +6,7 @@ import World from "../render/World";
 import GameSettings from "../Settings/Settings";
 import { getColor, transformMinimapLocation } from "../utils/helpers";
 import PlayerState from "../states/PlayerState";
+import { getAnimationSpeed, getFadeSpeed, getSoakSpeed } from "../render/Renderer/AnimationDataProvider";
 
 export default class StaticPlayerCells extends Container {
   private firstTab: Cell;
@@ -117,9 +118,13 @@ export default class StaticPlayerCells extends Container {
   }
 
   private animateSpawnAnimation(): void {
+    const animationSpeed = getAnimationSpeed();
+    const fadeSpeed = getFadeSpeed();
+    const soakSpeed = getSoakSpeed();
+
     this.children.forEach((child: Cell) => {
       if (child.type === 'SPAWN_ANIMATION') {
-        child.animate();
+        child.animate(animationSpeed, fadeSpeed, soakSpeed);
 
         if (child.isDestroyed) {
           this.removeChild(child);

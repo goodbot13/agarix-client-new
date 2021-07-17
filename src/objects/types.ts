@@ -24,6 +24,6 @@ export interface IMainGameObject {
   isDestroyed: boolean,
   update: (location: Location) => void,
   remove: (type: RemoveType) => void,
-  animate: () => void,
+  animate: (animationSpeed: number, fadeSpeed: number, soakSpeed: number) => void,
   setIsVisible: (visible: boolean) => void,
 }

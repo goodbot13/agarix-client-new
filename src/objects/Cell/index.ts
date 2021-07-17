@@ -357,34 +357,8 @@ export default class Cell extends Container implements IMainGameObject {
     this.sizeBeforeRemove = this.cell.width;
     this.zIndex = 0;
   }
-  
-  private getAnimationSpeed(): number {
-    return (GameSettings.all.settings.game.gameplay.animationSpeed / 1000) * PIXI.Ticker.shared.deltaTime;
-  }
 
-  private getFadeSpeed(): number {
-    const { fadeSpeed } = GameSettings.all.settings.game.cells;
-
-    if (fadeSpeed === 0) {
-      return 0;
-    }
-
-    return ((250 - fadeSpeed) / 1000) * PIXI.Ticker.shared.deltaTime;
-  }
-
-  private getSoakSpeed(): number {
-    const { soakSpeed } = GameSettings.all.settings.game.cells;
-
-    if (soakSpeed === 0) {
-      return 0;
-    }
-
-    return ((250 - soakSpeed) / 1000) * PIXI.Ticker.shared.deltaTime;
-  }
-
-  private animateOutOfView(): void {
-    const fadeSpeed = this.getFadeSpeed();
-
+  private animateOutOfView(fadeSpeed: number): void {
     if (this.cell.alpha <= 0 || fadeSpeed === 0) {
       this.isDestroyed = true;
     } else {
@@ -392,17 +366,14 @@ export default class Cell extends Container implements IMainGameObject {
     }
   }
 
-  private animateEaten(speed: number): void {
-    const fadeSpeed = this.getFadeSpeed();
-    const soakSpeed = this.getSoakSpeed();
-
+  private animateEaten(animationSpeed: number, fadeSpeed: number, soakSpeed: number): void {
     if (!this.isVisible) {
       this.isDestroyed = true;
       return;
     }
 
     if (soakSpeed !== 0) {
-      const apf = this.isMinimap ? (speed / 5) : soakSpeed;
+      const apf = this.isMinimap ? (animationSpeed / 5) : soakSpeed;
 
       if (this.cell.width > 1) {
         const newSize = -(this.cell.width * apf);
@@ -444,15 +415,13 @@ export default class Cell extends Container implements IMainGameObject {
     this.shadow.sprite.height = r * this.shadow.TEXTURE_OFFSET;
   }
 
-  private animateMove(speed: number): void {
+  private animateMove(animationSpeed: number, fadeSpeed: number): void {
     const { transparency } = GameSettings.all.settings.theming.cells;
 
-    const fadeSpeed = this.getFadeSpeed();
     const mtv = (this.isMinimap && this.isTeam) ? 0.1 : 1;
-
-    const x = (this.newLocation.x - this.x) * speed * mtv;
-    const y = (this.newLocation.y - this.y) * speed * mtv;
-    const r = (this.newLocation.r - this.cell.width) * speed * mtv;
+    const x = (this.newLocation.x - this.x) * animationSpeed * mtv;
+    const y = (this.newLocation.y - this.y) * animationSpeed * mtv;
+    const r = (this.newLocation.r - this.cell.width) * animationSpeed * mtv;
 
     this.cell.width += r;
     this.cell.height += r;
@@ -483,10 +452,8 @@ export default class Cell extends Container implements IMainGameObject {
     }
   }
 
-  public animate(): void {
-    const speed = this.getAnimationSpeed();
-
-    this.originalSize += (this.newOriginalSize - this.originalSize) * speed;
+  public animate(animationSpeed: number, fadeSpeed: number, soakSpeed: number): void {
+    this.originalSize += (this.newOriginalSize - this.originalSize) * animationSpeed;
     this.updateInfo();
 
     if (this.removing) {
@@ -496,9 +463,9 @@ export default class Cell extends Container implements IMainGameObject {
       }
 
       if (this.removeType === 'REMOVE_CELL_OUT_OF_VIEW') {
-        this.animateOutOfView();
+        this.animateOutOfView(fadeSpeed);
       } else if (this.removeType === 'REMOVE_EATEN_CELL') {
-        this.animateEaten(speed);
+        this.animateEaten(animationSpeed, fadeSpeed, soakSpeed);
       }
     } else {
       if (this.culled) {
@@ -509,9 +476,8 @@ export default class Cell extends Container implements IMainGameObject {
         this.cell.width = this.cell.height = this.newLocation.r;
         this.shadow.sprite.width = this.shadow.sprite.height = this.shadow.TEXTURE_OFFSET * this.newLocation.r;
       } else {
-        this.animateMove(speed);
+        this.animateMove(animationSpeed, fadeSpeed);
       }
-      
     }
   }
 }
