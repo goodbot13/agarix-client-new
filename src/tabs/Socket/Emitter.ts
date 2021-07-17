@@ -1,3 +1,4 @@
+import Master from '../../Master';
 import PlayerState from '../../states/PlayerState';
 import { createView } from '../../utils/helpers';
 import Writer from '../../utils/Writer';
@@ -88,9 +89,11 @@ export default class Emitter {
     const focused = (this.socket.tabType === 'FIRST_TAB' && PlayerState.first.focused) ||
                     (this.socket.tabType === 'SECOND_TAB' && PlayerState.second.focused);
 
-    if (!dirty && !focused && this.socket.tabType !== 'SPEC_TABS') {
-      return;
-    } 
+    if (!Master.isPrivate) {
+      if (!dirty && !focused && this.socket.tabType !== 'SPEC_TABS') {
+        return;
+      } 
+    }
 
     let posX: number, posY: number;
 
@@ -110,13 +113,13 @@ export default class Emitter {
         posY = y ? y : this.socket.world.view.secondTab.cursor.y;
         break;
     }
-  
-    
-    const view = createView(13);
+
+    const view = Master.isPrivate ? createView(9) : createView(13);
     view.setUint8(0, 16);
     view.setInt32(1, posX, true);
     view.setInt32(5, posY, true);
-    view.setUint32(9, this.socket.protocolKey, true);
+
+    !Master.isPrivate && view.setUint32(9, this.socket.protocolKey, true);
 
     this.socket.sendMessage(view); 
   }

@@ -6,13 +6,13 @@ import { IMapOffsets } from "../tabs/Socket/Socket";
 export const transformMinimapLocation = (location: Location, mapOffsets: IMapOffsets, shift?: boolean): Location => {
   const { size } = Settings.all.settings.theming.minimap;
 
-  const offsetX = !shift ? mapOffsets.minX : -7071;
-  const offsetY = !shift ? mapOffsets.minY : -7071;
+  const offsetX = !shift ? mapOffsets.minX : -mapOffsets.width / 2;
+  const offsetY = !shift ? mapOffsets.minY : -mapOffsets.height / 2;
 
   return {
-    x: (location.x - offsetX)  / 14142 * size,
-    y: (location.y - offsetY) / 14142 * size,
-    r: location.r / 14142 * size
+    x: (location.x - offsetX)  / mapOffsets.width * size,
+    y: (location.y - offsetY) / mapOffsets.height * size,
+    r: location.r / mapOffsets.width * size
   }
 }
 

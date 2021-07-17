@@ -1,6 +1,6 @@
 export type Subtype = 'FIRST_TAB' | 'SECOND_TAB' | 'TOP_ONE_TAB' | 'SPEC_TABS';
 export type RemoveType = 'REMOVE_CELL_OUT_OF_VIEW' | 'REMOVE_EATEN_CELL';
-export type CellType = 'FOOD' | 'VIRUS' | 'CELL' | 'SPAWN_ANIMATION' | 'REMOVE_ANIMATION';
+export type CellType = 'FOOD' | 'VIRUS' | 'CELL' | 'SPAWN_ANIMATION' | 'REMOVE_ANIMATION' | 'EJECTED';
 
 export interface Location {
   x: number,

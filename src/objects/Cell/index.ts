@@ -14,11 +14,9 @@ import TextureGenerator from '../../Textures/TexturesGenerator';
 import SettingsState from '../../states/SettingsState';
 
 export default class Cell extends Container implements IMainGameObject {
-  public readonly subtype: Subtype;
+  public subtype: Subtype;
   public originalSize: number = 0;
   public newOriginalSize: number = 0;
-  public originalMass: number = 0;
-  public shortMass: string = '';
   public isPlayerCell: boolean = false;
   public isTeam: boolean = false;
   public isDestroyed: boolean = false;
@@ -28,7 +26,6 @@ export default class Cell extends Container implements IMainGameObject {
   public removing: boolean = false;
   public colorHex: Array<string> = [];
   public isVisible: boolean;
-  public animating: boolean = true;
   public cell: CellSprite;
   public shadow: Shadow;
   public stats: Stats;
@@ -48,19 +45,31 @@ export default class Cell extends Container implements IMainGameObject {
 
   private usingSkin: boolean;
 
-  constructor(subtype: Subtype, location: Location, color: RGB, nick: string, skin: string, world: World) {
+  constructor(/* subtype: Subtype, location: Location, color: RGB, nick: string, skin: string, world: World */) {
     super();
+    
+    // add cell to main container
+    this.cell = new CellSprite(); // r * 2
+    this.shadow = new Shadow(this.cell, this); // r * 2
+    this.stats = new Stats(this);
+    this.rings = new Rings(this);
 
+    this.addChild(this.cell);
+    this.addChild(this.shadow.sprite);
+    this.cell.addChild(this.rings.innerRing, this.rings.outerRing);
+    this.cell.addChild(this.stats.nick, this.stats.mass);
+  }
+
+  public reuse(subtype: Subtype, location: Location, color: RGB, nick: string, skin: string, world: World): void {
     const { x, y, r } = location;
-    const doubleR = r * 2;
 
     // apply default cell information 
-    this.zIndex = doubleR;
+    this.zIndex = r * 2;
     this.x = x;
     this.y = y;
     this.nick = nick;
     this.color = color;
-    this.originalSize = r;
+    this.originalSize = this.newOriginalSize = r;
     this.subtype = subtype;
     this.type = 'CELL';
     this.agarSkinName = skin;
@@ -68,31 +77,33 @@ export default class Cell extends Container implements IMainGameObject {
     this.sortableChildren = true;
     this.isVisible = false;
     this.renderable = false;
-    
+
+    this.isPlayerCell = false;
+    this.isTeam = false;
+    this.isDestroyed = false;
+    this.newLocation = location;
+    this.removing = false;
+    this.colorHex = [];
+    this.sizeBeforeRemove = 0;
+    this.multiboxFocuesTab = false;
+    this.isMinimap = false;
+    this.culled = false;
+
     if (this.nick) {
       this.usesSkinByAgarName = Master.skins.skinsByNameHas(this.nick);
     }
 
     this.getSkin();
-
-    // add cell to main container
-    this.cell = new CellSprite(doubleR, this);
-    this.shadow = new Shadow(this.cell, this, doubleR);
-    this.stats = new Stats(this);
-    this.rings = new Rings(this);
-
-    this.stats.updateMass(true);
-    this.stats.updateNick(nick);
-
-    this.addChild(this.cell);
-    this.addChild(this.shadow.sprite);
-    this.cell.addChild(this.rings.innerRing, this.rings.outerRing);
-    this.cell.addChild(this.stats.nick, this.stats.mass);
-
     this.addColorInformation(color);
     this.applyAlpha();
     this.applyTint();
     this.update(location);
+    
+    this.stats.updateMass(true);
+    this.stats.updateNick(nick);
+
+    this.cell.setSize(r * 2);
+    this.shadow.setSize(this.cell.width);
   }
 
   private getSkin(): void {
@@ -346,11 +357,6 @@ export default class Cell extends Container implements IMainGameObject {
     this.sizeBeforeRemove = this.cell.width;
     this.zIndex = 0;
   }
-
-  private fullDestroy(): void {
-    this.destroy({ children: true });
-    this.isDestroyed = true;
-  }  
   
   private getAnimationSpeed(): number {
     return (GameSettings.all.settings.game.gameplay.animationSpeed / 1000) * PIXI.Ticker.shared.deltaTime;
@@ -380,7 +386,6 @@ export default class Cell extends Container implements IMainGameObject {
     const fadeSpeed = this.getFadeSpeed();
 
     if (this.cell.alpha <= 0 || fadeSpeed === 0) {
-      this.destroy({ children: true });
       this.isDestroyed = true;
     } else {
       this.updateAlpha(-fadeSpeed);
@@ -392,7 +397,7 @@ export default class Cell extends Container implements IMainGameObject {
     const soakSpeed = this.getSoakSpeed();
 
     if (!this.isVisible) {
-      this.fullDestroy();
+      this.isDestroyed = true;
       return;
     }
 
@@ -409,18 +414,18 @@ export default class Cell extends Container implements IMainGameObject {
 
         this.updateAlpha(this.cell.width / this.sizeBeforeRemove);
       } else {
-        this.fullDestroy();
+        this.isDestroyed = true;
       }
     } else {
       if (fadeSpeed === 0) {
-        this.fullDestroy();
+        this.isDestroyed = true;
         return;
       } 
 
       if (this.cell.alpha > 0) {
         this.updateAlpha(-fadeSpeed);
       } else {
-        this.fullDestroy();
+        this.isDestroyed = true;
       }
     }
   }
@@ -486,7 +491,7 @@ export default class Cell extends Container implements IMainGameObject {
 
     if (this.removing) {
       if (this.culled) {
-        this.fullDestroy();
+        this.isDestroyed = true;
         return;
       }
 

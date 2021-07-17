@@ -230,27 +230,24 @@ export default class Receiver {
       let blue: number;
       let isFood: number;
       let accountId: number;
+      let isEjected: boolean;
 
       let x = this.reader.getInt32();
       let y = this.reader.getInt32();
       let r = this.reader.getUint16();
 
       let cellFlags = this.reader.getUint8();
-      let cellFlags2: number;
-
-      if (cellFlags & 0x80) {
-        cellFlags2 = this.reader.getUint8();
-      }
+      let cellFlags2 = cellFlags & 128 ? this.reader.getUint8() : 0;
 
       isVirus = cellFlags & 1;
 
-      if (cellFlags & 0x02) {
+      if (cellFlags & 2) {
         red = this.reader.getUint8();
         green = this.reader.getUint8();
         blue = this.reader.getUint8();
       }
 
-      if (cellFlags & 0x04) {
+      if (cellFlags & 4) {
         cellSkin = this.reader.getStringUTF8();
 
         if (cellSkin.includes('custom')) {
@@ -260,13 +257,17 @@ export default class Receiver {
         }
       }
 
-      if (cellFlags & 0x08) {
+      if (cellFlags & 8) {
         name = this.reader.getStringUTF8();
+      }
+
+      if (cellFlags & 32) {
+        isEjected = true;
       }
 
       isFood = cellFlags2 & 1;
 
-      if (cellFlags2 & 0x04) {
+      if (cellFlags2 & 4) {
         accountId = this.reader.getUint32();
       }
 
@@ -275,7 +276,7 @@ export default class Receiver {
       x += this.socket.shiftOffsets.x * this.socket.offsetsPositionMultiplier.x;
       y += this.socket.shiftOffsets.y * this.socket.offsetsPositionMultiplier.y;
 
-      const type: CellType = isFood ? 'FOOD' : isVirus ? 'VIRUS' : 'CELL';
+      const type: CellType = isFood ? 'FOOD' : isEjected ? 'EJECTED' : isVirus ? 'VIRUS' : 'CELL';
       const location: Location = { x, y, r };
       const color: RGB = { red, green, blue };
 
@@ -314,7 +315,10 @@ export default class Receiver {
     const maxX = this.reader.getFloat64();
     const maxY = this.reader.getFloat64();
 
-    return { minX, minY, maxX, maxY };
+    const width = Math.abs(maxX - minX);
+    const height = Math.abs(maxY - minY);
+
+    return { minX, minY, maxX, maxY, width, height };
   }
 
   public handleDisconnectMessage(messageParam: number): void {

@@ -60,7 +60,8 @@ export default class RealPlayersCells extends Container {
 
     if (type === 'CELL') {
       const loc = transformMinimapLocation(location, this.world.view.firstTab.getShiftedMapOffsets());
-      const cell = new Cell(subtype, loc, color, name, skin, this.world);
+      const cell = new Cell(/* subtype, loc, color, name, skin, this.world */);
+      cell.reuse(subtype, loc, color, name, skin, this.world);
 
       cell.setIsVisible(true);
       cell.setIsMinimapCell();

@@ -77,7 +77,7 @@ export default class TeamPlayers extends Container {
           true
         );
 
-        const cell = new Cell('FIRST_TAB', location, { red: 0, green: 0, blue: 0 }, player.nick, '', this.world);
+        const cell = new Cell(/* 'FIRST_TAB', location, { red: 0, green: 0, blue: 0 }, player.nick, '', this.world */);
 
         cell.setIsMinimapCell();
         cell.isTeam = true;

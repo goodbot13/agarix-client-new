@@ -43,7 +43,7 @@ export default class GlobalBackground extends Container implements IMapObject {
     let width = ratio === 1 ? 50000 : 40000;
     let height = width / ratio + (ratio === 1 ? 0 : 5000);
 
-    if (this.map.size.width !== 14142) {
+    if (~~this.map.size.width !== 14142) {
       width += 20000;
       height = width / ratio + (ratio === 1 ? 0 : 10000);
     }
@@ -63,7 +63,13 @@ export default class GlobalBackground extends Container implements IMapObject {
     this.sprite = new Sprite(TextureGenerator.secondBackgroundImage);
     this.sprite.width = width;
     this.sprite.height = height;
-    this.sprite.position.set(-width / 2 + this.map.size.width, -this.map.size.height / 2 + 7171);
+    // this.sprite.position.set(-width / 2 + this.map.size.width, -this.map.size.height / 2 + 7171);
+
+    this.sprite.position.set(
+      (-width / 2) + this.map.size.width / 2, 
+      (-height / 2) + this.map.size.height / 2
+    );
+
 
     if (!this.displacementSprite) {
       this.displacementSprite = new Sprite(TextureGenerator.globalDisplacement);

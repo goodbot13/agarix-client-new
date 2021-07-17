@@ -21,13 +21,17 @@ import SkinsLoader from '../utils/SkinsLoader';
 import TextureGenerator from '../Textures/TexturesGenerator';
 import Master from '../Master';
 import { getColor } from '../utils/helpers';
+import Ejected from '../objects/Ejected';
+import CachedObjects from '../utils/CachedObjects';
 
 export default class World {
   public cells: Container;
-  public food: Container;
+  public food: ParticleContainer;
+  public ejected: ParticleContainer;
   public map: WorldMap;
-  public indexedCells: Map <number, Cell | Virus>;
-  public indexedFood: Map <number, Food>;
+  public indexedCells: Map<number, Cell | Virus | Ejected>;
+  public indexedFood: Map<number, Food>;
+  public indexedEjected: Map<number, Ejected>; 
   public created: boolean;
   public playerCells: PlayerCells;
   public renderer: WorldLoop;
@@ -52,8 +56,11 @@ export default class World {
       });
     }
 
+    this.ejected = new ParticleContainer(1024);
+
     this.indexedCells = new Map();
     this.indexedFood = new Map();
+    this.indexedEjected = new Map();
     this.playerCells = new PlayerCells();
     this.socketCells = new SocketCells();
     this.view = new View({ playerCells: this.playerCells, socketCells: this.socketCells }, scene.app.view);
@@ -77,7 +84,9 @@ export default class World {
 
   private addFood(id: number, location: Location, type: CellType, subtype: Subtype): void {
     if (!this.indexedFood.has(id)) {
-      const food = new Food(location, subtype);
+      const food = CachedObjects.getFood();
+      food.reuse(location, subtype);
+
       this.indexedFood.set(id, food);
       this.food.addChild(food);
       /* this.socketCells.add(subtype, food, id); */
@@ -86,9 +95,26 @@ export default class World {
     }
   }
 
+  private addEjected(id: number, location: Location, color: RGB, type: CellType, subtype: Subtype): void {
+    if (!this.indexedEjected.has(id)) {
+      const ejected = CachedObjects.getEjected();
+      ejected.reuse(location, color, subtype);
+
+      this.indexedEjected.set(id, ejected);
+      this.ejected.addChild(ejected);
+    } else {
+      this.update(id, location, type);
+    }
+  }
+
   public add(id: number, location: Location, color: RGB, name: string, type: CellType, subtype: Subtype, skin?: string): void {
     if (type === 'FOOD') {
       this.addFood(id, location, type, subtype);
+      return;
+    }
+
+    if (type === 'EJECTED') {
+      this.addEjected(id, location, color, type, subtype);
       return;
     }
 
@@ -109,7 +135,8 @@ export default class World {
           SkinsLoader.loadAgar(skin);
         }
 
-        cell = new Cell(subtype, location, color, name, skin, this);
+        cell = CachedObjects.getCell();
+        cell.reuse(subtype, location, color, name, skin, this);
 
         this.indexedCells.set(id, cell);
         this.cells.addChild(cell);
@@ -168,11 +195,15 @@ export default class World {
   }
 
   private update(id: number, location: Location, type: CellType): void {
-    if (type === 'CELL' || type === 'VIRUS') {
-      this.indexedCells.get(id).update(location);
-      this.minimap.updateRealPlayerCell(id, location);
-    } else {
+    if (type === 'FOOD') {
       this.indexedFood.get(id).update(location);
+    } else {
+      if (type === 'CELL' || type === 'VIRUS') {
+        this.indexedCells.get(id).update(location);
+        this.minimap.updateRealPlayerCell(id, location);
+      } else {
+        this.indexedEjected.get(id).update(location);
+      }
     }
   }
 
@@ -211,7 +242,7 @@ export default class World {
 
       if (removeImmediatly || GameSettings.all.settings.game.performance.foodPerformanceMode) {
         this.food.removeChild(food);
-        food.destroy();
+        CachedObjects.addFood(food);
       } else {
         food.remove();
       }
@@ -221,12 +252,32 @@ export default class World {
       return;
     }
 
+    if (this.indexedEjected.has(id)) {
+      const object = this.indexedEjected.get(id) as Ejected;
+
+      if (removeImmediatly) {
+        this.ejected.removeChild(object);
+        CachedObjects.addEjected(object);
+      } else {
+        object.remove(removeType);
+      }
+
+      this.indexedEjected.delete(id);
+      this.playerCells.remove(object.subtype, id);
+      this.socketCells.remove(object.subtype, id);
+
+      return;
+    }
+
     if (this.indexedCells.has(id)) {
       const object = this.indexedCells.get(id) as Cell | Virus;
 
       if (removeImmediatly) {
         this.cells.removeChild(object);
-        object.destroy({ children: true });
+        
+        if (object.type === 'CELL') {
+          CachedObjects.addCell(object as Cell);
+        }
       } else {
         object.remove(removeType);
 
@@ -252,16 +303,25 @@ export default class World {
 
   public clear(): void {
     while (this.food.children[0]) {
-      this.food.children[0].destroy();
+      CachedObjects.addFood(this.food.children[0] as Food);
       this.food.removeChild(this.food.children[0]);
     }
 
     while (this.cells.children[0]) {
-      this.cells.children[0].destroy();
+      if ((this.cells.children[0] as Cell).type === 'CELL') {
+        CachedObjects.addCell(this.cells.children[0] as Cell);
+      }
+
       this.cells.removeChild(this.cells.children[0]);
     }
 
+    while (this.ejected.children[0]) {
+      CachedObjects.addEjected(this.ejected.children[0] as Ejected);
+      this.ejected.removeChild(this.ejected.children[0]);
+    }
+
     this.indexedCells.clear();
+    this.indexedEjected.clear();
     this.indexedFood.clear();
     this.socketCells.clear();
     this.playerCells.clear();
@@ -274,6 +334,7 @@ export default class World {
   public clearCellsByType(subtype: Subtype): void {
     let cellsEntries = 0;
     let foodEntries = 0;
+    let ejectedEntries = 0;
 
     if (subtype === 'TOP_ONE_TAB') {
       this.minimap.reset();
@@ -281,28 +342,48 @@ export default class World {
 
     this.indexedCells.forEach((cell, key) => {
       if (cell.subtype === subtype) {
-        cell.destroy({ children: true });
+        
+        if (cell.type === 'CELL') {
+          CachedObjects.addCell(cell as Cell);
+        }
+
         this.cells.removeChild(cell);
         this.indexedCells.delete(key);
         this.socketCells.remove(subtype, key);
         this.playerCells.remove(subtype, key);
+
         cellsEntries++;
+      }
+    });
+
+    this.indexedEjected.forEach((ejected, key) => {
+      if (ejected.subtype === subtype) {
+        CachedObjects.addEjected(ejected);
+
+        this.ejected.removeChild(ejected);
+        this.indexedEjected.delete(key);
+        this.socketCells.remove(subtype, key);
+        this.playerCells.remove(subtype, key);
+
+        ejectedEntries++;
       }
     });
 
     this.indexedFood.forEach((food, key) => {
       if (food.subtype === subtype) {
-        food.destroy();
+        CachedObjects.addFood(food);
+
         this.food.removeChild(food);
         this.indexedFood.delete(key);
         this.socketCells.remove(subtype, key);
+
         foodEntries++;
       }
     });
 
     if (cellsEntries || foodEntries) {
       this.logger.info(
-        `[${subtype}] cleanup due to socket disconnect. Buffer size: [food - ${foodEntries}] [cells - ${cellsEntries}]`
+        `[${subtype}] cleanup due to socket disconnect. Buffer size: [food - ${foodEntries}] [cells - ${cellsEntries}], [ejected - ${ejectedEntries}]`
       );
     }
   }

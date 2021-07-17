@@ -235,7 +235,7 @@ class Stage {
     this.root.addChild(this.mainContainer);
     this.app.stage.addChild(this.root);
     this.app.stage.addChild(this.world.minimap);
-    this.foodVirusCellContainer.addChild(this.world.food, this.world.cells);
+    this.foodVirusCellContainer.addChild(this.world.food, this.world.ejected, this.world.cells);
     this.mainContainer.addChild(this.world.map, this.foodVirusCellContainer);
 
     let frameStart = performance.now(); 
@@ -262,6 +262,7 @@ class Stage {
 
   public createGameScene(mapOffsets: IMapOffsets): void {
     this.world.map.setPosition(mapOffsets.minX, mapOffsets.minY);
+    this.world.map.setSize(mapOffsets.width, mapOffsets.height);
     this.world.view.center();
     this.world.view.mouse.zoomValue = 0.04085;
     this.world.view.camera.scale = 0.04085;
