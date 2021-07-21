@@ -31,8 +31,8 @@ export default class CellStats {
   
   private setMassAnchor(): void {
     if (GameSettings.all.settings.game.cells.nicks && this.nick_text) {
-      if (this.currentAnchor.y !== -0.75) { // @ts-ignore
-        this.mass.anchor = new Point(0.5, -0.75);
+      if (this.currentAnchor.y !== -0.75) {
+        this.mass.anchor.set(0.5, -0.75);
         this.currentAnchor = this.mass.anchor;
       }
     } else {
@@ -53,6 +53,7 @@ export default class CellStats {
       this.nick.visible = this.nick.renderable = mNicks;
       this.nick.scale.set(7);
       this.nick.y = -700;
+      console.log('minimap cell');
       return;
     }
 
@@ -71,6 +72,7 @@ export default class CellStats {
         const visible = autoHideMassAndNicks ? this.cell.originalSize > (27 / this.cell.world.view.camera.scale) : true;
         this.mass.visible = this.mass.renderable = visible && mass;
         this.nick.visible = this.nick.renderable = visible && nicks;
+        this.nick.scale.set(0.85);
       }
     }
   }
@@ -83,15 +85,9 @@ export default class CellStats {
   public updateNick(nick: string): void {
     this.nick_text = nick;
 
-    let texture = TexturesGenerator.cellNicksCache.get(nick);
-
-    if (texture) {
+    TexturesGenerator.cellNicksGenerator.createNick(nick, (texture) => {
       this.nick.texture = texture;
-    } else {
-      texture = this.createText(nick);
-      TexturesGenerator.cellNicksCache.set(nick, texture);
-      this.nick.texture = texture;
-    }
+    });
   }
   
   private calculateMass(): void {
@@ -123,44 +119,5 @@ export default class CellStats {
     }
 
     this.setMassAnchor();
-  }
-
-  public createText(text: string): Texture {
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-
-    const drawText = text === '__undefined__' ? '' : text;
-    const font = 'bold 128px Lato';
-    const lineWidth = 5;
-
-    ctx.textAlign = 'center';
-    ctx.lineWidth = lineWidth;
-    ctx.font = font;
-    
-    let { width } = ctx.measureText(drawText);
-    width += lineWidth * 2;
-
-    if (width > 2048) {
-      width = 2048;
-    }
-
-    canvas.width = width;
-    canvas.height = width;
-
-    ctx.textAlign = 'center';
-    ctx.font = font;
-    ctx.lineWidth = lineWidth;
-    ctx.strokeStyle = '#606060';
-    ctx.fillStyle = '#FFF';
-    ctx.strokeText(drawText, canvas.width / 2, canvas.height / 2);
-    ctx.fillText(drawText, canvas.width / 2, canvas.height / 2);
-
-    PIXI.utils.trimCanvas(canvas);
-
-    const texture = Texture.from(canvas);
-    texture.baseTexture.mipmap = MIPMAP_MODES.ON;
-    texture.baseTexture.scaleMode = SCALE_MODES.LINEAR;
-
-    return texture;
   }
 }

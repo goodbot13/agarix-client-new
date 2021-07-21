@@ -1,4 +1,4 @@
-import { Container, ParticleContainer } from 'pixi.js';
+import { Container, IParticleProperties, ParticleContainer } from 'pixi.js';
 import WorldMap from '../objects/Map/Map';
 import Food from '../objects/Food';
 import Cell from '../objects/Cell/index';
@@ -48,15 +48,16 @@ export default class World {
     this.cells = new Container();
     this.cells.sortableChildren = true;
 
-    this.food = new ParticleContainer(4096, {
+    const PARTICLE_CONFIG: IParticleProperties = {
       vertices: true,
       position: true,
       rotation: false,
       uvs: false,
       tint: true,
-    });
+    };
 
-    this.ejected = new ParticleContainer(1024);
+    this.food = new ParticleContainer(4096, PARTICLE_CONFIG);
+    this.ejected = new ParticleContainer(1024, PARTICLE_CONFIG);
 
     this.indexedCells = new Map();
     this.indexedFood = new Map();
@@ -110,78 +111,79 @@ export default class World {
     }
   }
 
+  private addCell(id: number, location: Location, color: RGB, name: string, type: CellType, subtype: Subtype, skin?: string): void {
+    let cell: Cell;
+
+    if (!this.indexedCells.has(id)) {
+      if (Master.skins.skinsByNameHas(name)) {
+        const url = Master.skins.get(name).url;
+
+        SkinsLoader.load(url);
+      }
+
+      if (skin) {
+        SkinsLoader.loadAgar(skin);
+      }
+
+      cell = CachedObjects.getCell();
+      cell.reuse(subtype, location, color, name, skin, this);
+
+      this.indexedCells.set(id, cell);
+      this.cells.addChild(cell);
+      this.socketCells.add(subtype, cell, id);
+      this.minimap.addRealPlayerCell(id, location, color, name, type, subtype, skin);
+
+      this.renderer.checkIsTeam(cell);
+
+    } else {
+      cell = this.indexedCells.get(id) as Cell;
+      this.update(id, location, type);
+    }
+
+    if (subtype === 'FIRST_TAB' && this.playerCells.firstTabIds.has(id)) {
+      this.playerCells.addFirstTabCell(id, cell);
+
+      if (GameSettings.all.settings.game.multibox.enabled && PlayerState.second.playing && this.controller.currentFocusedTab === 'FIRST_TAB') {
+        cell.setIsFoucsedTab(true);
+      }
+    } else if (subtype === 'SECOND_TAB' && this.playerCells.secondTabIds.has(id)) {
+      this.playerCells.addSecondTabCell(id, cell);
+
+      if (PlayerState.first.playing && this.controller.currentFocusedTab === 'SECOND_TAB') {
+        cell.setIsFoucsedTab(true);
+      }
+    }
+  }
+
+  private addVirus(id: number, location: Location, color: RGB, name: string, type: CellType, subtype: Subtype): void {
+    if (!this.indexedCells.has(id)) {
+      const virus = new Virus(location, subtype);
+      this.cells.addChild(virus);
+      this.indexedCells.set(id, virus);
+      this.socketCells.add(subtype, virus, id);
+      this.minimap.addRealPlayerCell(id, location, color, name, type, subtype);
+    } else {
+      this.update(id, location, type);
+    }
+  }
+
   public add(id: number, location: Location, color: RGB, name: string, type: CellType, subtype: Subtype, skin?: string): void {
-    if (type === 'FOOD') {
-      this.addFood(id, location, type, subtype);
-      return;
-    }
+    switch (type) {
+      case 'FOOD':
+        this.addFood(id, location, type, subtype);
+        break;
 
-    if (type === 'EJECTED') {
-      this.addEjected(id, location, color, type, subtype);
-      return;
-    }
+      case 'EJECTED':
+        this.addEjected(id, location, color, type, subtype);
+        break;
 
-    if (type === 'CELL') {
-      let cell: Cell;
+      case 'CELL':
+        this.addCell(id, location, color, name, type, subtype, skin);
+        break;
 
-      if (!this.indexedCells.has(id)) {
-
-        name = name ? name.trim() : '';
-        
-        if (Master.skins.skinsByNameHas(name)) {
-          const url = Master.skins.get(name).url;
-
-          SkinsLoader.load(url);
-        }
-
-        if (skin) {
-          SkinsLoader.loadAgar(skin);
-        }
-
-        cell = CachedObjects.getCell();
-        cell.reuse(subtype, location, color, name, skin, this);
-
-        this.indexedCells.set(id, cell);
-        this.cells.addChild(cell);
-        this.socketCells.add(subtype, cell, id);
-        this.minimap.addRealPlayerCell(id, location, color, name, type, subtype, skin);
-
-        this.renderer.checkIsTeam(cell);
-
-      } else {
-        cell = this.indexedCells.get(id) as Cell;
-        this.update(id, location, type);
-      }
-
-      if (subtype === 'FIRST_TAB' && this.playerCells.firstTabIds.has(id)) {
-        this.playerCells.addFirstTabCell(id, cell);
-
-        if (GameSettings.all.settings.game.multibox.enabled && PlayerState.second.playing && this.controller.currentFocusedTab === 'FIRST_TAB') {
-          cell.setIsFoucsedTab(true);
-        }
-      } else if (subtype === 'SECOND_TAB' && this.playerCells.secondTabIds.has(id)) {
-        this.playerCells.addSecondTabCell(id, cell);
-
-        if (PlayerState.first.playing && this.controller.currentFocusedTab === 'SECOND_TAB') {
-          cell.setIsFoucsedTab(true);
-        }
-      }
-
-      return;
-    }
-
-    if (type === 'VIRUS') {
-      if (!this.indexedCells.has(id)) {
-        const virus = new Virus(location, subtype);
-        this.cells.addChild(virus);
-        this.indexedCells.set(id, virus);
-        this.socketCells.add(subtype, virus, id);
-        this.minimap.addRealPlayerCell(id, location, color, name, type, subtype);
-      } else {
-        this.update(id, location, type);
-      }
-
-      return;
+      case 'VIRUS':
+        this.addVirus(id, location, color, name, type, subtype,)
+        break;
     }
   }
 
@@ -331,7 +333,7 @@ export default class World {
 
     this.minimap.reset();
 
-    TextureGenerator.cellNicksCache.clear();
+    TextureGenerator.cellNicksGenerator.clear();
   }
 
   public clearCellsByType(subtype: Subtype): void {
@@ -386,7 +388,7 @@ export default class World {
 
     if (cellsEntries || foodEntries) {
       this.logger.info(
-        `[${subtype}] cleanup due to socket disconnect. Buffer size: [food - ${foodEntries}] [cells - ${cellsEntries}], [ejected - ${ejectedEntries}]`
+        `[${subtype}] disconnected. Food: ${foodEntries}, cells: ${cellsEntries}, ejected - ${ejectedEntries}`
       );
     }
   }

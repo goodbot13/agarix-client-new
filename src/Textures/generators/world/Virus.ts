@@ -1,8 +1,8 @@
-import GameSettings from '../Settings/Settings';
+import GameSettings from '../../../Settings/Settings';
 import { MIPMAP_MODES, SCALE_MODES, Texture, Sprite, Container, Rectangle } from 'pixi.js';
 import { GlowFilter } from '@pixi/filter-glow';
-import { getColor, rgbToStringHex } from '../utils/helpers';
-import Globals from '../Globals';
+import { getColor, rgbToStringHex } from '../../../utils/helpers';
+import Globals from '../../../Globals';
 
 const generateVirus = (): Texture => {
   const {

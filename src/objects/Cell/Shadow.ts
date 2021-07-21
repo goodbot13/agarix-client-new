@@ -32,15 +32,15 @@ export default class Shadow {
     }
   }
 
-  public applyPlayerShadow(): void {
-    this.sprite.texture = TextureGenerator.myCellShadow;
-    this.TEXTURE_OFFSET = TextureGenerator.myCellShadow.width / TextureGenerator.cell.width;
-    this.sprite.width = this.sprite.height = this.cellSprite.width * this.TEXTURE_OFFSET;
-  }
+  public updateTexture(): void {
+    if (this.cell.isPlayerCell) {
+      this.sprite.texture = TextureGenerator.myCellShadow;
+      this.TEXTURE_OFFSET = TextureGenerator.myCellShadow.width / TextureGenerator.cell.width;
+    } else {
+      this.sprite.texture = TextureGenerator.cellShadow;
+      this.TEXTURE_OFFSET = TextureGenerator.cellShadow.width / TextureGenerator.cell.width;
+    }
 
-  public changeTexture(): void {
-    this.sprite.texture = TextureGenerator.cellShadow;
-    this.TEXTURE_OFFSET = TextureGenerator.cellShadow.width / TextureGenerator.cell.width;
     this.sprite.width = this.sprite.height = this.cellSprite.width * this.TEXTURE_OFFSET;
   }
 }

@@ -1,8 +1,8 @@
-import GameSettings from '../Settings/Settings';
+import GameSettings from '../../../Settings/Settings';
 import { SCALE_MODES, Texture, Sprite, utils, MIPMAP_MODES } from 'pixi.js';
 import { GlowFilter } from '@pixi/filter-glow';
-import { getColor, rgbToStringHex } from '../utils/helpers';
-import Globals from '../Globals';
+import { getColor, rgbToStringHex } from '../../../utils/helpers';
+import Globals from '../../../Globals';
 
 const generateFood = () => {
   const canvas = document.createElement('canvas');

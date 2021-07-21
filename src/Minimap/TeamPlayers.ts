@@ -1,11 +1,11 @@
 import { Container, utils } from "pixi.js";
 import Cell from '../objects/Cell/index';
-import { Location } from "../objects/types";
 import Ogar from "../Ogar";
 import { getAnimationSpeed, getFadeSpeed, getSoakSpeed } from "../render/Renderer/AnimationDataProvider";
 import World from "../render/World";
 import GameSettings from "../Settings/Settings";
 import PlayerState from "../states/PlayerState";
+import CachedObjects from "../utils/CachedObjects";
 import { transformMinimapLocation } from "../utils/helpers";
 
 export default class TeamPlayers extends Container {
@@ -24,7 +24,7 @@ export default class TeamPlayers extends Container {
   }
 
   public reset(): void {
-    this.buffer.forEach((obj) => obj.destroy({ children: true }));
+    this.buffer.forEach((obj) => CachedObjects.addCell(obj));
     this.buffer.clear();
 
     while (this.children.length > 0) {
@@ -56,7 +56,7 @@ export default class TeamPlayers extends Container {
         cell.update({ x: location.x, y: location.y, r: playerSize / 2 });
 
         if (!player.alive) {
-          cell.destroy({ children: true });
+          CachedObjects.addCell(cell);
           this.removeChild(cell);
           this.buffer.delete(player.id);
         } else {
@@ -82,8 +82,8 @@ export default class TeamPlayers extends Container {
           true
         );
 
-        const cell = new Cell(/* 'FIRST_TAB', location, { red: 0, green: 0, blue: 0 }, player.nick, '', this.world */);
-
+        const cell = CachedObjects.getCell();
+        cell.reuse('FIRST_TAB', location, { red: 0, green: 0, blue: 0 }, player.nick, '', this.world);
         cell.setIsMinimapCell();
         cell.isTeam = true;
         cell.stats.nick.visible = true;
@@ -99,7 +99,7 @@ export default class TeamPlayers extends Container {
 
     this.buffer.forEach((cell, key) => {
       if (!Ogar.firstTab.team.has(key)) {
-        cell.destroy({ children: true });
+        CachedObjects.addCell(cell);
         this.removeChild(cell);
         this.buffer.delete(key);
       }

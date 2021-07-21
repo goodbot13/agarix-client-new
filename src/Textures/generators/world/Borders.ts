@@ -1,8 +1,8 @@
-import GameSettings from '../Settings/Settings';
+import GameSettings from '../../../Settings/Settings';
 import { MIPMAP_MODES, SCALE_MODES, Graphics, Container, Rectangle, Texture } from 'pixi.js';
 import { GlowFilter } from '@pixi/filter-glow';
-import { getColor, rgbToStringHex } from '../utils/helpers';
-import Globals from '../Globals';
+import { getColor, rgbToStringHex } from '../../../utils/helpers';
+import Globals from '../../../Globals';
 
 const generateBorders = () => {
   const {

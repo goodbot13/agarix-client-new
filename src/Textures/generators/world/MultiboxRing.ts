@@ -1,5 +1,5 @@
 import { SCALE_MODES, Texture } from "pixi.js";
-import GameSettings from "../Settings/Settings";
+import GameSettings from "../../../Settings/Settings";
 
 const generateMultiboxLinedRing = () => {
   const canvas = document.createElement('canvas');

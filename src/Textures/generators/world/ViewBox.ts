@@ -1,5 +1,5 @@
 import { Graphics, SCALE_MODES, Rectangle } from "pixi.js";
-import Globals from "../Globals";
+import Globals from "../../../Globals";
 
 const createViewBox = () => {
   const g = new Graphics();

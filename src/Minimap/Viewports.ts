@@ -1,5 +1,4 @@
 import { Container } from "pixi.js";
-import { Location } from "../objects/types";
 import ViewBox from "../objects/ViewBox";
 import World from "../render/World";
 import GameSettings from "../Settings/Settings";
@@ -49,8 +48,8 @@ export default class Viewports extends Container {
         this.world.view.firstTab.getShiftedMapOffsets()
       );
 
-      const w = bounds.width / 14142 * size;
-      const h = bounds.height / 14142 * size;
+      const w = bounds.width / this.world.map.size.width * size;
+      const h = bounds.height / this.world.map.size.height * size;
  
       this.firstTab.animate(x, y, w, h);
     } else {
@@ -77,8 +76,8 @@ export default class Viewports extends Container {
         this.world.view.firstTab.getShiftedMapOffsets()
       );
 
-      const w = bounds.width / 14142 * size;
-      const h = bounds.height / 14142 * size;
+      const w = bounds.width / this.world.map.size.width * size;
+      const h = bounds.height / this.world.map.size.height * size;
  
       this.topOneTab.animate(x, y, w, h);
     } else {

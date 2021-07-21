@@ -89,21 +89,24 @@ export default class Cell extends Container implements IMainGameObject {
     this.isMinimap = false;
     this.culled = false;
 
+    this.agarSkinTexture = null;
+    this.skinByNameTexture = null;
+
     if (this.nick) {
       this.usesSkinByAgarName = Master.skins.skinsByNameHas(this.nick);
     }
 
     this.getSkin();
     this.addColorInformation(color);
-    this.applyAlpha();
     this.applyTint();
     this.update(location);
-    
     this.stats.updateMass(true);
     this.stats.updateNick(nick);
-
     this.cell.setSize(r * 2);
     this.shadow.setSize(this.cell.width);
+
+    this.cell.alpha = 0;
+    this.shadow.sprite.alpha = 0;
   }
 
   private getSkin(): void {
@@ -137,13 +140,8 @@ export default class Cell extends Container implements IMainGameObject {
     this.colorHex.push(originalColor, modifiedColor);
   }
 
-  private applyAlpha(): void {
-    this.cell.alpha = 0;
-    this.shadow.sprite.alpha = 0;
-  }
-
   public changeShadowTexture(): void {
-    this.shadow.changeTexture();
+    this.shadow.updateTexture();
   }
 
   public setIsMinimapCell(): void {
@@ -203,7 +201,7 @@ export default class Cell extends Container implements IMainGameObject {
     this.nick = nick && nick.trim();
     this.stats.updateNick(nick);
     this.customSkinTexture = skinTexture;
-    this.shadow.applyPlayerShadow();
+    this.shadow.updateTexture();
 
     if (this.nick) {
       this.usesSkinByAgarName = Master.skins.skinsByNameHas(this.nick);

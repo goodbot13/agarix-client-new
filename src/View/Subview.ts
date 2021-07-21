@@ -11,7 +11,7 @@ class Subview {
   public cursor: View.ITabCursor = { x: 0, y: 0 };
   public playerBox: View.IPlayerBox = { width: 0, height: 0, mass: 0 };
   public bounds: View.IBounds = { left: 0, right: 0, top: 0, bottom: 0, width: 0, height: 0 };
-  public mapOffsets: IMapOffsets = { minX: 0, minY: 0, maxY: 0, maxX: 0 };
+  public mapOffsets: IMapOffsets = { minX: 0, minY: 0, maxY: 0, maxX: 0, width: 0, height: 0 };
   public mapOffsetsShift: IMapOffsetsShift = { x: 0, y: 0 };
   public sortRequired: boolean = false;
 
@@ -75,7 +75,9 @@ class Subview {
       minX: this.mapOffsets.minX + this.mapOffsetsShift.x,
       minY: this.mapOffsets.minY + this.mapOffsetsShift.y,
       maxX: this.mapOffsets.maxX + this.mapOffsetsShift.x,
-      maxY: this.mapOffsets.maxY + this.mapOffsetsShift.y
+      maxY: this.mapOffsets.maxY + this.mapOffsetsShift.y,
+      width: Math.abs(this.mapOffsets.maxX - this.mapOffsets.minX),
+      height: Math.abs(this.mapOffsets.maxY - this.mapOffsets.minY)
     }
   }
 
@@ -91,7 +93,7 @@ class Subview {
     }
   }
 
-  calcPlayingStats() {
+  public calcPlayingStats() {
     if (this.playerCells.size) {
       this.viewport.x = 0;
       this.viewport.y = 0;

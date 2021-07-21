@@ -1,22 +1,22 @@
 import { GlowFilter } from "@pixi/filter-glow";
 import { Sprite } from "pixi.js";
 import { MIPMAP_MODES, SCALE_MODES, Texture } from "pixi.js";
-import Globals from "../Globals";
-import GameSettings from "../Settings/Settings";
+import Globals from "../../../Globals";
+import GameSettings from "../../../Settings/Settings";
 
-const generateMyCellShadow = () => {
+const generateCellShadow = () => {
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
 
   const size = 512;
   const lineWidth = 6;
-  const { myShadowDistance, myShadowStrength } = GameSettings.all.settings.theming.cells;
+  const { shadowDistance, shadowStrength } = GameSettings.all.settings.theming.cells;
 
-  canvas.width = canvas.height = size + myShadowDistance * 2;
+  canvas.width = canvas.height = size + shadowDistance * 2;
 
   ctx.strokeStyle = '#FFFFFF';
   ctx.lineWidth = lineWidth;
-  ctx.arc(size / 2 + myShadowDistance, size / 2 + myShadowDistance, size / 2 - lineWidth, 0, Math.PI * 2);
+  ctx.arc(size / 2 + shadowDistance, size / 2 + shadowDistance, size / 2 - lineWidth, 0, Math.PI * 2);
   ctx.stroke();
   
   if (GameSettings.all.settings.game.performance.glowFilterShaderType === 'GPU-1') {
@@ -24,8 +24,8 @@ const generateMyCellShadow = () => {
     // @ts-ignore
     sprite.filters = [new GlowFilter({
       color: 0xFFFFFF,
-      distance: myShadowDistance,
-      outerStrength: myShadowStrength,
+      distance: shadowDistance,
+      outerStrength: shadowStrength,
       quality: 0.175
     })];
 
@@ -37,9 +37,9 @@ const generateMyCellShadow = () => {
 
   } else if (GameSettings.all.settings.game.performance.glowFilterShaderType === 'Canvas') {
     ctx.shadowColor = '#FFFFFF';
-    ctx.shadowBlur = myShadowDistance - lineWidth;
+    ctx.shadowBlur = shadowDistance - lineWidth;
 
-    for (let i = 0; i < myShadowStrength; i++) {
+    for (let i = 0; i < shadowStrength; i++) {
       ctx.stroke();
     }
   }
@@ -51,4 +51,4 @@ const generateMyCellShadow = () => {
   return texture;
 }
 
-export default generateMyCellShadow;
+export default generateCellShadow;
