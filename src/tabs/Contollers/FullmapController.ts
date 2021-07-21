@@ -39,11 +39,11 @@ export default class FullmapController {
     this.sockets[index] && this.sockets[index].destroy();
   }
 
-  public connectByIndex(index: number): Promise<void | IMapOffsets> {
+  public connectByIndex(index: number): Promise<IMapOffsets> {
     return new Promise((resolve: any) => {
-      this.sockets[index].init().then(() => {
+      this.sockets[index].init().then((mapOffsets) => {
         this.sockets[index].spectate(this.coordinates[index].x, this.coordinates[index].y);
-        resolve();
+        resolve(mapOffsets);
       });
     }); 
   }

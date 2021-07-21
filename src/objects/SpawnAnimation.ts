@@ -18,18 +18,22 @@ class SpawnAnimation extends Container {
 
     const { spawnAnimation } = GameSettings.all.settings.game.effects;
 
-    if (spawnAnimation === 'Default') {
-      this.spriteBuffer.push(new Sprite(TextureGenerator.removeEffect));
-    } else if (spawnAnimation === 'Acimazis') {
-      for (let i = 0; i < TextureGenerator.removeAnimationsAcim.length; i++) {
-        this.spriteBuffer.push(new Sprite(TextureGenerator.removeAnimationsAcim[i]));
-      }
-    } else if (spawnAnimation === '2CL') {
-      this.spriteBuffer.push(new Sprite(TextureGenerator.removeAnimationHSLO3D));
-    } else if (spawnAnimation === 'Yue') {
-      for (let i = 0; i < TextureGenerator.removeAnimationYue.length; i++) {
-        this.spriteBuffer.push(new Sprite(TextureGenerator.removeAnimationYue[i]));
-      }
+    switch (spawnAnimation) {
+      case 'Default':
+        this.spriteBuffer.push(new Sprite(TextureGenerator.removeEffect));
+        break;
+
+      case '2CL':
+        this.spriteBuffer.push(new Sprite(TextureGenerator.removeAnimationHSLO3D));
+        break;
+
+      case 'Acimazis':
+        TextureGenerator.removeAnimationsAcim.forEach((texture) => this.spriteBuffer.push(new Sprite(texture)));
+        break;
+
+      case 'Yue':
+        TextureGenerator.removeAnimationYue.forEach((texture) => this.spriteBuffer.push(new Sprite(texture)));
+        break;
     }
 
     this.spriteBuffer.forEach((sprite) => {

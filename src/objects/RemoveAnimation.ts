@@ -21,18 +21,22 @@ class RemoveAnimation extends Container {
     const { x, y, r } = location;
     const { cellRemoveAnimation } = GameSettings.all.settings.game.effects;
 
-    if (cellRemoveAnimation === 'Default') {
-      this.spriteBuffer.push(new Sprite(TextureGenerator.removeEffect));
-    } else if (cellRemoveAnimation === 'Acimazis') {
-      for (let i = 0; i < TextureGenerator.removeAnimationsAcim.length; i++) {
-        this.spriteBuffer.push(new Sprite(TextureGenerator.removeAnimationsAcim[i]));
-      }
-    } else if (cellRemoveAnimation === '2CL') {
-      this.spriteBuffer.push(new Sprite(TextureGenerator.removeAnimationHSLO3D));
-    } else if (cellRemoveAnimation === 'Yue') {
-      for (let i = 0; i < TextureGenerator.removeAnimationYue.length; i++) {
-        this.spriteBuffer.push(new Sprite(TextureGenerator.removeAnimationYue[i]));
-      }
+    switch (cellRemoveAnimation) {
+      case 'Default':
+        this.spriteBuffer.push(new Sprite(TextureGenerator.removeEffect));
+        break;
+
+      case '2CL':
+        this.spriteBuffer.push(new Sprite(TextureGenerator.removeAnimationHSLO3D));
+        break;
+
+      case 'Acimazis':
+        TextureGenerator.removeAnimationsAcim.forEach((texture) => this.spriteBuffer.push(new Sprite(texture)));
+        break;
+
+      case 'Yue':
+        TextureGenerator.removeAnimationYue.forEach((texture) => this.spriteBuffer.push(new Sprite(texture)));
+        break;
     }
 
     this.spriteBuffer.forEach((sprite) => {
