@@ -6,9 +6,8 @@ import * as PIXI from 'pixi.js';
 import PlayerState from '../states/PlayerState';
 
 class Food extends Sprite {
-  public readonly subtype: Subtype;
+  public subtype: Subtype;
   public originalSize: number;
-  public sizeOffset: number;
   public removing: boolean = false;
   public isDestroyed: boolean = false;
   public type: CellType;
@@ -18,9 +17,12 @@ class Food extends Sprite {
   private SPEED: number = 0.0225;
   private realAlpha: number = 0;
 
-  constructor(location: Location, subtype: Subtype,) {
+  constructor(/* location: Location, subtype: Subtype */) {
     super(TextureGenerator.food);
+    // this.reuse(location, subtype);
+  }
 
+  public reuse(location: Location, subtype: Subtype) {
     const { x, y, r } = location;
     const { foodPerformanceMode } = GameSettings.all.settings.game.performance;
 
@@ -32,6 +34,11 @@ class Food extends Sprite {
     this.y = y;
     this.width = this.height = foodPerformanceMode ? 512 : 0;
     this.alpha = foodPerformanceMode ? 1 : 0;
+
+    this.removing = false;
+    this.isDestroyed = false;
+    this.culled = false;
+    this.realAlpha = 0;
   }
 
   private getStep(): number {
@@ -64,14 +71,12 @@ class Food extends Sprite {
     if (this.removing) {
 
       if (this.culled) {
-        this.destroy();
         this.isDestroyed = true;
         return;
       }
 
       // instantly remove & destroy 
       if (instantAnimation) {
-        this.destroy();
         this.isDestroyed = true;
         return;
       }
@@ -79,7 +84,6 @@ class Food extends Sprite {
       if (this.width <= 40) {
 
         // food is ready to be removed & destroyed
-        this.destroy();
         this.isDestroyed = true;
 
       } else {

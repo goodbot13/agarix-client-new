@@ -1,8 +1,9 @@
+import * as PIXI from 'pixi.js';
+import { Container, ParticleContainer } from "pixi.js";
 import GameSettings from "../Settings/Settings";
 import Globals from "../Globals";
 import Controller from "../tabs/Contollers/TabsController";
 import World from "./World";
-import { Container } from "pixi.js";
 import Map from "../objects/Map/Map";
 import SpawnAnimation from "../objects/SpawnAnimation";
 import Cell from "../objects/Cell/index";
@@ -11,18 +12,21 @@ import Food from "../objects/Food";
 import CellsRenderer from './Renderer/CellsRenderer';
 import FoodRenderer from './Renderer/FoodRenderer';
 import Minimap from "../Minimap/MinimapWEBGL";
-import * as PIXI from 'pixi.js';
 import RemoveAnimation from "../objects/RemoveAnimation";
 import UICommunicationService from "../communication/FrontAPI";
 import SkinsLoader from "../utils/SkinsLoader";
 import WorldState from "../states/WorldState";
 import PlayerState from "../states/PlayerState";
 import Ogar from "../Ogar";
+import Ejected from '../objects/Ejected';
+import CachedObjects from '../utils/CachedObjects';
+import { getAnimationSpeed, getFadeSpeed, getSoakSpeed } from './Renderer/AnimationDataProvider';
 
 export default class WorldLoop {
   private world: World;
   private cells: Container;
-  private food: Container;
+  private food: ParticleContainer;
+  private ejected: ParticleContainer;
   private map: Map;
   private controller: Controller;
   private cellsRenderer: CellsRenderer;
@@ -36,6 +40,7 @@ export default class WorldLoop {
     this.world = world;
     this.cells = world.cells;
     this.food = world.food;
+    this.ejected = world.ejected;
     this.map = world.map;
     this.controller = world.controller;
     this.minimap = world.minimap;
@@ -68,16 +73,45 @@ export default class WorldLoop {
     });
   }
 
+  private renderEjected(): void {
+    const animationSpeed = getAnimationSpeed();
+    const fadeSpeed = getFadeSpeed();
+    const soakSpeed = getSoakSpeed();
+
+    for (let i = 0; i < this.ejected.children.length; i++) {
+      const ejected = this.ejected.children[i] as Ejected;
+      ejected.animate(animationSpeed, fadeSpeed, soakSpeed);
+
+      if (ejected.isDestroyed) {
+        this.ejected.removeChild(ejected);
+        CachedObjects.addEjected(ejected);
+
+        continue;
+      }
+
+      this.cellsRenderer.render(ejected);
+    }
+  }
+
   private renderCells(): void {
     // check for isTeam every 1 second. isAlive may be changed only every 2 seconds
     const canCheckForTeam = WorldState.ticks % 60 * PIXI.Ticker.shared.deltaTime === 0;
 
+    const animationSpeed = getAnimationSpeed();
+    const fadeSpeed = getFadeSpeed();
+    const soakSpeed = getSoakSpeed();
+
     for (let i = 0; i < this.cells.children.length; i++) {
       const object = this.cells.children[i] as Cell | Virus | RemoveAnimation;
-      object.animate();
+      object.animate(animationSpeed, fadeSpeed, soakSpeed);
 
       if (object.isDestroyed) {
         this.cells.removeChild(object);
+        
+        if (object.type === 'CELL') {
+          CachedObjects.addCell(object as Cell);
+        }
+        
         continue;
       }
 
@@ -121,6 +155,8 @@ export default class WorldLoop {
 
       if (food.isDestroyed) {
         this.food.removeChild(food);
+        CachedObjects.addFood(food);
+
         continue;
       }
 
@@ -235,6 +271,7 @@ export default class WorldLoop {
     this.checkIsPlaying();
     this.map.renderTick();
     this.renderCells();
+    this.renderEjected();
     this.minimap.renderFrame();
     this.renderFood();
     this.checkWtfRgbMode();

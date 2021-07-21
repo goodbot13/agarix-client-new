@@ -20,6 +20,7 @@ export default new class Master {
   public envConfig: EnvConfig;
   public regions: Regions;
   public gameMode: GameMode;
+  public isPrivate: boolean;
   public skins: AgarSkinsList;
   public latestId: number = 0;
 
@@ -146,6 +147,8 @@ export default new class Master {
   }
 
   public async connect(token?: string, serverToken?: boolean): Promise<ISocketData> {
+    this.isPrivate = false;
+
     if (serverToken) {
       return Promise.resolve(this.connectByServerToken(token));
     }
@@ -154,6 +157,19 @@ export default new class Master {
       return this.joinParty(token);
     } else {
       return this.getServer();
+    }
+  }
+
+  public async connectPrivate(config: any): Promise<ISocketData> {
+    this.isPrivate = true;
+
+    if (config.ws) {
+      return Promise.resolve({ 
+        address: config.ws,
+        https: config.ws,
+        protocolVersion: 22,
+        clientVersionInt: 31100
+      });
     }
   }
 

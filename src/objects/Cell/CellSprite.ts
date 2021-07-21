@@ -3,12 +3,15 @@ import Cell from ".";
 import TextureGenerator from '../../Textures/TexturesGenerator';
 
 export default class CellSprite extends Sprite {
-  constructor(size: number, private cell: Cell) {
+  constructor() {
     super(TextureGenerator.cell);
     this.sortableChildren = true;
-    this.width = size;
-    this.height = size;
     this.anchor.set(0.5);
     this.zIndex = 2;
+  }
+
+  public setSize(size: number) {
+    this.width = size;
+    this.height = size;
   }
 }

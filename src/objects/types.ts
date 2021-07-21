@@ -1,6 +1,6 @@
 export type Subtype = 'FIRST_TAB' | 'SECOND_TAB' | 'TOP_ONE_TAB' | 'SPEC_TABS';
 export type RemoveType = 'REMOVE_CELL_OUT_OF_VIEW' | 'REMOVE_EATEN_CELL';
-export type CellType = 'FOOD' | 'VIRUS' | 'CELL' | 'SPAWN_ANIMATION' | 'REMOVE_ANIMATION';
+export type CellType = 'FOOD' | 'VIRUS' | 'CELL' | 'SPAWN_ANIMATION' | 'REMOVE_ANIMATION' | 'EJECTED';
 
 export interface Location {
   x: number,
@@ -24,6 +24,6 @@ export interface IMainGameObject {
   isDestroyed: boolean,
   update: (location: Location) => void,
   remove: (type: RemoveType) => void,
-  animate: () => void,
+  animate: (animationSpeed: number, fadeSpeed: number, soakSpeed: number) => void,
   setIsVisible: (visible: boolean) => void,
 }

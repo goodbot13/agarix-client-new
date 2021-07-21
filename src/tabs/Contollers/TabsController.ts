@@ -18,7 +18,6 @@ class Controller {
   public currentFocusedTab: TabType = 'FIRST_TAB';
 
   private logger: Logger;
-  private connectionTimeoutsIds: Array<NodeJS.Timeout> = [];
 
   constructor(public world: World) {
     this.fullmapController = new FullmapController(this);
@@ -26,13 +25,19 @@ class Controller {
   }
 
   public init(socketData?: ISocketData): Promise<IMapOffsets> {
-    return new Promise((resolve: any, reject: (reason: string) => void) => {
+    return new Promise(async (resolve: any, reject: (reason: string) => void) => {
       this.disconnectAll();
 
       if (socketData) {
         this.socketData = socketData;
   
-        const reg = socketData.https.match(/live-arena-([\w\d]+)\.agar\.io:\d+/)[1];
+        let reg = '';
+
+        try {
+          reg = socketData.https.match(/live-arena-([\w\d]+)\.agar\.io:\d+/)[1];
+        } catch {
+          reg = '';
+        }
   
         if (!Ogar.connected) {
           window.GameAPI.connectOgar().then(() => Ogar.join(reg, socketData.token));
@@ -41,32 +46,29 @@ class Controller {
         }
       }
 
-      let mainId: NodeJS.Timeout;
-      let fullMapId: NodeJS.Timeout;
-      let topOneId: NodeJS.Timeout;
-      let secondPlayerTabId: NodeJS.Timeout;
+      const { spectatorMode } = GameSettings.all.settings.game.gameplay;
 
-      mainId = setTimeout(() => {
-        this.connectFirstPlayerTab().then(mapOffsets => {
+      try {
+        const mapOffsets = await this.connectFirstPlayerTab();
 
-          if (GameSettings.all.settings.game.gameplay.spectatorMode === 'Full map') {
-            fullMapId = setTimeout(() => this.enableFullMapView(), 400);
-            this.connectionTimeoutsIds.push(fullMapId);
-          } else if (GameSettings.all.settings.game.gameplay.spectatorMode === 'Top one') {
-            topOneId = setTimeout(() => this.connectTopOneTab(), 400);
-            this.connectionTimeoutsIds.push(topOneId);
-          }
-  
-          if (GameSettings.all.settings.game.multibox.enabled) {
-            secondPlayerTabId = setTimeout(() => this.connectSecondPlayerTab(), 600);
-            this.connectionTimeoutsIds.push(secondPlayerTabId);
-          }
-  
-          resolve(mapOffsets);
-        }).catch((reason) => reject(reason));
-      }, 200);
+        switch (spectatorMode) {
+          case 'Full map':
+            this.enableFullMapView();
+            break;
 
-      this.connectionTimeoutsIds.push(mainId);
+          case 'Top one':
+            this.connectTopOneTab();
+            break;
+        }
+
+        if (GameSettings.all.settings.game.multibox.enabled) {
+          this.connectSecondPlayerTab();
+        }
+
+        resolve(mapOffsets);
+      } catch (reason) {
+        reject(reason);
+      }
     });
   }
 
@@ -87,6 +89,7 @@ class Controller {
       this.firstTabSocket.onDisconnect(() => {
         UICommunicationService.sendChatGameMessage('Main player tab disconnected.', ChatAuthor.Game);
         UICommunicationService.setFirstTabStatus('DISCONNECTED');
+        UICommunicationService.updateLeaderboard([]);
       });
     });
   }
@@ -178,7 +181,6 @@ class Controller {
   }
 
   public disconnectAll(): void {
-    this.connectionTimeoutsIds.forEach((timeout) => clearTimeout(timeout));
     this.disconnectFirstTab();
     this.disconnectSecondTab();
     this.disconnectTopOneTab();

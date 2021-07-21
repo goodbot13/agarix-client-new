@@ -1,7 +1,7 @@
 const path = require('path');
 const TerserPlugin = require('terser-webpack-plugin');
 
-const dev = false;
+const dev = true;
 
 let mode = 'development';
 let optimization = { }

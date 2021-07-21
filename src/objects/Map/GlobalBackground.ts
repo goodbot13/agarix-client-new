@@ -4,13 +4,14 @@ import * as PIXI from 'pixi.js';
 import GameSettings from "../../Settings/Settings";
 import IMapObject from "./interfaces";
 import { getColor } from "../../utils/helpers";
+import Map from "./Map";
 
 export default class GlobalBackground extends Container implements IMapObject {
   private sprite: Sprite;
   private displacementSprite: Sprite;
   private spriteContainer: Container;
 
-  constructor() {
+  constructor(private map: Map) {
     super();
 
     this.spriteContainer = new Container();
@@ -19,6 +20,8 @@ export default class GlobalBackground extends Container implements IMapObject {
     
     this.sprite.addChild(this.displacementSprite);
     this.addChild(this.spriteContainer);
+
+    this.map.listen('sizechange', () => this.create());
   }
 
   public async updateTexture(): Promise<any> {
@@ -37,20 +40,36 @@ export default class GlobalBackground extends Container implements IMapObject {
   public create(): void {
     const backgroundData = TextureGenerator.secondBackgroundImage.baseTexture;
     const ratio = backgroundData.width / backgroundData.height;
-    const width = ratio === 1 ? 50000 : 40000;
-    const height = width / ratio + (ratio === 1 ? 0 : 5000);
+    let width = ratio === 1 ? 50000 : 40000;
+    let height = width / ratio + (ratio === 1 ? 0 : 5000);
+
+    if (~~this.map.size.width !== 14142) {
+      width += 20000;
+      height = width / ratio + (ratio === 1 ? 0 : 10000);
+    }
 
     if (this.sprite) {
       this.spriteContainer.removeChild(this.sprite);
       this.sprite.destroy();
+      this.sprite = null;
+    }
+
+    if (this.displacementSprite) {
+      this.spriteContainer.removeChild(this.displacementSprite);
+      this.displacementSprite.destroy();
+      this.displacementSprite = null;
     }
 
     this.sprite = new Sprite(TextureGenerator.secondBackgroundImage);
-    this.sprite.width = 14142;
-    this.sprite.height = 14142;
     this.sprite.width = width;
     this.sprite.height = height;
-    this.sprite.position.set(-width / 2 + 7171, -height / 2 + 7171);
+    // this.sprite.position.set(-width / 2 + this.map.size.width, -this.map.size.height / 2 + 7171);
+
+    this.sprite.position.set(
+      (-width / 2) + this.map.size.width / 2, 
+      (-height / 2) + this.map.size.height / 2
+    );
+
 
     if (!this.displacementSprite) {
       this.displacementSprite = new Sprite(TextureGenerator.globalDisplacement);

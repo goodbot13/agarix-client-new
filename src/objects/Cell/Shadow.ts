@@ -7,14 +7,17 @@ export default class Shadow {
   public sprite: Sprite;
   public TEXTURE_OFFSET: number;
 
-  constructor(private cellSprite: Sprite, private cell: Cell, size: number) {
+  constructor(private cellSprite: Sprite, private cell: Cell) {
     this.TEXTURE_OFFSET = TextureGenerator.cellShadow.width / TextureGenerator.cell.width;
 
     this.sprite = new Sprite(TextureGenerator.cellShadow);
     this.sprite.anchor.set(0.5);
+    this.sprite.zIndex = 1;
+  }
+
+  public setSize(size: number) {
     this.sprite.width = size * this.TEXTURE_OFFSET;
     this.sprite.height = size * this.TEXTURE_OFFSET;
-    this.sprite.zIndex = 1;
   }
 
   public update(): void {

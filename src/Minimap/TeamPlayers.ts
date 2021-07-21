@@ -2,6 +2,7 @@ import { Container, utils } from "pixi.js";
 import Cell from '../objects/Cell/index';
 import { Location } from "../objects/types";
 import Ogar from "../Ogar";
+import { getAnimationSpeed, getFadeSpeed, getSoakSpeed } from "../render/Renderer/AnimationDataProvider";
 import World from "../render/World";
 import GameSettings from "../Settings/Settings";
 import PlayerState from "../states/PlayerState";
@@ -34,6 +35,10 @@ export default class TeamPlayers extends Container {
   public renderTick(): void {
     const { playerSize } = GameSettings.all.settings.theming.minimap;
 
+    const animationSpeed = getAnimationSpeed();
+    const fadeSpeed = getFadeSpeed();
+    const soakSpeed = getSoakSpeed();
+
     Ogar.firstTab.team.forEach((player) => {
       if (this.buffer.has(player.id)) {
 
@@ -55,7 +60,7 @@ export default class TeamPlayers extends Container {
           this.removeChild(cell);
           this.buffer.delete(player.id);
         } else {
-          cell.animate();
+          cell.animate(animationSpeed, fadeSpeed, soakSpeed);
         }
 
       } else {
@@ -77,7 +82,7 @@ export default class TeamPlayers extends Container {
           true
         );
 
-        const cell = new Cell('FIRST_TAB', location, { red: 0, green: 0, blue: 0 }, player.nick, '', this.world);
+        const cell = new Cell(/* 'FIRST_TAB', location, { red: 0, green: 0, blue: 0 }, player.nick, '', this.world */);
 
         cell.setIsMinimapCell();
         cell.isTeam = true;

@@ -148,6 +148,26 @@ class Stage {
     });
   }
 
+  public async connectPrivate(token?: string, serverToken?: boolean): Promise<string> {
+    if (WorldState.gameJoined) {
+      await this.disconnect();
+
+      this.world.view.center();
+
+      WorldState.gameJoined = false;
+    }
+
+    const socketData = await Master.connectPrivate({ ws: 'wss://imsolo.pro:2109/' });
+
+    return new Promise((resolve, reject) => {
+      this.world.controller.init(socketData).then((mapOffsets) => {
+        this.join(mapOffsets);
+
+        return resolve('connected!');
+      });
+    });
+  }
+
   public async connect(token?: string, serverToken?: boolean, isInit?: boolean): Promise<string> {
     if (WorldState.gameJoined) {
       await this.disconnect();
@@ -215,7 +235,7 @@ class Stage {
     this.root.addChild(this.mainContainer);
     this.app.stage.addChild(this.root);
     this.app.stage.addChild(this.world.minimap);
-    this.foodVirusCellContainer.addChild(this.world.food, this.world.cells);
+    this.foodVirusCellContainer.addChild(this.world.food, this.world.ejected, this.world.cells);
     this.mainContainer.addChild(this.world.map, this.foodVirusCellContainer);
 
     let frameStart = performance.now(); 
@@ -242,6 +262,7 @@ class Stage {
 
   public createGameScene(mapOffsets: IMapOffsets): void {
     this.world.map.setPosition(mapOffsets.minX, mapOffsets.minY);
+    this.world.map.setSize(mapOffsets.width, mapOffsets.height);
     this.world.view.center();
     this.world.view.mouse.zoomValue = 0.04085;
     this.world.view.camera.scale = 0.04085;

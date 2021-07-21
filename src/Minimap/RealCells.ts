@@ -2,6 +2,7 @@ import { Container } from "pixi.js";
 import Cell from "../objects/Cell/index";
 import { CellType, Location, RemoveType, RGB, Subtype } from "../objects/types";
 import Virus from "../objects/Virus/Virus";
+import { getAnimationSpeed, getFadeSpeed, getSoakSpeed } from "../render/Renderer/AnimationDataProvider";
 import World from "../render/World";
 import GameSettings from "../Settings/Settings";
 import { transformMinimapLocation } from "../utils/helpers";
@@ -21,11 +22,15 @@ export default class RealPlayersCells extends Container {
 
   private renderCells(): void {
     this.lastRenderTime = Date.now();
-
+    
+    const animationSpeed = getAnimationSpeed();
+    const fadeSpeed = getFadeSpeed();
+    const soakSpeed = getSoakSpeed();
+    
     for (let i = 0; i < this.children.length; i++) {
       const obj = this.children[i] as Cell | Virus;
 
-      obj.animate();   
+      obj.animate(animationSpeed, fadeSpeed, soakSpeed);   
 
       if (obj.isDestroyed) {
         this.removeChild(obj);
@@ -60,7 +65,8 @@ export default class RealPlayersCells extends Container {
 
     if (type === 'CELL') {
       const loc = transformMinimapLocation(location, this.world.view.firstTab.getShiftedMapOffsets());
-      const cell = new Cell(subtype, loc, color, name, skin, this.world);
+      const cell = new Cell(/* subtype, loc, color, name, skin, this.world */);
+      cell.reuse(subtype, loc, color, name, skin, this.world);
 
       cell.setIsVisible(true);
       cell.setIsMinimapCell();

@@ -24,7 +24,7 @@ export default class GhostCells extends Container {
     this.buffer = new Array(20)
       .fill({} as Cell)
       .map(() => {
-        const cell = new Cell('TOP_ONE_TAB', { x: 0, y: 0, r: 0 }, ghostCellsColor, '', '', this.world);
+        const cell = new Cell(/* 'TOP_ONE_TAB', { x: 0, y: 0, r: 0 }, ghostCellsColor, '', '', this.world */);
         cell.setIsMinimapCell();
         cell.cell.tint = getColor(ghostCellsColor);
         cell.shadow.sprite.visible = false;

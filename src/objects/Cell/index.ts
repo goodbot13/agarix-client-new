@@ -14,11 +14,9 @@ import TextureGenerator from '../../Textures/TexturesGenerator';
 import SettingsState from '../../states/SettingsState';
 
 export default class Cell extends Container implements IMainGameObject {
-  public readonly subtype: Subtype;
+  public subtype: Subtype;
   public originalSize: number = 0;
   public newOriginalSize: number = 0;
-  public originalMass: number = 0;
-  public shortMass: string = '';
   public isPlayerCell: boolean = false;
   public isTeam: boolean = false;
   public isDestroyed: boolean = false;
@@ -28,7 +26,6 @@ export default class Cell extends Container implements IMainGameObject {
   public removing: boolean = false;
   public colorHex: Array<string> = [];
   public isVisible: boolean;
-  public animating: boolean = true;
   public cell: CellSprite;
   public shadow: Shadow;
   public stats: Stats;
@@ -48,19 +45,31 @@ export default class Cell extends Container implements IMainGameObject {
 
   private usingSkin: boolean;
 
-  constructor(subtype: Subtype, location: Location, color: RGB, nick: string, skin: string, world: World) {
+  constructor(/* subtype: Subtype, location: Location, color: RGB, nick: string, skin: string, world: World */) {
     super();
+    
+    // add cell to main container
+    this.cell = new CellSprite(); // r * 2
+    this.shadow = new Shadow(this.cell, this); // r * 2
+    this.stats = new Stats(this);
+    this.rings = new Rings(this);
 
+    this.addChild(this.cell);
+    this.addChild(this.shadow.sprite);
+    this.cell.addChild(this.rings.innerRing, this.rings.outerRing);
+    this.cell.addChild(this.stats.nick, this.stats.mass);
+  }
+
+  public reuse(subtype: Subtype, location: Location, color: RGB, nick: string, skin: string, world: World): void {
     const { x, y, r } = location;
-    const doubleR = r * 2;
 
     // apply default cell information 
-    this.zIndex = doubleR;
+    this.zIndex = r * 2;
     this.x = x;
     this.y = y;
     this.nick = nick;
     this.color = color;
-    this.originalSize = r;
+    this.originalSize = this.newOriginalSize = r;
     this.subtype = subtype;
     this.type = 'CELL';
     this.agarSkinName = skin;
@@ -68,31 +77,33 @@ export default class Cell extends Container implements IMainGameObject {
     this.sortableChildren = true;
     this.isVisible = false;
     this.renderable = false;
-    
+
+    this.isPlayerCell = false;
+    this.isTeam = false;
+    this.isDestroyed = false;
+    this.newLocation = location;
+    this.removing = false;
+    this.colorHex = [];
+    this.sizeBeforeRemove = 0;
+    this.multiboxFocuesTab = false;
+    this.isMinimap = false;
+    this.culled = false;
+
     if (this.nick) {
       this.usesSkinByAgarName = Master.skins.skinsByNameHas(this.nick);
     }
 
     this.getSkin();
-
-    // add cell to main container
-    this.cell = new CellSprite(doubleR, this);
-    this.shadow = new Shadow(this.cell, this, doubleR);
-    this.stats = new Stats(this);
-    this.rings = new Rings(this);
-
-    this.stats.updateMass(true);
-    this.stats.updateNick(nick);
-
-    this.addChild(this.cell);
-    this.addChild(this.shadow.sprite);
-    this.cell.addChild(this.rings.innerRing, this.rings.outerRing);
-    this.cell.addChild(this.stats.nick, this.stats.mass);
-
     this.addColorInformation(color);
     this.applyAlpha();
     this.applyTint();
     this.update(location);
+    
+    this.stats.updateMass(true);
+    this.stats.updateNick(nick);
+
+    this.cell.setSize(r * 2);
+    this.shadow.setSize(this.cell.width);
   }
 
   private getSkin(): void {
@@ -347,57 +358,22 @@ export default class Cell extends Container implements IMainGameObject {
     this.zIndex = 0;
   }
 
-  private fullDestroy(): void {
-    this.destroy({ children: true });
-    this.isDestroyed = true;
-  }  
-  
-  private getAnimationSpeed(): number {
-    return (GameSettings.all.settings.game.gameplay.animationSpeed / 1000) * PIXI.Ticker.shared.deltaTime;
-  }
-
-  private getFadeSpeed(): number {
-    const { fadeSpeed } = GameSettings.all.settings.game.cells;
-
-    if (fadeSpeed === 0) {
-      return 0;
-    }
-
-    return ((250 - fadeSpeed) / 1000) * PIXI.Ticker.shared.deltaTime;
-  }
-
-  private getSoakSpeed(): number {
-    const { soakSpeed } = GameSettings.all.settings.game.cells;
-
-    if (soakSpeed === 0) {
-      return 0;
-    }
-
-    return ((250 - soakSpeed) / 1000) * PIXI.Ticker.shared.deltaTime;
-  }
-
-  private animateOutOfView(): void {
-    const fadeSpeed = this.getFadeSpeed();
-
+  private animateOutOfView(fadeSpeed: number): void {
     if (this.cell.alpha <= 0 || fadeSpeed === 0) {
-      this.destroy({ children: true });
       this.isDestroyed = true;
     } else {
       this.updateAlpha(-fadeSpeed);
     }
   }
 
-  private animateEaten(speed: number): void {
-    const fadeSpeed = this.getFadeSpeed();
-    const soakSpeed = this.getSoakSpeed();
-
+  private animateEaten(animationSpeed: number, fadeSpeed: number, soakSpeed: number): void {
     if (!this.isVisible) {
-      this.fullDestroy();
+      this.isDestroyed = true;
       return;
     }
 
     if (soakSpeed !== 0) {
-      const apf = this.isMinimap ? (speed / 5) : soakSpeed;
+      const apf = this.isMinimap ? (animationSpeed / 5) : soakSpeed;
 
       if (this.cell.width > 1) {
         const newSize = -(this.cell.width * apf);
@@ -409,18 +385,18 @@ export default class Cell extends Container implements IMainGameObject {
 
         this.updateAlpha(this.cell.width / this.sizeBeforeRemove);
       } else {
-        this.fullDestroy();
+        this.isDestroyed = true;
       }
     } else {
       if (fadeSpeed === 0) {
-        this.fullDestroy();
+        this.isDestroyed = true;
         return;
       } 
 
       if (this.cell.alpha > 0) {
         this.updateAlpha(-fadeSpeed);
       } else {
-        this.fullDestroy();
+        this.isDestroyed = true;
       }
     }
   }
@@ -439,15 +415,13 @@ export default class Cell extends Container implements IMainGameObject {
     this.shadow.sprite.height = r * this.shadow.TEXTURE_OFFSET;
   }
 
-  private animateMove(speed: number): void {
+  private animateMove(animationSpeed: number, fadeSpeed: number): void {
     const { transparency } = GameSettings.all.settings.theming.cells;
 
-    const fadeSpeed = this.getFadeSpeed();
     const mtv = (this.isMinimap && this.isTeam) ? 0.1 : 1;
-
-    const x = (this.newLocation.x - this.x) * speed * mtv;
-    const y = (this.newLocation.y - this.y) * speed * mtv;
-    const r = (this.newLocation.r - this.cell.width) * speed * mtv;
+    const x = (this.newLocation.x - this.x) * animationSpeed * mtv;
+    const y = (this.newLocation.y - this.y) * animationSpeed * mtv;
+    const r = (this.newLocation.r - this.cell.width) * animationSpeed * mtv;
 
     this.cell.width += r;
     this.cell.height += r;
@@ -478,22 +452,20 @@ export default class Cell extends Container implements IMainGameObject {
     }
   }
 
-  public animate(): void {
-    const speed = this.getAnimationSpeed();
-
-    this.originalSize += (this.newOriginalSize - this.originalSize) * speed;
+  public animate(animationSpeed: number, fadeSpeed: number, soakSpeed: number): void {
+    this.originalSize += (this.newOriginalSize - this.originalSize) * animationSpeed;
     this.updateInfo();
 
     if (this.removing) {
       if (this.culled) {
-        this.fullDestroy();
+        this.isDestroyed = true;
         return;
       }
 
       if (this.removeType === 'REMOVE_CELL_OUT_OF_VIEW') {
-        this.animateOutOfView();
+        this.animateOutOfView(fadeSpeed);
       } else if (this.removeType === 'REMOVE_EATEN_CELL') {
-        this.animateEaten(speed);
+        this.animateEaten(animationSpeed, fadeSpeed, soakSpeed);
       }
     } else {
       if (this.culled) {
@@ -504,9 +476,8 @@ export default class Cell extends Container implements IMainGameObject {
         this.cell.width = this.cell.height = this.newLocation.r;
         this.shadow.sprite.width = this.shadow.sprite.height = this.shadow.TEXTURE_OFFSET * this.newLocation.r;
       } else {
-        this.animateMove(speed);
+        this.animateMove(animationSpeed, fadeSpeed);
       }
-      
     }
   }
 }

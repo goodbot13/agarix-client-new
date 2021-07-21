@@ -71,10 +71,10 @@ export default class Socket {
   constructor(socketData: ISocketData, tabType: TabType, world: World) {
     this.socketData = socketData;
     this.tabType = tabType;
-    this.protocolKey = null;
-    this.clientKey = null;
+    this.protocolKey = 0;
+    this.clientKey = -1;
     this.mapOffsetFixed = false;
-    this.mapOffsets = { minX: 0, minY: 0, maxX: 0, maxY: 0 };
+    this.mapOffsets = { minX: 0, minY: 0, maxX: 0, maxY: 0, width: 0, height: 0 };
     this.offsetsPositionMultiplier = { x: 1, y: 1 };
     this.playerSpawned = false;
     this.shiftOffsets = { x: 0, y: 0 };
@@ -83,6 +83,7 @@ export default class Socket {
     this.disconnectHandler = new CallbacksHandler();
     this.emitter = new Emitter(this);
     this.logger = new Logger('AgarSocket');
+    (window as any).xxx = 0;
   }
 
   public init(): Promise<IMapOffsets | void> {
@@ -179,6 +180,10 @@ export default class Socket {
     const opcode = this.receiver.reader.getUint8();
 
     switch (opcode) {
+
+      case 64: case 16:
+        this.receiver.handlePrivateServerMessage(opcode);
+        break;
 
       case 161: break;
       case 5: break;
@@ -314,8 +319,12 @@ export default class Socket {
 
   public sendMessage(message: DataView): void {
     if (this.socket.readyState === SOCKET_OPENED) {
-      message = shiftMessage(message, this.clientKey);
-      this.clientKey = shiftKey(this.clientKey);
+
+      if (this.clientKey !== -1) {
+        message = shiftMessage(message, this.clientKey);
+        this.clientKey = shiftKey(this.clientKey);
+      } 
+
       this.socket.send(message.buffer);
     }
   }
@@ -332,16 +341,7 @@ export default class Socket {
     this.mapOffsetFixed = true;
     this.mapOffsets = offsets;
 
-    const { minX, minY, maxX, maxY } = offsets;
-    const gameMode = Master.gameMode.get();
-
-    if (gameMode === ':ffa') {
-      const mapWidth = Math.abs(minX) + Math.abs(maxX);
-      const mapHeight = Math.abs(minY) + Math.abs(maxY);
-
-      this.offsetsPositionMultiplier.x = 14142 / mapWidth;
-      this.offsetsPositionMultiplier.y = 14142 / mapHeight;
-    }
+    const { minX, minY, maxX, maxY, width, height } = offsets;
   
     // world is not created. set global offsets 
     if (!WorldState.gameJoined) {
@@ -434,11 +434,11 @@ export default class Socket {
 
 export interface ISocketData {
   address: string,
-  protocolVersion: number,
-  clientVersionInt: number,
-  clientVersionString: string,
+  protocolVersion?: number,
+  clientVersionInt?: number,
+  clientVersionString?: string,
   token?: string,
-  serverToken: string,
+  serverToken?: string,
   https?: string
 }
 
@@ -446,7 +446,9 @@ export interface IMapOffsets {
   minX: number,
   minY: number,
   maxX: number,
-  maxY: number
+  maxY: number,
+  width: number,
+  height: number
 }
 
 export interface IMapOffsetsShift {

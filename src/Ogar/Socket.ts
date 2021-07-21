@@ -216,7 +216,7 @@ export default class Socket {
 		if (this.second) {
 			return;
 		}
-		
+
 		clearInterval(this.topTeamsUpdateInterval);
 	}
 }

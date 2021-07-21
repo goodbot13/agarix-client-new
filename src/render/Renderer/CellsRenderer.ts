@@ -6,6 +6,7 @@ import GameSettings from '../../Settings/Settings';
 import PlayerState from '../../states/PlayerState';
 import SettingsState from '../../states/SettingsState';
 import SpawnAnimation from '../../objects/SpawnAnimation';
+import Ejected from '../../objects/Ejected';
 
 export default class CellsRenderer {
 
@@ -37,7 +38,7 @@ export default class CellsRenderer {
     return [visible, isPlayerCell];
   }
 
-  public render(cell: Cell | Virus | RemoveAnimation): void {
+  public render(cell: Cell | Virus | RemoveAnimation | Ejected): void {
     if (this.world.view.shouldObjectBeCulled(cell.x, cell.y, cell.width / 2)) {
       cell.renderable = cell.visible = false;
       cell.culled = true;
