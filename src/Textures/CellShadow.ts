@@ -21,7 +21,7 @@ const generateCellShadow = () => {
   
   if (GameSettings.all.settings.game.performance.glowFilterShaderType === 'GPU-1') {
     const sprite = new Sprite(Texture.from(canvas));
-
+    // @ts-ignore
     sprite.filters = [new GlowFilter({
       color: 0xFFFFFF,
       distance: shadowDistance,

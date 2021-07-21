@@ -36,7 +36,7 @@ const generateFood = () => {
       utils.trimCanvas(canvas);
 
       sprite = new Sprite(Texture.from(canvas));
-
+      // @ts-ignore
       sprite.filters = [new GlowFilter({
         color: getColor(glowColor),
         distance: glowDistance,

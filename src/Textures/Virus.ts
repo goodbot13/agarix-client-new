@@ -38,6 +38,7 @@ const generateVirus = (): Texture => {
   const sprite = new Sprite(texture);
 
   if (glow) {
+    // @ts-ignore
     sprite.filters = [new GlowFilter({
       color: getColor(glowColor),
       distance: glowDistance,

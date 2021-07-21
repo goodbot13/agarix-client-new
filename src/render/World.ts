@@ -43,14 +43,14 @@ export default class World {
   constructor(public scene: Stage) {
     this.cells = new Container();
     this.cells.sortableChildren = true;
-    
-    if (GameSettings.all.settings.game.performance.foodPerformanceMode) {
-      this.food = new ParticleContainer(4096);
-    } else {
-      this.food = new ParticleContainer(4096, {
-        vertices: true
-      });
-    }
+
+    this.food = new ParticleContainer(4096, {
+      vertices: true,
+      position: true,
+      rotation: false,
+      uvs: false,
+      tint: true,
+    });
 
     this.indexedCells = new Map();
     this.indexedFood = new Map();
@@ -66,14 +66,17 @@ export default class World {
 
     this.renderer = new WorldLoop(this);
     
-    // load all available skins
-    for (let i = 0; i < 10; i++) {
-      SkinsLoader.load(GameSettings.all.profiles.leftProfiles[i].skinUrl);
-      SkinsLoader.load(GameSettings.all.profiles.rightProfiles[i].skinUrl);
-    }
+    this.cachePlayerSkins();
     
     this.logger = new Logger('World');
   }
+
+  private cachePlayerSkins(): void {
+    const { leftProfiles, rightProfiles } = GameSettings.all.profiles;
+
+    leftProfiles.forEach((profile) => SkinsLoader.load(profile.skinUrl));
+    rightProfiles.forEach((profile) => SkinsLoader.load(profile.skinUrl));
+  } 
 
   private addFood(id: number, location: Location, type: CellType, subtype: Subtype): void {
     if (!this.indexedFood.has(id)) {

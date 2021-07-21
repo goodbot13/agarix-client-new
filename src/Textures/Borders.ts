@@ -35,6 +35,7 @@ const generateBorders = () => {
     }
 
     if (borderGlow) {
+      // @ts-ignore
       g.filters = [new GlowFilter({ 
         quality: glowQuality, 
         outerStrength: borderGlowStrength,

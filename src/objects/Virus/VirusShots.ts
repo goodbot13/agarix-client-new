@@ -18,8 +18,8 @@ export default class VirusShots extends Container {
     this.shotsCircleSprite.scale.set((100 - (200 - this.virusRadius)) / 50);
     this.addChild(this.shotsCircleSprite);
 
-    this.text = new BitmapText('0', { fontName: 'MassLato', fontSize: 160 }); 
-    this.text.anchor = new Point(0.5, 0.5);
+    this.text = new BitmapText('0', { fontName: 'MassLato', fontSize: 160 });
+    this.text.anchor.set(0.5, 0.5);
 
     this.addChild(this.text);
 

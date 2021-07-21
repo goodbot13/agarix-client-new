@@ -31,13 +31,13 @@ export default class CellStats {
   
   private setMassAnchor(): void {
     if (GameSettings.all.settings.game.cells.nicks && this.nick_text) {
-      if (this.currentAnchor.y !== -0.75) {
+      if (this.currentAnchor.y !== -0.75) { // @ts-ignore
         this.mass.anchor = new Point(0.5, -0.75);
         this.currentAnchor = this.mass.anchor;
       }
     } else {
-      if (this.currentAnchor.y !== 0.5) {
-        this.mass.anchor = new Point(0.5, 0.5);
+      if (this.currentAnchor.y !== 0.5) { 
+        this.mass.anchor.set(0.5, 0.5);
         this.currentAnchor = this.mass.anchor;
       }
     }
