@@ -24,7 +24,7 @@ export default class GhostCells extends Container {
     this.buffer = new Array(20)
       .fill({} as Cell)
       .map(() => {
-        const cell = new Cell(/* 'TOP_ONE_TAB', { x: 0, y: 0, r: 0 }, ghostCellsColor, '', '', this.world */);
+        const cell = new Cell();
         cell.setIsMinimapCell();
         cell.cell.tint = getColor(ghostCellsColor);
         cell.shadow.sprite.visible = false;
@@ -83,10 +83,14 @@ export default class GhostCells extends Container {
   }
 
   public updateColor(): void {
-    this.buffer.forEach((cell) => cell.cell.tint = getColor(GameSettings.all.settings.theming.minimap.ghostCellsColor));
+    this.buffer.forEach((cell) => {
+      cell.cell.tint = getColor(GameSettings.all.settings.theming.minimap.ghostCellsColor);
+    });
   }
 
   public reset(): void {
-    this.buffer.forEach((cell) => cell.visible = false);
+    this.buffer.forEach((cell) => {
+      cell.visible = false;
+    });
   }
 }

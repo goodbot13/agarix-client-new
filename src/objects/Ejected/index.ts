@@ -18,9 +18,8 @@ export default class Ejected extends Sprite implements IMainGameObject {
   private removeType: RemoveType;
   private SIZE: number;
 
-  constructor(/* public location: Location, public color: RGB, public subtype: Subtype */) {
+  constructor() {
     super(TexturesGenerator.cell);
-    // this.reuse(location, color, subtype);
   }
 
   public reuse(location: Location, color: RGB, subtype: Subtype): void {

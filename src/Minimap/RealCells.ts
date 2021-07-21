@@ -5,6 +5,7 @@ import Virus from "../objects/Virus/Virus";
 import { getAnimationSpeed, getFadeSpeed, getSoakSpeed } from "../render/Renderer/AnimationDataProvider";
 import World from "../render/World";
 import GameSettings from "../Settings/Settings";
+import CachedObjects from "../utils/CachedObjects";
 import { transformMinimapLocation } from "../utils/helpers";
 
 export default class RealPlayersCells extends Container {
@@ -65,7 +66,7 @@ export default class RealPlayersCells extends Container {
 
     if (type === 'CELL') {
       const loc = transformMinimapLocation(location, this.world.view.firstTab.getShiftedMapOffsets());
-      const cell = new Cell(/* subtype, loc, color, name, skin, this.world */);
+      const cell = new Cell();
       cell.reuse(subtype, loc, color, name, skin, this.world);
 
       cell.setIsVisible(true);
@@ -98,7 +99,10 @@ export default class RealPlayersCells extends Container {
       if (removeImmediately) {
         this.buffer.delete(id);
         this.removeChild(obj);
-        obj.destroy({ children: true });
+        
+        if (obj.type === 'CELL') {
+          CachedObjects.addCell(obj as Cell);
+        }
       } else {
         obj.remove(removeType);
       }
@@ -129,7 +133,14 @@ export default class RealPlayersCells extends Container {
   }
 
   public reset(): void {
-    this.buffer.forEach((obj) => obj.destroy({ children: true }));
+    this.buffer.forEach((obj) => {
+      if (obj.type === 'CELL') {
+        CachedObjects.addCell(obj as Cell);
+      } else {
+        obj.destroy({ children: true })
+      }
+    });
+
     this.buffer.clear();
 
     while (this.children.length > 0) {

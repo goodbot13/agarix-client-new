@@ -48,21 +48,27 @@ export default class Rings {
   private setAuthorRing(): void {
     const { ringsType } = GameSettings.all.settings.game.cells;
 
-    if (ringsType === 'Acimazis') {
-      this.innerRing.texture = TextureGenerator.innerRing;
-      this.outerRing.texture = TextureGenerator.outerRing;
-      this.outerRing.scale.set(1);
-      this.innerRing.visible = this.outerRing.visible = true;
-    } else if (ringsType === '2CL') {
-      this.outerRing.texture = TextureGenerator.hsloRing;
-      this.outerRing.scale.set(1.149);
-      this.innerRing.visible = false;
-      this.outerRing.visible = true;
-    } else if (ringsType === 'Yue') {
-      this.outerRing.texture = TextureGenerator.removeAnimationYue[2];
-      this.outerRing.scale.set(1.149);
-      this.innerRing.visible = false;
-      this.outerRing.visible = true;
+    switch (ringsType) {
+      case 'Acimazis':
+        this.innerRing.texture = TextureGenerator.innerRing;
+        this.outerRing.texture = TextureGenerator.outerRing;
+        this.outerRing.scale.set(1);
+        this.innerRing.visible = this.outerRing.visible = true;
+        break;
+
+      case '2CL':
+        this.outerRing.texture = TextureGenerator.hsloRing;
+        this.outerRing.scale.set(1.149);
+        this.innerRing.visible = false;
+        this.outerRing.visible = true;
+        break;
+
+      case 'Yue':
+        this.outerRing.texture = TextureGenerator.removeAnimationYue[2];
+        this.outerRing.scale.set(1.149);
+        this.innerRing.visible = false;
+        this.outerRing.visible = true;
+        break;
     }
   }
 
