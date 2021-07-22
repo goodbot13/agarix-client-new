@@ -213,9 +213,9 @@ export default class Receiver {
     const eatRecordsLen = this.reader.getUint16();
     for (let i = 0; i < eatRecordsLen; i++) {
       const eaterId = this.reader.getUint32();
-      const victimId = this.reader.getUint32(); 
+      const victimId = this.reader.getUint32();
 
-      this.socket.world.removeEaten(victimId);
+      this.socket.world.removeEaten(victimId, eaterId);
     }
 
     let cellUpdate = false;

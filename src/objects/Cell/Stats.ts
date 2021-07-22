@@ -53,7 +53,6 @@ export default class CellStats {
       this.nick.visible = this.nick.renderable = mNicks;
       this.nick.scale.set(7);
       this.nick.y = -700;
-      console.log('minimap cell');
       return;
     }
 

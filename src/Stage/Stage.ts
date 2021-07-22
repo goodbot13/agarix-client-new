@@ -350,7 +350,7 @@ class Stage {
         return;
       }
 
-      this.foodVirusCellContainer.alpha += 0.05 * PIXI.Ticker.shared.deltaTime;
+      this.foodVirusCellContainer.alpha += 0.08 * PIXI.Ticker.shared.deltaTime;
     }
 
     this.app.ticker.add(this.showStageTicker);
@@ -364,7 +364,7 @@ class Stage {
       }
 
       this.hideTicker = () => {
-        this.foodVirusCellContainer.alpha -= 0.05 * PIXI.Ticker.shared.deltaTime;
+        this.foodVirusCellContainer.alpha -= 0.08 * PIXI.Ticker.shared.deltaTime;
 
         if (this.foodVirusCellContainer.alpha <= 0) {
           this.app.ticker.remove(this.hideTicker);

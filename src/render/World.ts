@@ -239,7 +239,7 @@ export default class World {
     }
   }
 
-  private remove(id: number, removeType: RemoveType): void {
+  private remove(id: number, removeType: RemoveType, eaterId?: number): void {
     const removeImmediatly = Date.now() - this.lastRenderTime > 100;
 
     if (this.indexedFood.has(id)) {
@@ -284,7 +284,11 @@ export default class World {
           CachedObjects.addCell(object as Cell);
         }
       } else {
-        object.remove(removeType);
+        if (eaterId) {
+          object.remove(removeType, this.indexedCells.get(eaterId) as Cell);
+        } else {
+          object.remove(removeType);
+        }
 
         if (removeType === 'REMOVE_EATEN_CELL') {
           this.addRemoveAnimation(object);
@@ -298,8 +302,8 @@ export default class World {
     }
   }
 
-  public removeEaten(id: number): void {
-    this.remove(id, 'REMOVE_EATEN_CELL');
+  public removeEaten(id: number, eaterId: number): void {
+    this.remove(id, 'REMOVE_EATEN_CELL', eaterId);
   }
 
   public removeOutOfView(id: number): void {  

@@ -63,7 +63,8 @@ export interface IGameCellsState {
   soakSpeed: number,
   fadeSpeed: number,
   oneColored: boolean,
-  shadow: ShadowType
+  shadow: ShadowType,
+  soakToEaten: boolean
 }
 
 export interface IGameEffectsState {

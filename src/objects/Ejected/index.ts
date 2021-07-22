@@ -64,14 +64,10 @@ export default class Ejected extends Sprite implements IMainGameObject {
       this.alpha += -fadeSpeed;
     }
   }
-
-  private fullDestroy(): void {
-    this.isDestroyed = true;
-  }
-
+  
   private animateEaten(fadeSpeed: number, soakSpeed: number): void {
     if (!this.isVisible) {
-      this.fullDestroy();
+      this.isDestroyed = true;
       return;
     }
 
@@ -84,18 +80,18 @@ export default class Ejected extends Sprite implements IMainGameObject {
 
         this.alpha += (this.width / this.SIZE);
       } else {
-        this.fullDestroy();
+        this.isDestroyed = true;
       }
     } else {
       if (fadeSpeed === 0) {
-        this.fullDestroy();
+        this.isDestroyed = true;
         return;
       } 
 
       if (this.alpha > 0) {
         this.alpha += -fadeSpeed;
       } else {
-        this.fullDestroy();
+        this.isDestroyed = true;
       }
     }
   }

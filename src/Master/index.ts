@@ -7,10 +7,12 @@ import GameSettings from '../Settings/Settings';
 import FacebookLogin from "../tabs/Login/FacebookLogin";
 import GoogleLogin from "../tabs/Login/GoogleLogin";
 import UICommunicationService from '../communication/FrontAPI';
+import MasterCache from "./MasterCache";
 
 export default new class Master {
   private readonly AGAR_CORE: string = "https://agar.io/agario.core.js";
   private readonly MC_CORE: string = "https://agar.io/mc/agario.js";
+  private readonly cache: MasterCache;
 
   private clientVersionInt: number = 31009;
   private clientVersionString: string = '';
@@ -29,6 +31,7 @@ export default new class Master {
     this.regions = new Regions();
     this.gameMode = new GameMode();
     this.skins = new AgarSkinsList();
+    this.cache = new MasterCache()
 
     this.gameMode.set(GameSettings.all.game.mode);
     this.regions.setCurrent(GameSettings.all.game.currentServerIndex);
@@ -101,7 +104,7 @@ export default new class Master {
     const { regions } = await this.send(this.envConfig.REGIONS_INFO_URL, null);
 
     this.regions.setFetched(regions);
-    this.regions.setUpdatingInterval(() => this.getRegionsInfo(), 10 * 60000);
+    this.regions.setUpdatingInterval(() => this.getRegionsInfo(), 5 * 60000);
   }
 
   private async getSkins(): Promise<any> {
@@ -119,17 +122,31 @@ export default new class Master {
 
   public async init(): Promise<boolean> {
     return new Promise(async (resolve: any) => {
-      // receive environment & parse it
       await this.envConfig.init();
 
-      // set login app ids
       FacebookLogin.FB_APP_ID = this.envConfig.FB_APP_ID;
       GoogleLogin.GOOGLE_CLIENT_ID = this.envConfig.GOOGLE_CLIENT_ID;
 
-      await this.setClientAndsupportProtocolVersion();
-      await this.setProtocolVersion();
-      await this.getRegionsInfo();
-      await this.getSkins();
+      if (this.cache.get() === null) {
+        await this.setClientAndsupportProtocolVersion();
+        await this.setProtocolVersion();
+        await this.getRegionsInfo();
+        await this.getSkins();
+
+        this.cache.set({
+          clientVersionInt: this.clientVersionInt,
+          clientVersionString: this.clientVersionString,
+          supportProtocolVersion: this.supportProtocolVersion,
+          protocolVersion: this.protocolVersion
+        });
+      } else {
+        const cached = this.cache.get();
+
+        this.clientVersionInt = cached.clientVersionInt;
+        this.clientVersionString = cached.clientVersionString;
+        this.supportProtocolVersion = cached.supportProtocolVersion;
+        this.protocolVersion = cached.protocolVersion;
+      }
 
       resolve();
     });

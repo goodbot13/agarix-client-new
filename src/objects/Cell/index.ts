@@ -42,15 +42,15 @@ export default class Cell extends Container implements IMainGameObject {
   public agarSkinTexture: Texture;
   public skinByNameTexture: Texture;
   public culled: boolean = false;
+  public eatenBy: Cell;
 
   private usingSkin: boolean;
 
-  constructor(/* subtype: Subtype, location: Location, color: RGB, nick: string, skin: string, world: World */) {
+  constructor() {
     super();
-    
-    // add cell to main container
-    this.cell = new CellSprite(); // r * 2
-    this.shadow = new Shadow(this.cell, this); // r * 2
+
+    this.cell = new CellSprite();
+    this.shadow = new Shadow(this.cell, this);
     this.stats = new Stats(this);
     this.rings = new Rings(this);
 
@@ -58,6 +58,11 @@ export default class Cell extends Container implements IMainGameObject {
     this.addChild(this.shadow.sprite);
     this.cell.addChild(this.rings.innerRing, this.rings.outerRing);
     this.cell.addChild(this.stats.nick, this.stats.mass);
+
+    this.interactive = true;
+    this.on('mousedown', () => {
+      console.log(JSON.parse(JSON.stringify(this)));
+    });
   }
 
   public reuse(subtype: Subtype, location: Location, color: RGB, nick: string, skin: string, world: World): void {
@@ -91,6 +96,7 @@ export default class Cell extends Container implements IMainGameObject {
 
     this.agarSkinTexture = null;
     this.skinByNameTexture = null;
+    this.eatenBy = null;
 
     if (this.nick) {
       this.usesSkinByAgarName = Master.skins.skinsByNameHas(this.nick);
@@ -349,11 +355,12 @@ export default class Cell extends Container implements IMainGameObject {
     this.newOriginalSize = location.r;
   }
 
-  public remove(type: RemoveType): void {
+  public remove(type: RemoveType, eatenBy?: Cell): void {
     this.removing = true;
     this.removeType = type;
     this.sizeBeforeRemove = this.cell.width;
     this.zIndex = 0;
+    this.eatenBy = eatenBy;
   }
 
   private animateOutOfView(fadeSpeed: number): void {
@@ -380,6 +387,14 @@ export default class Cell extends Container implements IMainGameObject {
         this.cell.height += newSize;
         this.shadow.sprite.width += newSize * this.shadow.TEXTURE_OFFSET;
         this.shadow.sprite.height += newSize * this.shadow.TEXTURE_OFFSET;
+
+        if (/* GameSettings.all.settings.game.cells.soakToEaten */ true) {
+          const x = (this.eatenBy.x - this.x) * (animationSpeed / 5);
+          const y = (this.eatenBy.y - this.y) * (animationSpeed / 5);
+  
+          this.x += x;
+          this.y += y;
+        }
 
         this.updateAlpha(this.cell.width / this.sizeBeforeRemove);
       } else {
