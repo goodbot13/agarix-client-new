@@ -9,7 +9,7 @@ import Ogar from "../Ogar";
 import * as PIXI from 'pixi.js';
 
 class View {
-  public mouse: View.IWindowMouse = { x: 0,  y: 0, zoomValue: 0.0375};
+  public mouse: View.IWindowMouse = { x: 0,  y: 0, zoomValue: 0.0375 };
   public camera: View.ICamera = { x: 0, y: 0, scale: 0.02281 };
   public firstTab: Subview;
   public secondTab: Subview;

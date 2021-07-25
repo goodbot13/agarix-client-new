@@ -1,6 +1,6 @@
 import * as PIXI from 'pixi.js';
 import { Container, Texture } from 'pixi.js';
-import { Subtype, RGB, RemoveType, Location, CellType, IMainGameObject } from '../types';
+import { Subtype, RGB, RemoveType, Location, CellType, IMainGameObject, Vector } from '../types';
 import Stats from './Stats';
 import World from '../../render/World';
 import Rings from './Rings';
@@ -42,9 +42,10 @@ export default class Cell extends Container implements IMainGameObject {
   public agarSkinTexture: Texture;
   public skinByNameTexture: Texture;
   public culled: boolean = false;
-  public eatenBy: Cell;
+  public eatenBy: Vector = { x: 0, y: 0 };
 
   private usingSkin: boolean;
+  private distBeforeRemove: number = -1;
 
   constructor() {
     super();
@@ -61,14 +62,13 @@ export default class Cell extends Container implements IMainGameObject {
 
     this.interactive = true;
     this.on('mousedown', () => {
-      console.log(JSON.parse(JSON.stringify(this)));
+      console.log(this);
     });
   }
 
   public reuse(subtype: Subtype, location: Location, color: RGB, nick: string, skin: string, world: World): void {
     const { x, y, r } = location;
 
-    // apply default cell information 
     this.zIndex = r * 2;
     this.x = x;
     this.y = y;
@@ -96,11 +96,17 @@ export default class Cell extends Container implements IMainGameObject {
 
     this.agarSkinTexture = null;
     this.skinByNameTexture = null;
-    this.eatenBy = null;
+    this.eatenBy = { x: 0, y: 0 };
+    this.distBeforeRemove = -1;
 
     if (this.nick) {
       this.usesSkinByAgarName = Master.skins.skinsByNameHas(this.nick);
     }
+
+    this.cell.transform.scale.set(1, 1);
+    this.cell.scale.set(1, 1);
+    this.cell.alpha = 0;
+    this.shadow.sprite.alpha = 0;
 
     this.getSkin();
     this.addColorInformation(color);
@@ -109,13 +115,15 @@ export default class Cell extends Container implements IMainGameObject {
     this.stats.updateMass(true);
     this.stats.updateNick(nick);
     this.cell.setSize(r * 2);
+    this.newOriginalSize = r;
     this.shadow.setSize(this.cell.width);
-
-    this.cell.alpha = 0;
-    this.shadow.sprite.alpha = 0;
   }
 
   private getSkin(): void {
+    if (this.isMinimap) {
+      return;
+    }
+
     if (this.agarSkinName && this.agarSkinTexture) {
       return;
     }
@@ -150,7 +158,7 @@ export default class Cell extends Container implements IMainGameObject {
     this.shadow.updateTexture();
   }
 
-  public setIsMinimapCell(): void {
+  public setIsMinimapCell(size: number): void {
     this.isMinimap = true;
     this.renderable = true;
     this.setIsVisible(true);
@@ -161,6 +169,9 @@ export default class Cell extends Container implements IMainGameObject {
     this.stats.nick.renderable = false;
     this.stats.mass.visible = false;
     this.stats.mass.renderable = false;
+    this.customSkinTexture = null;
+    this.agarSkinTexture = null;
+    this.cell.setSize(size * 2);
   }
 
   public setIsFoucsedTab(value: boolean): void {
@@ -360,7 +371,22 @@ export default class Cell extends Container implements IMainGameObject {
     this.removeType = type;
     this.sizeBeforeRemove = this.cell.width;
     this.zIndex = 0;
-    this.eatenBy = eatenBy;
+    
+    if (eatenBy) {
+      this.eatenBy = {
+        x: eatenBy.x,
+        y: eatenBy.y
+      }
+
+      this.distBeforeRemove = this.calcDistBetweenEatenAndCurrent();
+    }
+  }
+
+  private calcDistBetweenEatenAndCurrent(): number {
+    const distX = Math.pow(this.eatenBy.x - this.x, 2);
+    const distY = Math.pow(this.eatenBy.y - this.y, 2);
+
+    return Math.sqrt(distX + distY);
   }
 
   private animateOutOfView(fadeSpeed: number): void {
@@ -381,19 +407,28 @@ export default class Cell extends Container implements IMainGameObject {
       const apf = this.isMinimap ? (animationSpeed / 5) : soakSpeed;
 
       if (this.cell.width > 1) {
-        const newSize = -(this.cell.width * apf);
+        let newSize =  -(this.cell.width * apf);
 
-        this.cell.width += newSize;
-        this.cell.height += newSize;
-        this.shadow.sprite.width += newSize * this.shadow.TEXTURE_OFFSET;
-        this.shadow.sprite.height += newSize * this.shadow.TEXTURE_OFFSET;
-
-        if (/* GameSettings.all.settings.game.cells.soakToEaten */ true) {
+        if (GameSettings.all.settings.game.cells.soakToEaten) {
           const x = (this.eatenBy.x - this.x) * (animationSpeed / 5);
           const y = (this.eatenBy.y - this.y) * (animationSpeed / 5);
-  
+
           this.x += x;
           this.y += y;
+
+          newSize /= 1.5;
+
+          if (this.calcDistBetweenEatenAndCurrent() < this.distBeforeRemove / 1.33) {
+            this.cell.width += newSize;
+            this.cell.height += newSize;
+            this.shadow.sprite.width += newSize * this.shadow.TEXTURE_OFFSET;
+            this.shadow.sprite.height += newSize * this.shadow.TEXTURE_OFFSET;
+          }
+        } else {
+          this.cell.width += newSize;
+          this.cell.height += newSize;
+          this.shadow.sprite.width += newSize * this.shadow.TEXTURE_OFFSET;
+          this.shadow.sprite.height += newSize * this.shadow.TEXTURE_OFFSET;
         }
 
         this.updateAlpha(this.cell.width / this.sizeBeforeRemove);

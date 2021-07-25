@@ -17,10 +17,10 @@ export default class GameMode {
       case ':battleroyale': return 'BTR';
       case ':teams': return 'TMS';
       
-      default: return 'PTY';
+      default: return 'Private';
     }
   }
 }
 
-export type TOgarGameMode = 'FFA' | 'PTY' | 'EXP' | 'BTR' | 'TMS';
+export type TOgarGameMode = 'FFA' | 'PTY' | 'EXP' | 'BTR' | 'TMS' | 'Private';
 export type TGameMode = ':party' | ':ffa' | ':battleroyale' | ':teams' | ':experimental';

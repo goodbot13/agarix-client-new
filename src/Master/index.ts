@@ -130,8 +130,6 @@ export default new class Master {
       if (this.cache.get() === null) {
         await this.setClientAndsupportProtocolVersion();
         await this.setProtocolVersion();
-        await this.getRegionsInfo();
-        await this.getSkins();
 
         this.cache.set({
           clientVersionInt: this.clientVersionInt,
@@ -147,6 +145,9 @@ export default new class Master {
         this.supportProtocolVersion = cached.supportProtocolVersion;
         this.protocolVersion = cached.protocolVersion;
       }
+
+      await this.getRegionsInfo();
+      await this.getSkins();
 
       resolve();
     });

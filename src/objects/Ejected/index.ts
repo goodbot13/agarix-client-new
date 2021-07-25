@@ -1,9 +1,9 @@
 import { Sprite } from "pixi.js";
-import * as PIXI from 'pixi.js';
 import TexturesGenerator from "../../Textures/TexturesGenerator";
 import { getColor, getColorLighten } from "../../utils/helpers";
-import { RGB, Subtype, Location, CellType, IMainGameObject, RemoveType } from "../types";
+import { RGB, Subtype, Location, CellType, IMainGameObject, RemoveType, Vector } from "../types";
 import GameSettings from '../../Settings/Settings';
+import Cell from "../Cell";
 
 export default class Ejected extends Sprite implements IMainGameObject {
   public type: CellType = 'EJECTED';
@@ -14,6 +14,7 @@ export default class Ejected extends Sprite implements IMainGameObject {
   public isPlayerCell: boolean = false;
   public isDestroyed: boolean = false;
 
+  private eatenBy: Vector = { x: 0, y: 0 };
   private removing: boolean = false;
   private removeType: RemoveType;
   private SIZE: number;
@@ -44,6 +45,7 @@ export default class Ejected extends Sprite implements IMainGameObject {
     this.isVisible = true;
     this.renderable = true;
     this.culled = false;
+    this.eatenBy = { x: 0, y: 0 };
     this.alpha = 1;
   }
 
@@ -58,14 +60,15 @@ export default class Ejected extends Sprite implements IMainGameObject {
   }
 
   private animateOutOfView(fadeSpeed: number): void {
+    this.alpha += -fadeSpeed;
+
     if (this.alpha <= 0 || fadeSpeed === 0) {
       this.isDestroyed = true;
-    } else {
-      this.alpha += -fadeSpeed;
-    }
+      this.alpha = 0;
+    } 
   }
   
-  private animateEaten(fadeSpeed: number, soakSpeed: number): void {
+  private animateEaten(fadeSpeed: number, soakSpeed: number, animationSpeed: number): void {
     if (!this.isVisible) {
       this.isDestroyed = true;
       return;
@@ -77,6 +80,14 @@ export default class Ejected extends Sprite implements IMainGameObject {
 
         this.width += newSize;
         this.height += newSize;
+
+        if (/* GameSettings.all.settings.game.cells.soakToEaten */ true) {
+          const x = (this.eatenBy.x - this.x) * (animationSpeed / 5);
+          const y = (this.eatenBy.y - this.y) * (animationSpeed / 5);
+  
+          this.x += x;
+          this.y += y;
+        }
 
         this.alpha += (this.width / this.SIZE);
       } else {
@@ -130,7 +141,7 @@ export default class Ejected extends Sprite implements IMainGameObject {
       if (this.removeType === 'REMOVE_CELL_OUT_OF_VIEW') {
         this.animateOutOfView(fadeSpeed);
       } else if (this.removeType === 'REMOVE_EATEN_CELL') {
-        this.animateEaten(fadeSpeed, soakSpeed);
+        this.animateEaten(fadeSpeed, soakSpeed, animationSpeed);
       }
     } else { 
       if (this.culled) {
@@ -144,8 +155,13 @@ export default class Ejected extends Sprite implements IMainGameObject {
     }
   }
 
-  public remove(type: RemoveType): void {
+  public remove(type: RemoveType, eatenBy?: Cell): void {
     this.removing = true;
     this.removeType = type;
+    
+    if (eatenBy) {
+      this.eatenBy.x = eatenBy.x;
+      this.eatenBy.y = eatenBy.y;
+    }
   }
 }

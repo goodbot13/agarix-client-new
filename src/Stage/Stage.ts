@@ -157,7 +157,7 @@ class Stage {
       WorldState.gameJoined = false;
     }
 
-    const socketData = await Master.connectPrivate({ ws: 'wss://imsolo.pro:2109/' });
+    const socketData = await Master.connectPrivate({ ws: 'wss://imsolo.pro:2104/' });
 
     return new Promise((resolve, reject) => {
       this.world.controller.init(socketData).then((mapOffsets) => {
@@ -178,6 +178,8 @@ class Stage {
     }
 
     const socketData = await Master.connect(token, serverToken);
+    
+    console.log(socketData);
 
     return new Promise((
       resolve: (tokens: string) => void, 

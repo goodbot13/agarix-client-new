@@ -45,7 +45,7 @@ class GameMap extends Container {
 
     this.emitEvent('sizechange');
 
-    this.logger.info(`Size set - width: ${width}, height: ${height}`);
+    // this.logger.info(`Size set - width: ${width}, height: ${height}`);
   }
 
   public listen(event: TMapEvent, action: () => void) {
@@ -54,7 +54,7 @@ class GameMap extends Container {
 
     this.eventListeners.set(event, listeners);
 
-    this.logger.info(`Event: ${event}, action: ${typeof action}`);
+    // this.logger.info(`Event: ${event}, action: ${typeof action}`);
   }
 
   private emitEvent(event: TMapEvent) {
@@ -63,7 +63,7 @@ class GameMap extends Container {
     if (events) {
       events.forEach((action) => action());
       
-      this.logger.info(`Event emitted: ${event}, listeners: ${events.length}`);
+      // this.logger.info(`Event emitted: ${event}, listeners: ${events.length}`);
     }
   }
 }

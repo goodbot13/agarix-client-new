@@ -56,8 +56,8 @@ export default class World {
       tint: true,
     };
 
-    this.food = new ParticleContainer(4096, PARTICLE_CONFIG);
-    this.ejected = new ParticleContainer(1024, PARTICLE_CONFIG);
+    this.food = new ParticleContainer(3072, PARTICLE_CONFIG, 3072, false);
+    this.ejected = new ParticleContainer(768, PARTICLE_CONFIG, 768, false);
 
     this.indexedCells = new Map();
     this.indexedFood = new Map();
@@ -213,7 +213,6 @@ export default class World {
   }
 
   private addRemoveAnimation(object: Cell | Virus): void {
-
     const matchSize = object.type === 'CELL' 
       ? (object as Cell).cell.width > 150 
       : object.type === 'VIRUS' ? (object as Virus).virusSprite.width : false;
@@ -264,7 +263,13 @@ export default class World {
         this.ejected.removeChild(object);
         CachedObjects.addEjected(object);
       } else {
-        object.remove(removeType);
+        const eatenBy = this.indexedCells.get(eaterId) as Cell;
+
+        if (eatenBy) {
+          object.remove(removeType, eatenBy);
+        } else {
+          object.remove('REMOVE_CELL_OUT_OF_VIEW');
+        }
       }
 
       this.indexedEjected.delete(id);
@@ -284,10 +289,12 @@ export default class World {
           CachedObjects.addCell(object as Cell);
         }
       } else {
-        if (eaterId) {
-          object.remove(removeType, this.indexedCells.get(eaterId) as Cell);
+        const eatenBy = this.indexedCells.get(eaterId) as Cell;
+
+        if (eatenBy) {
+          object.remove(removeType, eatenBy);
         } else {
-          object.remove(removeType);
+          object.remove('REMOVE_CELL_OUT_OF_VIEW');
         }
 
         if (removeType === 'REMOVE_EATEN_CELL') {

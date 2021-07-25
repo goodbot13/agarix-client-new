@@ -56,6 +56,8 @@ export default class CellStats {
       return;
     }
 
+    this.nick.y = 0;
+
     if (this.cell.isPlayerCell) {
       this.mass.visible = this.mass.renderable = myMass;
       this.nick.visible = this.nick.renderable = myNick;

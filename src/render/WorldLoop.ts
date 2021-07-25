@@ -1,17 +1,13 @@
 import * as PIXI from 'pixi.js';
-import { Container, ParticleContainer } from "pixi.js";
 import GameSettings from "../Settings/Settings";
 import Globals from "../Globals";
-import Controller from "../tabs/Contollers/TabsController";
 import World from "./World";
-import Map from "../objects/Map/Map";
 import SpawnAnimation from "../objects/SpawnAnimation";
 import Cell from "../objects/Cell/index";
 import Virus from "../objects/Virus/Virus";
 import Food from "../objects/Food";
 import CellsRenderer from './Renderer/CellsRenderer';
 import FoodRenderer from './Renderer/FoodRenderer';
-import Minimap from "../Minimap/MinimapWEBGL";
 import RemoveAnimation from "../objects/RemoveAnimation";
 import UICommunicationService from "../communication/FrontAPI";
 import SkinsLoader from "../utils/SkinsLoader";
@@ -20,30 +16,16 @@ import PlayerState from "../states/PlayerState";
 import Ogar from "../Ogar";
 import Ejected from '../objects/Ejected';
 import CachedObjects from '../utils/CachedObjects';
-import { getAnimationSpeed, getFadeSpeed, getSoakSpeed } from './Renderer/AnimationDataProvider';
+import { getAnimationSpeed, getFadeSpeed, getFadeSpeedForEjected, getSoakSpeed, getSoakSpeedForEjected } from './Renderer/AnimationDataProvider';
 
 export default class WorldLoop {
-  private world: World;
-  private cells: Container;
-  private food: ParticleContainer;
-  private ejected: ParticleContainer;
-  private map: Map;
-  private controller: Controller;
   private cellsRenderer: CellsRenderer;
   private foodRenderer: FoodRenderer;
-  private minimap: Minimap;
   private stp: boolean = false;
   private ftp: boolean = false;
   private rgbWtfModeHueValue: number = 0;
 
-  constructor(world: World) {
-    this.world = world;
-    this.cells = world.cells;
-    this.food = world.food;
-    this.ejected = world.ejected;
-    this.map = world.map;
-    this.controller = world.controller;
-    this.minimap = world.minimap;
+  constructor(private world: World) {
     this.cellsRenderer = new CellsRenderer(this.world);
     this.foodRenderer = new FoodRenderer(this.world);
   }
@@ -75,15 +57,15 @@ export default class WorldLoop {
 
   private renderEjected(): void {
     const animationSpeed = getAnimationSpeed();
-    const fadeSpeed = getFadeSpeed();
-    const soakSpeed = getSoakSpeed();
+    const fadeSpeed = getFadeSpeedForEjected(this.world.ejected.children.length);
+    const soakSpeed = getSoakSpeedForEjected(this.world.ejected.children.length);
 
-    for (let i = 0; i < this.ejected.children.length; i++) {
-      const ejected = this.ejected.children[i] as Ejected;
+    for (let i = 0; i < this.world.ejected.children.length; i++) {
+      const ejected = this.world.ejected.children[i] as Ejected;
       ejected.animate(animationSpeed, fadeSpeed, soakSpeed);
 
       if (ejected.isDestroyed) {
-        this.ejected.removeChild(ejected);
+        this.world.ejected.removeChild(ejected);
         CachedObjects.addEjected(ejected);
 
         continue;
@@ -101,12 +83,12 @@ export default class WorldLoop {
     const fadeSpeed = getFadeSpeed();
     const soakSpeed = getSoakSpeed();
 
-    for (let i = 0; i < this.cells.children.length; i++) {
-      const object = this.cells.children[i] as Cell | Virus | RemoveAnimation;
+    for (let i = 0; i < this.world.cells.children.length; i++) {
+      const object = this.world.cells.children[i] as Cell | Virus | RemoveAnimation;
       object.animate(animationSpeed, fadeSpeed, soakSpeed);
 
       if (object.isDestroyed) {
-        this.cells.removeChild(object);
+        this.world.cells.removeChild(object);
         
         if (object.type === 'CELL') {
           CachedObjects.addCell(object as Cell);
@@ -131,30 +113,30 @@ export default class WorldLoop {
     const { deltaTime } =  PIXI.Ticker.shared;
 
     if (GameSettings.all.settings.theming.food.enabled) {
-      this.food.visible = this.food.renderable = true;
+      this.world.food.visible = this.world.food.renderable = true;
 
-      if (this.food.alpha >= 1) {
-        this.food.alpha = 1;
+      if (this.world.food.alpha >= 1) {
+        this.world.food.alpha = 1;
       } else {
-        this.food.alpha += 0.02 * deltaTime;
+        this.world.food.alpha += 0.02 * deltaTime;
       }
     } else {
-      if (this.food.alpha <= 0) {
-        this.food.alpha = 0;
-        this.food.visible = this.food.renderable = false;
+      if (this.world.food.alpha <= 0) {
+        this.world.food.alpha = 0;
+        this.world.food.visible = this.world.food.renderable = false;
       } else {
-        this.food.alpha -= 0.033 * deltaTime;
+        this.world.food.alpha -= 0.033 * deltaTime;
       }
     }
   }
 
   private renderFood(): void {
-    for (let i = 0; i < this.food.children.length; i++) {
-      const food = this.food.children[i] as Food;
+    for (let i = 0; i < this.world.food.children.length; i++) {
+      const food = this.world.food.children[i] as Food;
       food.animate();
 
       if (food.isDestroyed) {
-        this.food.removeChild(food);
+        this.world.food.removeChild(food);
         CachedObjects.addFood(food);
 
         continue;
@@ -166,7 +148,7 @@ export default class WorldLoop {
 
   private checkIsPlaying(): void {
     if (this.world.playerCells.firstTab.size === 0) {
-      this.controller.firstTabSocket && (this.controller.firstTabSocket.playerSpawned = false);
+      this.world.controller.firstTabSocket && (this.world.controller.firstTabSocket.playerSpawned = false);
       PlayerState.first.playing = false;
       Ogar.connected && (Ogar.firstTab.death());
 
@@ -178,7 +160,7 @@ export default class WorldLoop {
         }
 
         if (GameSettings.all.settings.game.multibox.enabled && PlayerState.second.playing) {
-          this.controller.setSecondTabActive();
+          this.world.controller.setSecondTabActive();
         }
       }
     } else {
@@ -197,9 +179,9 @@ export default class WorldLoop {
       }
     }
 
-    if (GameSettings.all.settings.game.multibox.enabled && this.controller.secondTabSocket) {
+    if (GameSettings.all.settings.game.multibox.enabled && this.world.controller.secondTabSocket) {
       if (this.world.playerCells.secondTab.size === 0) {
-        this.controller.secondTabSocket.playerSpawned = false;
+        this.world.controller.secondTabSocket.playerSpawned = false;
         PlayerState.second.playing = false;
         Ogar.connected && (Ogar.secondTab.death());
 
@@ -211,7 +193,7 @@ export default class WorldLoop {
           }
 
           if (PlayerState.first.playing) {
-            this.controller.setFirstTabActive();
+            this.world.controller.setFirstTabActive();
           }
         }
       } else {
@@ -269,10 +251,10 @@ export default class WorldLoop {
     this.sort();
     this.checkFoodContainerVisibility();
     this.checkIsPlaying();
-    this.map.renderTick();
+    this.world.map.renderTick();
     this.renderCells();
     this.renderEjected();
-    this.minimap.renderFrame();
+    this.world.minimap.renderFrame();
     this.renderFood();
     this.checkWtfRgbMode();
 

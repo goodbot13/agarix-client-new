@@ -8,6 +8,15 @@ export interface Location {
   r: number
 }
 
+export interface Vector {
+  x: number, 
+  y: number
+}
+
+export interface Distance extends Vector {
+  total: number
+}
+
 export interface RGB {
   red: number,
   green: number, 

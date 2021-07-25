@@ -36,7 +36,7 @@ class Controller {
         try {
           reg = socketData.https.match(/live-arena-([\w\d]+)\.agar\.io:\d+/)[1];
         } catch {
-          reg = '';
+          reg = 'Private';
         }
   
         if (!Ogar.connected) {

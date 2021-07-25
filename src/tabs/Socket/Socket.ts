@@ -83,7 +83,6 @@ export default class Socket {
     this.disconnectHandler = new CallbacksHandler();
     this.emitter = new Emitter(this);
     this.logger = new Logger('AgarSocket');
-    (window as any).xxx = 0;
   }
 
   public init(): Promise<IMapOffsets | void> {
@@ -113,7 +112,7 @@ export default class Socket {
           this.disconnectHandler.execute();
           reject(SOCKET_CONNECTION_REJECT.NO_RESPONSE_FROM_SERVER);
         }
-      }, 2000);
+      }, 5000);
     }); 
   }
 

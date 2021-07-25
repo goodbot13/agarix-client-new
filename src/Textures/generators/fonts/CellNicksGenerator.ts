@@ -78,6 +78,11 @@ export default class CellNicksGenerator {
     pool.push(onCreateCallback);
     this.textCreationPool.set(text, pool);
 
+    // texture creation is already in setTimeout
+    if (pool.length > 1) {
+      return;
+    }
+
     // generate with delay to decrease lag spikes
     setTimeout(() => {
 
@@ -92,7 +97,8 @@ export default class CellNicksGenerator {
       // remove text from pool 
       this.textCreationPool.delete(text);
 
-    }, (this.textCreationPool.size - 1) * 1000);
+    }, (this.textCreationPool.size - 1) * 250);
+    
   }
 
   public clear(): void {

@@ -70,7 +70,7 @@ export default class RealPlayersCells extends Container {
       cell.reuse(subtype, loc, color, name, skin, this.world);
 
       cell.setIsVisible(true);
-      cell.setIsMinimapCell();
+      cell.setIsMinimapCell(location.r);
 
       this.buffer.set(id, cell);
       this.addChild(cell);
