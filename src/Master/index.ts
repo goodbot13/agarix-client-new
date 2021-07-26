@@ -14,10 +14,10 @@ export default new class Master {
   private readonly MC_CORE: string = "https://agar.io/mc/agario.js";
   private readonly cache: MasterCache;
 
-  private clientVersionInt: number = 31009;
+  private clientVersionInt: number = -1;
   private clientVersionString: string = '';
   private supportProtocolVersion: string = '';
-  private protocolVersion: number = 0;
+  private protocolVersion: number = -1;
 
   public envConfig: EnvConfig;
   public regions: Regions;
@@ -211,7 +211,7 @@ export default new class Master {
     return this.send(FIND_SERVER_URL, message).then((data: any) => this.assembleSocketData(data));
   }
 
-  public async joinParty(token?: string): Promise<ISocketData> {
+  private async joinParty(token?: string): Promise<ISocketData> {
     let data: any;
 
     if (!token) {

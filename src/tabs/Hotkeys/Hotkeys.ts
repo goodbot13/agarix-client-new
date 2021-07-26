@@ -146,18 +146,8 @@ class Hotkeys implements IGameAPIHotkeys {
 
       if (this.controller.currentFocusedTab === 'FIRST_TAB') {
         this.controller.setSecondTabActive();
-
-        /* if (this.macroFeedInterval) {
-          this.stopFeed();
-          this.macroFeed();
-        } */
       } else {
         this.controller.setFirstTabActive();
-
-        /* if (this.macroFeedInterval) {
-          this.stopFeed();
-          this.macroFeed();
-        } */
       }
 
       return;

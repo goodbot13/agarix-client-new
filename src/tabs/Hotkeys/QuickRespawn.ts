@@ -17,39 +17,39 @@ export default class QuickRespawn {
 
   constructor(private controller: Controller) { }
 
-	private spawn(tabType: TabType): void {
-		const { autoRespawnOnFail } = GameSettings.all.settings.game.gameplay;
+  private spawn(tabType: TabType): void {
+    const { autoRespawnOnFail } = GameSettings.all.settings.game.gameplay;
 
-		switch (tabType) {
-			case 'FIRST_TAB':
-				try {
-					this.controller.spawnFirstTab();
-					this.controller.setFirstTabActive();
-				} catch (reason) {
-					UICommunicationService.sendChatGameMessage(`Could not spawn (main)`, ChatAuthor.QuickRespawn);
+    switch (tabType) {
+      case 'FIRST_TAB':
+        try {
+          this.controller.spawnFirstTab();
+          this.controller.setFirstTabActive();
+        } catch (reason) {
+          UICommunicationService.sendChatGameMessage(`Could not spawn (main)`, ChatAuthor.QuickRespawn);
 
-					if (autoRespawnOnFail) {
-						this.handle();
-					}
-				}
+          if (autoRespawnOnFail) {
+            this.handle();
+          }
+        }
 
-				break;
+        break;
 
-			case 'SECOND_TAB':
-				try {
-					this.controller.spawnSecondTab();
-					this.controller.setSecondTabActive();
-				} catch (reason) {
-					UICommunicationService.sendChatGameMessage(`Could not spawn (multi)`, ChatAuthor.QuickRespawn);
+      case 'SECOND_TAB':
+        try {
+          this.controller.spawnSecondTab();
+          this.controller.setSecondTabActive();
+        } catch (reason) {
+          UICommunicationService.sendChatGameMessage(`Could not spawn (multi)`, ChatAuthor.QuickRespawn);
 
-					if (autoRespawnOnFail) {
-						this.handle();
-					}
-				}
+          if (autoRespawnOnFail) {
+            this.handle();
+          }
+        }
 
-				break;
-		}
-	}
+        break;
+    }
+  }
 
   public async handle() {
     if (this.controller.currentFocusedTab === 'FIRST_TAB') {
@@ -60,12 +60,12 @@ export default class QuickRespawn {
         if (reason === SOCKET_CONNECTION_REJECT.NO_RESPONSE_FROM_SERVER) {
           this.logger.error(`Could not connect to server. Reason: ${reason}`);
 
-					return false;
+          return false;
         }
       }
 
       await timeout(100);
-      
+
       this.spawn('FIRST_TAB');
 
     } else {
@@ -75,13 +75,13 @@ export default class QuickRespawn {
       } catch (reason) {
         if (reason === SOCKET_CONNECTION_REJECT.NO_RESPONSE_FROM_SERVER) {
           this.logger.error(`Could not connect to server. Reason: ${reason}`);
-					return false;
+          return false;
         }
       }
-      
+
       await timeout(100);
-      
-     	this.spawn('SECOND_TAB');
+
+      this.spawn('SECOND_TAB');
 
     }
   }

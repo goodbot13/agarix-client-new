@@ -2,17 +2,17 @@ export default class MasterCache {
   private clientVersionInt: number = -1;
   private clientVersionString: string = '';
   private supportProtocolVersion: string = '';
-  private protocolVersion: number = 0;
+  private protocolVersion: number = -1;
 
   private readonly STORAGE_NAME: string = 'AGARIX:MASTER_CACHE';
   private readonly CACHE_LIFETIME: number = 60 * 60 * 48 * 1000; // 48 hours
 
   constructor() {
-    const storage = localStorage.getItem(JSON.parse(this.STORAGE_NAME)) as unknown as IMasterSaveData; 
+    const storage = JSON.parse(localStorage.getItem(this.STORAGE_NAME)) as IMasterSaveData; 
 
     if (storage) {
       if (Date.now() - storage.savedTime > this.CACHE_LIFETIME) {
-          return;
+        return;
       }
 
       this.clientVersionInt = storage.clientVersionInt;
