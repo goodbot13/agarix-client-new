@@ -49,7 +49,7 @@ export default class WorldLoop {
       const undefinedExtensionColor = color.custom === '#000000' || color.cell === '#000000';
 
       if (sameNick && (sameColor || sameCustomColor || undefinedExtensionColor)) {
-        cell.setIsTeam(true, SkinsLoader.getTextureByUrl(player.skin));
+        cell.setIsTeam(true, player.skin);
       }
 
     });

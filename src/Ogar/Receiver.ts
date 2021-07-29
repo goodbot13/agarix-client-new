@@ -1,6 +1,5 @@
-import FrontAPI, { ITopTeamPlayer } from "../communication/FrontAPI";
+import FrontAPI from "../communication/FrontAPI";
 import Reader from "../utils/Reader";
-import SkinsLoader from "../utils/SkinsLoader";
 import Socket from "./Socket";
 
 export default class Receiver {
@@ -41,8 +40,6 @@ export default class Receiver {
 			custom: reader.readUTF16string(),
 			cell: reader.readUTF16string(),
 		};
-
-		SkinsLoader.load(player.skin);
 	}
 
 	public updateTeamPlayerPosition(reader: Reader) {
