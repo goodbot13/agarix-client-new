@@ -124,7 +124,9 @@ export default new class Master {
       FacebookLogin.FB_APP_ID = this.envConfig.FB_APP_ID;
       GoogleLogin.GOOGLE_CLIENT_ID = this.envConfig.GOOGLE_CLIENT_ID;
 
-      if (this.cache.get() === null) {
+      const cache = this.cache.get();
+
+      if (cache === null) {
         await this.setClientAndsupportProtocolVersion();
         await this.setProtocolVersion();
         await this.setLatestId();
@@ -137,13 +139,11 @@ export default new class Master {
           latestId: this.latestId
         });
       } else {
-        const cached = this.cache.get();
-
-        this.clientVersionInt = cached.clientVersionInt;
-        this.clientVersionString = cached.clientVersionString;
-        this.supportProtocolVersion = cached.supportProtocolVersion;
-        this.protocolVersion = cached.protocolVersion;
-        this.latestId = cached.latestId;
+        this.clientVersionInt = cache.clientVersionInt;
+        this.clientVersionString = cache.clientVersionString;
+        this.supportProtocolVersion = cache.supportProtocolVersion;
+        this.protocolVersion = cache.protocolVersion;
+        this.latestId = cache.latestId;
       }
 
       await this.getRegionsInfo();

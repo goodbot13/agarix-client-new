@@ -202,7 +202,11 @@ export default class SkinsLoader {
     if (skinName.includes('custom')) {
       url = `${Master.envConfig.CUSTOM_SKINS_URL}${skinName}.png`;
     } else {
-      url = Master.skins.get(skinName).url;
+      try {
+        url = Master.skins.get(skinName).url;
+      } catch (e) {
+        console.log(skinName, Master.skins);
+      }
     }
 
     if (this.checkUrlAndCache(url, onLoad)) {
