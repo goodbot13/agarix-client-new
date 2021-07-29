@@ -431,7 +431,12 @@ export default class Cell extends Container implements IMainGameObject {
           this.shadow.sprite.height += newSize * this.shadow.TEXTURE_OFFSET;
         }
 
-        this.updateAlpha(this.cell.width / this.sizeBeforeRemove);
+        const { transparency } = GameSettings.all.settings.theming.cells;
+        const newTransparency = this.cell.width / this.sizeBeforeRemove;
+
+        if (transparency > newTransparency) {
+          this.updateAlpha(this.cell.width / this.sizeBeforeRemove);
+        }
       } else {
         this.isDestroyed = true;
       }
