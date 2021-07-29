@@ -97,7 +97,7 @@ export default class GameAPI {
     Ogar.firstTab.player.skin = leftProfileSkinUrl;
     Ogar.firstTab.emitter.sendPlayerSkin();
 
-    SkinsLoader.load(leftProfileSkinUrl);
+    this.stage.world.skinsLoader.getCustomSkin(leftProfileSkinUrl, () => {});
   }
 
   public setSecondTabNick(): void {
@@ -113,7 +113,7 @@ export default class GameAPI {
     Ogar.secondTab.player.skin = rightProfileSkinUrl;
     Ogar.secondTab.emitter.sendPlayerSkin();
 
-    SkinsLoader.load(rightProfileSkinUrl);
+    this.stage.world.skinsLoader.getCustomSkin(rightProfileSkinUrl, () => {});
   }
 
   public sendMessage(message: string): void {

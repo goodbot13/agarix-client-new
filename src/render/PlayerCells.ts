@@ -30,7 +30,7 @@ export default class PlayerCells {
 
     cell.setPlayerCell(
       GameSettings.all.profiles.leftProfileNick, 
-      SkinsLoader.getTextureByUrl(GameSettings.all.profiles.leftProfileSkinUrl)
+      GameSettings.all.profiles.leftProfileSkinUrl
     );
 
     Ogar.firstTab.player.color.cell = cell.colorHex[1];
@@ -41,7 +41,7 @@ export default class PlayerCells {
 
     cell.setPlayerCell(
       GameSettings.all.profiles.rightProfileNick, 
-      SkinsLoader.getTextureByUrl(GameSettings.all.profiles.rightProfileSkinUrl)
+      GameSettings.all.profiles.rightProfileSkinUrl
     );
     
     Ogar.secondTab.player.color.cell = cell.colorHex[1];

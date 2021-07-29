@@ -41,10 +41,13 @@ export default class World {
   public controller: Controller;
   public hotkeys: Hotkeys;
   public minimap: Minimap;
+  public skinsLoader: SkinsLoader;
 
   private logger: Logger;
 
   constructor(public scene: Stage) {
+    this.skinsLoader = new SkinsLoader();
+
     this.cells = new Container();
     this.cells.sortableChildren = true;
 
@@ -82,8 +85,8 @@ export default class World {
   private cachePlayerSkins(): void {
     const { leftProfiles, rightProfiles } = GameSettings.all.profiles;
 
-    leftProfiles.forEach((profile) => SkinsLoader.load(profile.skinUrl));
-    rightProfiles.forEach((profile) => SkinsLoader.load(profile.skinUrl));
+    leftProfiles.forEach((profile) => this.skinsLoader.getCustomSkin(profile.skinUrl, () => {}));
+    rightProfiles.forEach((profile) => this.skinsLoader.getCustomSkin(profile.skinUrl, () => {}));
   } 
 
   private addFood(id: number, location: Location, type: CellType, subtype: Subtype): void {
@@ -111,20 +114,10 @@ export default class World {
     }
   }
 
-  private addCell(id: number, location: Location, color: RGB, name: string, type: CellType, subtype: Subtype, skin?: string): void {
+  private addCell(id: number, location: Location, color: RGB, name: string, type: CellType, subtype: Subtype, skin: string): void {
     let cell: Cell;
 
     if (!this.indexedCells.has(id)) {
-      if (Master.skins.skinsByNameHas(name)) {
-        const url = Master.skins.get(name).url;
-
-        SkinsLoader.load(url);
-      }
-
-      if (skin) {
-        SkinsLoader.loadAgar(skin);
-      }
-
       cell = CachedObjects.getCell();
       cell.reuse(subtype, location, color, name, skin, this);
 

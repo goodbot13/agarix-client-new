@@ -8,7 +8,7 @@ import Shadow from './Shadow';
 import CellSprite from './CellSprite';
 import GameSettings from '../../Settings/Settings';
 import { getColor, getColorLighten, rgbToStringHex } from '../../utils/helpers';
-import SkinsLoader from '../../utils/SkinsLoader';
+import SkinsLoader, { SkinTexture } from '../../utils/SkinsLoader';
 import Master from '../../Master';
 import TextureGenerator from '../../Textures/TexturesGenerator';
 import SettingsState from '../../states/SettingsState';
@@ -38,9 +38,9 @@ export default class Cell extends Container implements IMainGameObject {
   public type: CellType;
   public agarSkinName: string;
   public usesSkinByAgarName: boolean;
-  public customSkinTexture: Texture;
-  public agarSkinTexture: Texture;
-  public skinByNameTexture: Texture;
+  public customSkinTexture: SkinTexture;
+  public agarSkinTexture: SkinTexture;
+  public skinByNameTexture: SkinTexture;
   public culled: boolean = false;
   public eatenBy: Vector = { x: 0, y: 0 };
 
@@ -60,10 +60,10 @@ export default class Cell extends Container implements IMainGameObject {
     this.cell.addChild(this.rings.innerRing, this.rings.outerRing);
     this.cell.addChild(this.stats.nick, this.stats.mass);
 
-    this.interactive = true;
-    this.on('mousedown', () => {
-      console.log(this);
-    });
+    // this.interactive = true;
+    // this.on('mousedown', () => {
+    //   console.log(this);
+    // });
   }
 
   public reuse(subtype: Subtype, location: Location, color: RGB, nick: string, skin: string, world: World): void {
@@ -72,6 +72,7 @@ export default class Cell extends Container implements IMainGameObject {
     this.zIndex = r * 2;
     this.x = x;
     this.y = y;
+    this.transform.position.set(x, y);
     this.nick = nick;
     this.color = color;
     this.originalSize = this.newOriginalSize = r;
@@ -99,16 +100,12 @@ export default class Cell extends Container implements IMainGameObject {
     this.eatenBy = { x: 0, y: 0 };
     this.distBeforeRemove = -1;
 
-    if (this.nick) {
-      this.usesSkinByAgarName = Master.skins.skinsByNameHas(this.nick);
-    }
-
     this.cell.transform.scale.set(1, 1);
     this.cell.scale.set(1, 1);
     this.cell.alpha = 0;
     this.shadow.sprite.alpha = 0;
 
-    this.getSkin();
+    this.getSkins();
     this.addColorInformation(color);
     this.applyTint();
     this.update(location);
@@ -119,26 +116,20 @@ export default class Cell extends Container implements IMainGameObject {
     this.shadow.setSize(this.cell.width);
   }
 
-  private getSkin(): void {
+  private getSkins(): void {
     if (this.isMinimap) {
       return;
     }
 
-    if (this.agarSkinName && this.agarSkinTexture) {
-      return;
-    }
+    this.usesSkinByAgarName = Master.skins.skinsByNameHas(this.nick);
 
-    if (this.usesSkinByAgarName && this.skinByNameTexture) {
-      return;
-    }
+    this.world.skinsLoader.getAgarSkinByPlayerNick(this.nick, (texture) => {
+      this.skinByNameTexture = texture;
+    });
 
-    if (this.usesSkinByAgarName) {
-      this.skinByNameTexture = SkinsLoader.getAgarByNick(this.nick);
-    }
-
-    if (this.agarSkinName) {
-      this.agarSkinTexture = SkinsLoader.getAgar(this.agarSkinName);
-    }
+    this.world.skinsLoader.getAgarSkinBySkinName(this.agarSkinName, (texture) => {
+      this.agarSkinTexture = texture;
+    });
   }
 
   private addColorInformation(color: RGB): void {
@@ -209,7 +200,7 @@ export default class Cell extends Container implements IMainGameObject {
     }
   }
 
-  public setPlayerCell(nick: string, skinTexture: Texture) {
+  public setPlayerCell(nick: string, textureUrl: string) {
     if (!this.isPlayerCell) {
       this.updateAlpha(0.4, true); // initial player cell alpha
     }
@@ -217,12 +208,13 @@ export default class Cell extends Container implements IMainGameObject {
     this.isPlayerCell = true;
     this.nick = nick && nick.trim();
     this.stats.updateNick(nick);
-    this.customSkinTexture = skinTexture;
     this.shadow.updateTexture();
 
-    if (this.nick) {
-      this.usesSkinByAgarName = Master.skins.skinsByNameHas(this.nick);
-    }
+    this.usesSkinByAgarName = Master.skins.skinsByNameHas(this.nick);
+
+    this.world.skinsLoader.getCustomSkin(textureUrl, (texture) => {
+      this.customSkinTexture = texture;
+    });
   }
 
   private applyTint(): void {
@@ -317,14 +309,14 @@ export default class Cell extends Container implements IMainGameObject {
       const allowCustomSkins = skinsType === 'Custom' || skinsType === 'All';
 
       if ((teamAndCustomSkin || playerAndCustomSkin) && allowCustomSkins) {
-        this.cell.texture = this.customSkinTexture;
+        this.cell.texture = this.customSkinTexture.texture;
         this.usingSkin = true;
       } else {
         if (usesSkinByAgarName && (skinsType === 'Vanilla' || skinsType === 'All')) {
-          this.cell.texture = this.skinByNameTexture;
+          this.cell.texture = this.skinByNameTexture.texture;
           this.usingSkin = true;
         } else if (this.agarSkinTexture && (skinsType === 'Vanilla' || skinsType === 'All')) {
-          this.cell.texture = this.agarSkinTexture;
+          this.cell.texture = this.agarSkinTexture.texture;
           this.usingSkin = true;
         } else {
           this.cell.texture = TextureGenerator.cell;
@@ -336,10 +328,13 @@ export default class Cell extends Container implements IMainGameObject {
       this.cell.texture = TextureGenerator.cell;
       this.usingSkin = false;
     }
+
+    this.agarSkinTexture && this.agarSkinTexture.update();
+    this.skinByNameTexture && this.skinByNameTexture.update();
+    this.customSkinTexture && this.customSkinTexture.update();
   }
 
   private updateInfo(): void {
-    this.getSkin();
     this.updateSkinsVisibility();
     this.applyTint();
     this.stats.updateMass();
@@ -349,10 +344,12 @@ export default class Cell extends Container implements IMainGameObject {
     this.stats.update();
   }
 
-  public setIsTeam(isTeam: boolean, skinTexture?: Texture): void {
+  public setIsTeam(isTeam: boolean, skinUrl: string): void {
     if (isTeam) {
-      this.customSkinTexture = skinTexture;
       this.isTeam = true;
+      this.world.skinsLoader.getCustomSkin(skinUrl, (texture) => {
+        this.customSkinTexture = texture;
+      });
     } else if (this.isTeam) {
       this.cell.texture = TextureGenerator.cell;
       this.isTeam = false;

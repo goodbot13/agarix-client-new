@@ -8,6 +8,7 @@ import FacebookLogin from "../tabs/Login/FacebookLogin";
 import GoogleLogin from "../tabs/Login/GoogleLogin";
 import UICommunicationService from '../communication/FrontAPI';
 import MasterCache from "./MasterCache";
+import Logger from "../utils/Logger";
 
 export default new class Master {
   private readonly AGAR_CORE: string = "https://agar.io/agario.core.js";
@@ -104,16 +105,12 @@ export default new class Master {
     const { regions } = await this.send(this.envConfig.REGIONS_INFO_URL, null);
 
     this.regions.setFetched(regions);
-    this.regions.setUpdatingInterval(() => this.getRegionsInfo(), 5 * 60000);
+    this.regions.setUpdatingInterval(() => this.getRegionsInfo(), 2.5 * 60000);
   }
 
   private async getSkins(): Promise<any> {
-    const { LATEST_ID_URL, CFG_URL } = this.envConfig;
-
-    this.latestId = await this.xhr(LATEST_ID_URL);
-    const data = await this.xhr(`${CFG_URL}/${this.latestId}/GameConfiguration.json`);
-
-    this.skins.parse(data, CFG_URL, this.latestId);
+    const data = await this.xhr(`${this.envConfig.CFG_URL}/${this.latestId}/GameConfiguration.json`);
+    this.skins.parse(data, this.envConfig.CFG_URL, this.latestId);
   }
 
   public changeRegion(index: number): void {
@@ -127,23 +124,26 @@ export default new class Master {
       FacebookLogin.FB_APP_ID = this.envConfig.FB_APP_ID;
       GoogleLogin.GOOGLE_CLIENT_ID = this.envConfig.GOOGLE_CLIENT_ID;
 
-      if (this.cache.get() === null) {
+      const cache = this.cache.get();
+
+      if (cache === null) {
         await this.setClientAndsupportProtocolVersion();
         await this.setProtocolVersion();
+        await this.setLatestId();
 
         this.cache.set({
           clientVersionInt: this.clientVersionInt,
           clientVersionString: this.clientVersionString,
           supportProtocolVersion: this.supportProtocolVersion,
-          protocolVersion: this.protocolVersion
+          protocolVersion: this.protocolVersion,
+          latestId: this.latestId
         });
       } else {
-        const cached = this.cache.get();
-
-        this.clientVersionInt = cached.clientVersionInt;
-        this.clientVersionString = cached.clientVersionString;
-        this.supportProtocolVersion = cached.supportProtocolVersion;
-        this.protocolVersion = cached.protocolVersion;
+        this.clientVersionInt = cache.clientVersionInt;
+        this.clientVersionString = cache.clientVersionString;
+        this.supportProtocolVersion = cache.supportProtocolVersion;
+        this.protocolVersion = cache.protocolVersion;
+        this.latestId = cache.latestId;
       }
 
       await this.getRegionsInfo();
@@ -245,6 +245,11 @@ export default new class Master {
     addCharCode(mode);
 
     return new Uint8Array(output);
+  }
+
+  private async setLatestId(): Promise<number> {
+    this.latestId = await this.xhr(this.envConfig.LATEST_ID_URL);
+    return this.latestId;
   }
 
   private async setClientAndsupportProtocolVersion(): Promise<any> {
