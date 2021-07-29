@@ -178,8 +178,7 @@ class Stage {
     }
 
     const socketData = await Master.connect(token, serverToken);
-    
-    console.log(socketData);
+
 
     return new Promise((
       resolve: (tokens: string) => void, 

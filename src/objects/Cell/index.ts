@@ -8,7 +8,7 @@ import Shadow from './Shadow';
 import CellSprite from './CellSprite';
 import GameSettings from '../../Settings/Settings';
 import { getColor, getColorLighten, rgbToStringHex } from '../../utils/helpers';
-import SkinsLoader from '../../utils/SkinsLoader';
+import SkinsLoader, { SkinTexture } from '../../utils/SkinsLoader';
 import Master from '../../Master';
 import TextureGenerator from '../../Textures/TexturesGenerator';
 import SettingsState from '../../states/SettingsState';
@@ -38,9 +38,9 @@ export default class Cell extends Container implements IMainGameObject {
   public type: CellType;
   public agarSkinName: string;
   public usesSkinByAgarName: boolean;
-  public customSkinTexture: Texture;
-  public agarSkinTexture: Texture;
-  public skinByNameTexture: Texture;
+  public customSkinTexture: SkinTexture;
+  public agarSkinTexture: SkinTexture;
+  public skinByNameTexture: SkinTexture;
   public culled: boolean = false;
   public eatenBy: Vector = { x: 0, y: 0 };
 
@@ -60,10 +60,10 @@ export default class Cell extends Container implements IMainGameObject {
     this.cell.addChild(this.rings.innerRing, this.rings.outerRing);
     this.cell.addChild(this.stats.nick, this.stats.mass);
 
-    this.interactive = true;
-    this.on('mousedown', () => {
-      console.log(this);
-    });
+    // this.interactive = true;
+    // this.on('mousedown', () => {
+    //   console.log(this);
+    // });
   }
 
   public reuse(subtype: Subtype, location: Location, color: RGB, nick: string, skin: string, world: World): void {
@@ -309,14 +309,14 @@ export default class Cell extends Container implements IMainGameObject {
       const allowCustomSkins = skinsType === 'Custom' || skinsType === 'All';
 
       if ((teamAndCustomSkin || playerAndCustomSkin) && allowCustomSkins) {
-        this.cell.texture = this.customSkinTexture;
+        this.cell.texture = this.customSkinTexture.texture;
         this.usingSkin = true;
       } else {
         if (usesSkinByAgarName && (skinsType === 'Vanilla' || skinsType === 'All')) {
-          this.cell.texture = this.skinByNameTexture;
+          this.cell.texture = this.skinByNameTexture.texture;
           this.usingSkin = true;
         } else if (this.agarSkinTexture && (skinsType === 'Vanilla' || skinsType === 'All')) {
-          this.cell.texture = this.agarSkinTexture;
+          this.cell.texture = this.agarSkinTexture.texture;
           this.usingSkin = true;
         } else {
           this.cell.texture = TextureGenerator.cell;
@@ -328,6 +328,10 @@ export default class Cell extends Container implements IMainGameObject {
       this.cell.texture = TextureGenerator.cell;
       this.usingSkin = false;
     }
+
+    this.agarSkinTexture && this.agarSkinTexture.update();
+    this.skinByNameTexture && this.skinByNameTexture.update();
+    this.customSkinTexture && this.customSkinTexture.update();
   }
 
   private updateInfo(): void {

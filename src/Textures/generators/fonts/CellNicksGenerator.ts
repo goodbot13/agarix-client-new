@@ -1,4 +1,4 @@
-import { Texture, utils, SCALE_MODES, MIPMAP_MODES } from "pixi.js";
+import { Texture, SCALE_MODES, MIPMAP_MODES } from "pixi.js";
 import Logger from "../../../utils/Logger";
 
 export default class CellNicksGenerator {
@@ -7,7 +7,7 @@ export default class CellNicksGenerator {
   private logger: Logger;
 
   constructor() {
-    this.logger = new Logger('NicksCache');
+    this.logger = new Logger('NicksGenerator');
   }
 
   private has(nick: string): boolean {
@@ -103,6 +103,8 @@ export default class CellNicksGenerator {
 
   public clear(): void {
     const MAX_SAFE_SIZE = 768;
+
+    this.logger.warning(`Pool size: ${this.pool.size}`);
 
     if (this.pool.size <= MAX_SAFE_SIZE) {
       return;

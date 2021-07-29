@@ -1,17 +1,28 @@
+import Logger from "../utils/Logger";
+
 export default class MasterCache {
   private clientVersionInt: number = -1;
   private clientVersionString: string = '';
   private supportProtocolVersion: string = '';
   private protocolVersion: number = -1;
+  private latestId: number = -1;
+  private expirationDate: number = -1;
 
+  private readonly logger: Logger;
   private readonly STORAGE_NAME: string = 'AGARIX:MASTER_CACHE';
   private readonly CACHE_LIFETIME: number = 60 * 60 * 48 * 1000; // 48 hours
 
   constructor() {
+    this.logger = new Logger('MasterCache');
+
     const storage = JSON.parse(localStorage.getItem(this.STORAGE_NAME)) as IMasterSaveData; 
 
     if (storage) {
-      if (Date.now() - storage.savedTime > this.CACHE_LIFETIME) {
+      const difference = Date.now() - storage.savedTime;
+
+      this.expirationDate = difference;
+
+      if (difference < this.CACHE_LIFETIME) {
         return;
       }
 
@@ -19,18 +30,21 @@ export default class MasterCache {
       this.clientVersionString = storage.clientVersionString;
       this.supportProtocolVersion = storage.supportProtocolVersion;
       this.protocolVersion = storage.protocolVersion;
+      this.latestId = storage.latestId;
     }
   }
 
   public get(): IMasterCacheData | null {
     if (this.clientVersionInt === -1) {
+      this.logger.warning(`Loading from cache. Cache expiration in ${~~(this.expirationDate / 1000 / 60 / 24)}hrs`);
       return null;
     } else {
       return {
         clientVersionInt: this.clientVersionInt,
         clientVersionString: this.clientVersionString,
         supportProtocolVersion: this.supportProtocolVersion,
-        protocolVersion: this.protocolVersion
+        protocolVersion: this.protocolVersion,
+        latestId: this.latestId
       }
     }
   }
@@ -40,6 +54,7 @@ export default class MasterCache {
     this.clientVersionString = data.clientVersionString;
     this.supportProtocolVersion = data.supportProtocolVersion;
     this.protocolVersion = data.protocolVersion;
+    this.latestId = data.latestId;
 
     const saveData: IMasterSaveData = {
       ...data,
@@ -54,7 +69,8 @@ interface IMasterCacheData {
   clientVersionInt: number,
   clientVersionString: string,
   supportProtocolVersion: string,
-  protocolVersion: number
+  protocolVersion: number,
+  latestId: number
 }
 
 interface IMasterSaveData extends IMasterCacheData {

@@ -25,13 +25,9 @@ export const createTokens = (party: string, server: string): string => {
 }
 
 export const getColorLighten = (lighten: number, { red, green, blue }: RGB): number => {
-  const darkenR = lighten / red;
-  const darkenG = lighten / green;
-  const darkenB = lighten / blue;
-
-  const r = darkenR > 1 ? 1 : darkenR;
-  const g = darkenG > 1 ? 1 : darkenG;
-  const b = darkenB > 1 ? 1 : darkenB;
+  const r = Math.min(lighten / red, 1);
+  const g = Math.min(lighten / green, 1);
+  const b = Math.min(lighten / blue, 1);
 
   return utils.rgb2hex([r, g, b]);
 }

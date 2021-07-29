@@ -2,13 +2,31 @@ import { MIPMAP_MODES, SCALE_MODES, Texture } from "pixi.js"
 import Master from "../Master";
 import Logger from "./Logger";
 
+export class SkinTexture {
+  private lastUsedTime = Date.now();
+
+  constructor(public texture: Texture, public url: string) { }
+
+  public update(): void {
+    this.lastUsedTime = Date.now();
+  }
+
+  public get canBeDestroyed(): boolean {
+    return ((Date.now() - this.lastUsedTime) / 1000) > 3 * 90; // 1.5 minutes
+  }
+
+  public destroy(): void {
+    this.texture.destroy(true);
+  }
+}
+
 export default class SkinsLoader {
 
   // actual skins cache
-  private cache: Map<string, Texture> = new Map();
+  private cache: Map<string, SkinTexture> = new Map();
 
   // used to store onload skin callbacks for multiple request of same skin 
-  private requestPool: Map<string, Array<(skinTexture: Texture | null) => void>> = new Map();
+  private requestPool: Map<string, Array<(skinTexture: SkinTexture | null) => void>> = new Map();
 
   // urls which failed to load. Used to ignore and prevent loading cycle
   private failedToLoadUrls: Set<string> = new Set();
@@ -17,6 +35,19 @@ export default class SkinsLoader {
 
   constructor() {
     (window as any).skinsLoader = this;
+
+    setInterval(() => this.cleaner(), 60000);
+  }
+
+  private cleaner(): void {
+    this.cache.forEach((skinTexture, url) => {
+
+      if (skinTexture.canBeDestroyed) {
+        skinTexture.destroy();
+        this.cache.delete(url);
+      }
+
+    });
   }
 
   private blobToTexture(blob: Blob): Promise<Texture> {
@@ -31,7 +62,7 @@ export default class SkinsLoader {
         
         if (img.width === 1024 && img.height === 512) {
   
-          // agar level skins are splitted by two parts (vertical) of two 512x512 images
+          // agar level skins are splitted by two parts (horizontal) of two 512x512 images
           // so draw just left part of it
           ctx.drawImage(img, 0, 0, 512, 512, 0, 0, 512, 512);
   
@@ -64,7 +95,7 @@ export default class SkinsLoader {
     });
   }
 
-  private getSkinTexture(url: string): Promise<Texture> {
+  private getSkinTexture(url: string): Promise<SkinTexture> {
     return new Promise(async (resolve, reject) => {
 
       // load skin data by url
@@ -73,10 +104,10 @@ export default class SkinsLoader {
         // transform loaded skin data to texture
         this.blobToTexture(blob).then((texture) => {
 
-          resolve(texture);
+          resolve(new SkinTexture(texture, url));
 
         }).catch((reason) => {
-          this.logger.error('Error while creating texture blob.');
+          this.logger.error('Error while creating texture blob');
           reject();
         });
         
@@ -88,21 +119,16 @@ export default class SkinsLoader {
     });
   }
 
-  private checkUrlAndCache(url: string, onLoad: (skinTexture: Texture | null) => void): boolean {
-    // check if this url has failed before
-    if (this.failedToLoadUrls.has(url)) {
+  private checkUrlAndCache(url: string, onLoad: (skinTexture: SkinTexture | null) => void): boolean {
+    if (!url || this.failedToLoadUrls.has(url) || this.cache.has(url)) {
       onLoad(null);
       return true;
     }
 
-    // check if we already have requested skin in cache, just return it
-    if (this.cache.has(url)) {
-      onLoad(this.cache.get(url));
-      return true;
-    } 
+    return false;
   }
 
-  private startSkinGeneration(url: string, onLoad: (skinTexture: Texture | null) => void): void {
+  private startSkinGeneration(url: string, onLoad: (skinTexture: SkinTexture | null) => void): void {
 
     // there is no skin in cache. A new texture has to be generated
     const pool = this.requestPool.get(url) || [];
@@ -115,15 +141,15 @@ export default class SkinsLoader {
       return;
     }
 
-    // generate with delay to avoid lag spikes (freezes)
+    // generate with delay to avoid lag spikes (freezes if image is cached)
     setTimeout(() => {
 
-      this.getSkinTexture(url).then((texture) => {
+      this.getSkinTexture(url).then((skinTexture) => {
 
-        this.cache.set(url, texture);
+        this.cache.set(url, skinTexture);
 
         // fire all onLoad callbacks which were assigned to this texture load
-        pool.forEach((onLoad) => onLoad(texture));
+        pool.forEach((onLoad) => onLoad(skinTexture));
 
         // clean up
         this.requestPool.delete(url);
@@ -139,7 +165,7 @@ export default class SkinsLoader {
     }, (this.requestPool.size - 1) * 100);
   }
 
-  public getCustomSkin(url: string, onLoad: (skinTexture: Texture | null) => void): void {
+  public getCustomSkin(url: string, onLoad: (skinTexture: SkinTexture | null) => void): void {
     if (this.checkUrlAndCache(url, onLoad)) {
       return;
     }
@@ -147,7 +173,7 @@ export default class SkinsLoader {
     this.startSkinGeneration(url, onLoad);
   }
 
-  public getAgarSkinByPlayerNick(nick: string, onLoad: (skinTexture: Texture | null) => void): void {
+  public getAgarSkinByPlayerNick(nick: string, onLoad: (skinTexture: SkinTexture | null) => void): void {
     const skinData = Master.skins.get(nick);
 
     let url = '';
@@ -166,7 +192,7 @@ export default class SkinsLoader {
     this.startSkinGeneration(url, onLoad);
   }
 
-  public getAgarSkinBySkinName(skinName: string, onLoad: (skinTexture: Texture | null) => void): void {
+  public getAgarSkinBySkinName(skinName: string, onLoad: (skinTexture: SkinTexture | null) => void): void {
     let url = '';
 
     if (!skinName) {
