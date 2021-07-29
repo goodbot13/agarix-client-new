@@ -136,7 +136,7 @@ export default class SkinsLoader {
 
       });
 
-    }, (this.requestPool.size - 1) * 150);
+    }, (this.requestPool.size - 1) * 100);
   }
 
   public getCustomSkin(url: string, onLoad: (skinTexture: Texture | null) => void): void {
