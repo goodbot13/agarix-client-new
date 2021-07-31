@@ -1,9 +1,7 @@
 import { Container, Graphics } from 'pixi.js';
 import { CellType, Location, RemoveType, RGB, Subtype } from '../objects/types';
 import World from '../render/World';
-import GameSettings from '../Settings/Settings';
 import { IGhostCell } from '../tabs/Socket/Receiver';
-
 import GhostCells from './GhostCells';
 import RealPlayersCells from './RealCells';
 import StaticPlayerCells from './MyStaticCells';
@@ -46,13 +44,13 @@ export default class MinimapWEBGL extends Container {
   }
 
   private updatePositionAndSize(): void {
-    const { size } = GameSettings.all.settings.theming.minimap;
+    const { size } = this.world.settings.all.settings.theming.minimap;
     this.x = this.world.scene.app.view.width - size;
     this.y = this.world.scene.app.view.height - size;
   }
 
   public updateBackgroundColor(): void {
-    const { backgroundColor, size } = GameSettings.all.settings.theming.minimap;
+    const { backgroundColor, size } = this.world.settings.all.settings.theming.minimap;
 
     this.graphics.clear();
     this.graphics.beginFill(getColor(backgroundColor), backgroundColor.alpha);
@@ -71,7 +69,7 @@ export default class MinimapWEBGL extends Container {
   }
 
   public renderFrame(): void {
-    this.visible = GameSettings.all.settings.game.minimap.enabled;
+    this.visible = this.world.settings.all.settings.game.minimap.enabled;
 
     this.updatePositionAndSize();
     this.updateBackgroundColor();

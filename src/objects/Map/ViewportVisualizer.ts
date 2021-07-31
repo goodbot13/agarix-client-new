@@ -1,10 +1,7 @@
 import { Container } from "pixi.js";
-import Globals from "../../Globals";
-import TextureGenerator from "../../Textures/TexturesGenerator";
 import View from "../../View";
 import ViewBox from "../ViewBox";
 import * as PIXI from 'pixi.js';
-import GameSettings from "../../Settings/Settings";
 import IMapObject from "./interfaces";
 
 export default class ViewportVisualizer extends Container implements IMapObject {

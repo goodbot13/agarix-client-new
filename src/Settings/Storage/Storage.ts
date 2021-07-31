@@ -1,6 +1,6 @@
 import { IState } from "./initState";
 
-export default new class Storage {
+export default class Storage {
   private readonly name: string = 'AGARIX:DATA';
 
   private swap(str: string): string {

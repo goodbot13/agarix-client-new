@@ -14,7 +14,7 @@ class GameMap extends Container {
   private eventListeners: Map<TMapEvent, Array<() => void>> = new Map();
   private logger = new Logger('Map');
 
-  constructor(world: World) {
+  constructor(public world: World) {
     super();
 
     this.borders = new Borders(this);

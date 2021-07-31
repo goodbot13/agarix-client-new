@@ -1,12 +1,11 @@
-import GameSettings from '../../Settings/Settings';
 import * as PIXI from 'pixi.js';
 
 export const getAnimationSpeed = (): number => {
-  return (GameSettings.all.settings.game.gameplay.animationSpeed / 1000) * PIXI.Ticker.shared.deltaTime;
+  return ((window as any).GameSettings.all.settings.game.gameplay.animationSpeed / 1000) * PIXI.Ticker.shared.deltaTime;
 }
 
 export const getFadeSpeed = (): number => {
-  const { fadeSpeed } = GameSettings.all.settings.game.cells;
+  const { fadeSpeed } = (window as any).GameSettings.all.settings.game.cells;
 
   if (fadeSpeed === 0) {
     return 0;
@@ -16,7 +15,7 @@ export const getFadeSpeed = (): number => {
 }
 
 export const getSoakSpeed = (): number => {
-  const { soakSpeed } = GameSettings.all.settings.game.cells;
+  const { soakSpeed } = (window as any).GameSettings.all.settings.game.cells;
 
   if (soakSpeed === 0) {
     return 0;
@@ -29,7 +28,7 @@ export const getSoakSpeed = (): number => {
 // the more containerSize is, the faster animations is
 
 export const getFadeSpeedForEjected = (containerSize: number): number => {
-  const { fadeSpeed } = GameSettings.all.settings.game.cells;
+  const { fadeSpeed } = (window as any).GameSettings.all.settings.game.cells;
   let speedIncreaseMultiplier = 1;
 
   if (fadeSpeed === 0) {
@@ -45,7 +44,7 @@ export const getFadeSpeedForEjected = (containerSize: number): number => {
 }
 
 export const getSoakSpeedForEjected = (containerSize: number): number => {
-  const { soakSpeed } = GameSettings.all.settings.game.cells;
+  const { soakSpeed } = (window as any).GameSettings.all.settings.game.cells;
   let speedIncreaseMultiplier = 1;
 
   if (soakSpeed === 0) {

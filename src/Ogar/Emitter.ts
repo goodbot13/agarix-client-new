@@ -1,8 +1,6 @@
 import Writer from '../utils/Writer';
 import Socket from './Socket';
 import FrontAPI from '../communication/FrontAPI';
-import GameSettings from '../Settings/Settings';
-import Master from '../Master';
 
 const SPAWN_OPCODE                   = 1;
 const DEATH_OPCODE                   = 2;
@@ -77,7 +75,7 @@ export default class Emitter {
 	}
 
 	public sendPlayerTag(): void {
-		this.sendString(TAG_OPCODE, GameSettings.all.profiles.tag);
+		this.sendString(TAG_OPCODE, this.socket.settings.all.profiles.tag);
 
 		this.socket.team.clear();
 
@@ -96,11 +94,11 @@ export default class Emitter {
 	}
 
 	public sendServerRegion(): void {
-		this.sendString(REGION_OPCODE, Master.regions.getCurrent().split('-')[0]);
+		this.sendString(REGION_OPCODE, this.socket.master.regions.getCurrent().split('-')[0]);
 	}
 
 	public sendServerGamemode(): void {
-		this.sendString(GAMEMODE_OPCODE, Master.gameMode.getOgar());
+		this.sendString(GAMEMODE_OPCODE, this.socket.master.gameMode.getOgar());
 	}
 
 	public sendCustomColor(): void {

@@ -1,7 +1,6 @@
 import { Container } from "pixi.js";
 import ViewBox from "../objects/ViewBox";
 import World from "../render/World";
-import GameSettings from "../Settings/Settings";
 import PlayerState from "../states/PlayerState";
 import { getColor, transformMinimapLocation } from "../utils/helpers";
 
@@ -32,8 +31,8 @@ export default class Viewports extends Container {
   }
 
   private animateFirstTab(): void {
-    const { size } = GameSettings.all.settings.theming.minimap;
-    const { viewport } = GameSettings.all.settings.game.minimap;
+    const { size } = this.world.settings.all.settings.theming.minimap;
+    const { viewport } = this.world.settings.all.settings.game.minimap;
 
     if (viewport === 'All' || viewport === 'Main tab') {
       this.firstTab.visible = PlayerState.first.playing;
@@ -45,7 +44,8 @@ export default class Viewports extends Container {
           y: bounds.top, 
           r: 0 
         }, 
-        this.world.view.firstTab.getShiftedMapOffsets()
+        this.world.view.firstTab.getShiftedMapOffsets(),
+        this.world.settings
       );
 
       const w = bounds.width / this.world.map.size.width * size;
@@ -58,8 +58,8 @@ export default class Viewports extends Container {
   }
 
   private animateTopOneTab(): void {
-    const { size } = GameSettings.all.settings.theming.minimap;
-    const { viewport } = GameSettings.all.settings.game.minimap;
+    const { size } = this.world.settings.all.settings.theming.minimap;
+    const { viewport } = this.world.settings.all.settings.game.minimap;
 
     if (viewport === 'All' || viewport === 'Top one tab') {
       const { viewport } = this.world.view.topOneTab;
@@ -73,7 +73,8 @@ export default class Viewports extends Container {
           y: bounds.top, 
           r: 0 
         }, 
-        this.world.view.firstTab.getShiftedMapOffsets()
+        this.world.view.firstTab.getShiftedMapOffsets(),
+        this.world.settings
       );
 
       const w = bounds.width / this.world.map.size.width * size;
@@ -86,7 +87,7 @@ export default class Viewports extends Container {
   }
 
   public updateColors(): void {
-    const { topOneViewportColor, myViewportColor } = GameSettings.all.settings.theming.minimap;
+    const { topOneViewportColor, myViewportColor } = this.world.settings.all.settings.theming.minimap;
 
     this.topOneTab.tint = getColor(topOneViewportColor);
     this.topOneTab.alpha = topOneViewportColor.alpha;

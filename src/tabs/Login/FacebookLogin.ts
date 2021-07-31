@@ -1,6 +1,5 @@
 import UICommunicationService from '../../communication/FrontAPI';
 import Socket from '../Socket/Socket';
-import GameSettings from '../../Settings/Settings';
 import PlayerState from '../../states/PlayerState';
 import Logger from '../../utils/Logger';
 import Controller from '../Contollers/TabsController';
@@ -120,7 +119,7 @@ export default new class FacebookLogin {
       return;
     }
 
-    const { leftProfileLoginType, rightProfileLoginType } = GameSettings.all.profiles;
+    const { leftProfileLoginType, rightProfileLoginType } = (window as any).GameSettings.all.profiles;
 
     if (PlayerState.first.loggedIn && socket.tabType === 'FIRST_TAB') {
       return;

@@ -1,5 +1,5 @@
 import { MIPMAP_MODES, SCALE_MODES, Texture } from "pixi.js"
-import Master from "../Master";
+import World from "../render/World";
 import Logger from "./Logger";
 
 export class SkinTexture {
@@ -33,7 +33,7 @@ export default class SkinsLoader {
 
   private logger: Logger = new Logger('SkinsLoader');
 
-  constructor() {
+  constructor(public world: World) {
     (window as any).skinsLoader = this;
 
     setInterval(() => this.cleaner(), 60000);
@@ -174,7 +174,7 @@ export default class SkinsLoader {
   }
 
   public getAgarSkinByPlayerNick(nick: string, onLoad: (skinTexture: SkinTexture | null) => void): void {
-    const skinData = Master.skins.get(nick);
+    const skinData = this.world.master.skins.get(nick);
 
     let url = '';
 
@@ -200,12 +200,12 @@ export default class SkinsLoader {
     }
 
     if (skinName.includes('custom')) {
-      url = `${Master.envConfig.CUSTOM_SKINS_URL}${skinName}.png`;
+      url = `${this.world.master.envConfig.CUSTOM_SKINS_URL}${skinName}.png`;
     } else {
       try {
-        url = Master.skins.get(skinName).url;
+        url = this.world.master.skins.get(skinName).url;
       } catch (e) {
-        console.log(skinName, Master.skins);
+        console.log(skinName, this.world.master.skins);
       }
     }
 

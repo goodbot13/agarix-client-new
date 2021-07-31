@@ -1,8 +1,7 @@
 import { Container, Sprite } from "pixi.js";
-import GameSettings from "../Settings/Settings";
 import { CellType, Location, Subtype } from "./types";
-import TextureGenerator from "../Textures/TexturesGenerator";
 import * as PIXI from 'pixi.js';
+import World from "../render/World";
 
 class RemoveAnimation extends Container {
   public readonly subtype: Subtype;
@@ -14,28 +13,28 @@ class RemoveAnimation extends Container {
   private r: number;
   private spriteBuffer: Array<Sprite> = [];
 
-  constructor(location: Location, subtype: Subtype, tint: number) {
+  constructor(location: Location, subtype: Subtype, private world: World, tint: number) {
     super();
     this.type = 'REMOVE_ANIMATION';
 
     const { x, y, r } = location;
-    const { cellRemoveAnimation } = GameSettings.all.settings.game.effects;
+    const { cellRemoveAnimation } = world.settings.all.settings.game.effects;
 
     switch (cellRemoveAnimation) {
       case 'Default':
-        this.spriteBuffer.push(new Sprite(TextureGenerator.removeEffect));
+        this.spriteBuffer.push(new Sprite(this.world.textureGenerator.removeEffect));
         break;
 
       case '2CL':
-        this.spriteBuffer.push(new Sprite(TextureGenerator.removeAnimationHSLO3D));
+        this.spriteBuffer.push(new Sprite(this.world.textureGenerator.removeAnimationHSLO3D));
         break;
 
       case 'Acimazis':
-        TextureGenerator.removeAnimationsAcim.forEach((texture) => this.spriteBuffer.push(new Sprite(texture)));
+        this.world.textureGenerator.removeAnimationsAcim.forEach((texture) => this.spriteBuffer.push(new Sprite(texture)));
         break;
 
       case 'Yue':
-        TextureGenerator.removeAnimationYue.forEach((texture) => this.spriteBuffer.push(new Sprite(texture)));
+        this.world.textureGenerator.removeAnimationYue.forEach((texture) => this.spriteBuffer.push(new Sprite(texture)));
         break;
     }
 

@@ -1,6 +1,4 @@
 import { Container, filters, Graphics, Sprite, WRAP_MODES } from "pixi.js";
-import GameSettings from "../../Settings/Settings";
-import TextureGenerator from "../../Textures/TexturesGenerator";
 import * as PIXI from 'pixi.js';
 import ViewportVisualizer from "./ViewportVisualizer";
 import View from "../../View";
@@ -40,7 +38,7 @@ export default class Background extends Container implements IMapObject {
   }
 
   public async updateTexture(): Promise<any> {
-    const texture = await TextureGenerator.updateBackground();
+    const texture = await this.map.world.textureGenerator.updateBackground();
     /* this.sprite.cacheAsBitmap = false; */
     this.sprite.texture = texture;
     /* this.sprite.cacheAsBitmap = true; */
@@ -48,7 +46,7 @@ export default class Background extends Container implements IMapObject {
 
   public updateTint() {
     /* this.sprite.cacheAsBitmap = false; */
-    this.sprite.tint = getColor(GameSettings.all.settings.theming.map.backgroundTint);
+    this.sprite.tint = getColor(this.map.world.settings.all.settings.theming.map.backgroundTint);
     /* this.sprite.cacheAsBitmap = true; */
   }
 
@@ -76,7 +74,7 @@ export default class Background extends Container implements IMapObject {
       this.sprite.destroy();
     }
 
-    this.sprite = new Sprite(TextureGenerator.mapBackgroundImage);
+    this.sprite = new Sprite(this.map.world.textureGenerator.mapBackgroundImage);
     this.sprite.zIndex = 99;
     this.sprite.width = this.map.size.width + 800;
     this.sprite.height = this.map.size.height + 800;
@@ -85,7 +83,7 @@ export default class Background extends Container implements IMapObject {
     this.spriteContainer.addChild(this.sprite);
 
     if (!this.displacementSprite) {
-      this.displacementSprite = new Sprite(TextureGenerator.backgroundDisplacement);
+      this.displacementSprite = new Sprite(this.map.world.textureGenerator.backgroundDisplacement);
       this.displacementSprite.texture.baseTexture.wrapMode = WRAP_MODES.REPEAT;
       this.displacementSprite.width = this.map.size.width;
       this.displacementSprite.height = this.map.size.height;
@@ -101,7 +99,7 @@ export default class Background extends Container implements IMapObject {
   }
 
   private animateDisplacement(): void {
-    const { backgroundImageLiveEffectStrength } = GameSettings.all.settings.theming.map;
+    const { backgroundImageLiveEffectStrength } = this.map.world.settings.all.settings.theming.map;
 
     const liveEffectEnabled = backgroundImageLiveEffectStrength !== 'Disabled';
     const strength = Number(backgroundImageLiveEffectStrength); 
@@ -141,8 +139,8 @@ export default class Background extends Container implements IMapObject {
   public renderTick(): void {
     this.viewportVisualizer.renderTick();
 
-    this.sprite.visible = GameSettings.all.settings.theming.map.backgroundImage;
-    this.displacementSprite.visible = GameSettings.all.settings.theming.map.backgroundImage;
+    this.sprite.visible = this.map.world.settings.all.settings.theming.map.backgroundImage;
+    this.displacementSprite.visible = this.map.world.settings.all.settings.theming.map.backgroundImage;
 
     this.animateDisplacement();
   }

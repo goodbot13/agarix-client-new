@@ -3,8 +3,8 @@ import { Location, RGB } from "../objects/types";
 import Settings from "../Settings/Settings";
 import { IMapOffsets } from "../tabs/Socket/Socket";
 
-export const transformMinimapLocation = (location: Location, mapOffsets: IMapOffsets, shift?: boolean): Location => {
-  const { size } = Settings.all.settings.theming.minimap;
+export const transformMinimapLocation = (location: Location, mapOffsets: IMapOffsets, settings: Settings, shift?: boolean): Location => {
+  const { size } = settings.all.settings.theming.minimap;
 
   const offsetX = !shift ? mapOffsets.minX : -mapOffsets.width / 2;
   const offsetY = !shift ? mapOffsets.minY : -mapOffsets.height / 2;

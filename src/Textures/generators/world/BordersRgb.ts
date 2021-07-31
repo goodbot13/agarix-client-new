@@ -1,9 +1,9 @@
-import GameSettings from '../../../Settings/Settings';
 import { MIPMAP_MODES, SCALE_MODES, Texture } from 'pixi.js';
 import { rgbToStringHex, roundRect } from '../../../utils/helpers';
+import Settings from '../../../Settings/Settings';
 
-const generateRgbBorderLine = () => {
-  const { borderRoundness, borderColor, borderWidth } = GameSettings.all.settings.theming.map;
+const generateRgbBorderLine = (settings: Settings) => {
+  const { borderRoundness, borderColor, borderWidth } = settings.all.settings.theming.map;
 
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');

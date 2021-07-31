@@ -1,12 +1,12 @@
 import Subview from "./Subview";
 import { IViewport } from "../tabs/Socket/Socket";
-import GameSettings from "../Settings/Settings";
 import SocketCells from "../render/SocketCells";
 import PlayerCells from "../render/PlayerCells";
 import PlayerState from "../states/PlayerState";
 import WorldState from "../states/WorldState";
 import Ogar from "../Ogar";
 import * as PIXI from 'pixi.js';
+import Settings from "../Settings/Settings";
 
 class View {
   public mouse: View.IWindowMouse = { x: 0,  y: 0, zoomValue: 0.0375 };
@@ -18,7 +18,7 @@ class View {
   private scrollAvailable: boolean = false;
   private globalWindowBounds: View.IGlobaWindowBounds = { width: 0, height: 0, scale: 0 }
 
-  constructor(data: View.ITabs, private canvas: HTMLCanvasElement) {
+  constructor(data: View.ITabs, private canvas: HTMLCanvasElement, private settings: Settings, private ogar: Ogar) {
     this.firstTab = new Subview(data.socketCells.firstTab.data, data.playerCells.firstTab);
     this.secondTab = new Subview(data.socketCells.secondTab.data, data.playerCells.secondTab);
     this.topOneTab = new Subview(data.socketCells.topOneTab.data);
@@ -33,7 +33,7 @@ class View {
         return;
       }
 
-      this.mouse.zoomValue *= Math.pow((0.685 + (GameSettings.all.settings.game.gameplay.zoomSpeed / 100)), (e.deltaY / 100 || e.detail || 0))
+      this.mouse.zoomValue *= Math.pow((0.685 + (this.settings.all.settings.game.gameplay.zoomSpeed / 100)), (e.deltaY / 100 || e.detail || 0))
 
       if (this.mouse.zoomValue <= 0.0228) {
         this.mouse.zoomValue = 0.02281;
@@ -65,11 +65,11 @@ class View {
   }
 
   private calcCam(valueX: number, valueY: number, isPlaying?: boolean): void {
-    if (isPlaying && GameSettings.all.settings.game.gameplay.cameraStyle === 'Default') {
+    if (isPlaying && this.settings.all.settings.game.gameplay.cameraStyle === 'Default') {
       this.camera.x = (this.camera.x + valueX) / 2;
       this.camera.y = (this.camera.y + valueY) / 2;
     } else {
-      const speed = (130 - GameSettings.all.settings.game.gameplay.cameraSpeed * 6) * PIXI.Ticker.shared.deltaTime;
+      const speed = (130 - this.settings.all.settings.game.gameplay.cameraSpeed * 6) * PIXI.Ticker.shared.deltaTime;
 
       this.camera.x = ((speed - 1) * this.camera.x + valueX) / speed;
       this.camera.y = ((speed - 1) * this.camera.y + valueY) / speed;
@@ -96,7 +96,7 @@ class View {
   }
 
   private updateOgar() {
-    if (!Ogar.connected) {
+    if (!this.ogar.connected) {
       return;
     }
 
@@ -106,13 +106,13 @@ class View {
     const firstTabOffsets = this.firstTab.getShiftedMapOffsets();
     const secondTabOffsets = this.secondTab.getShiftedMapOffsets();
 
-    Ogar.firstTab.updatePosition(
+    this.ogar.firstTab.updatePosition(
       firstTabViewport.x - (firstTabOffsets.minX + 7071),
       firstTabViewport.y - (firstTabOffsets.minY + 7071),
       this.firstTab.playerBox.mass
     );
     
-    Ogar.secondTab.updatePosition(
+    this.ogar.secondTab.updatePosition(
       secondTabViewport.x - (secondTabOffsets.minX + 7071),
       secondTabViewport.y - (secondTabOffsets.minY + 7071),
       this.secondTab.playerBox.mass
@@ -173,7 +173,7 @@ class View {
         if (PlayerState.first.playing || PlayerState.second.playing) {
 
           // user is playing, check if multibox
-          if (GameSettings.all.settings.game.multibox.enabled) {
+          if (this.settings.all.settings.game.multibox.enabled) {
 
             // calc centered cam between the tabs and correct cursor position
             if (PlayerState.first.playing && PlayerState.second.playing) {

@@ -1,7 +1,5 @@
 import { Container, filters, Sprite } from "pixi.js";
-import TextureGenerator from "../../Textures/TexturesGenerator";
 import * as PIXI from 'pixi.js';
-import GameSettings from "../../Settings/Settings";
 import IMapObject from "./interfaces";
 import { getColor } from "../../utils/helpers";
 import Map from "./Map";
@@ -25,7 +23,7 @@ export default class GlobalBackground extends Container implements IMapObject {
   }
 
   public async updateTexture(): Promise<any> {
-    const texture = await TextureGenerator.updateGlobalBackground();
+    const texture = await this.map.world.textureGenerator.updateGlobalBackground();
     this.sprite.cacheAsBitmap = false;
     this.sprite.texture = texture;
     this.sprite.cacheAsBitmap = true;
@@ -33,12 +31,12 @@ export default class GlobalBackground extends Container implements IMapObject {
 
   public updateTint(): void {
     this.sprite.cacheAsBitmap = false;
-    this.sprite.tint = getColor(GameSettings.all.settings.theming.map.globalBackgroundImageTint);
+    this.sprite.tint = getColor(this.map.world.settings.all.settings.theming.map.globalBackgroundImageTint);
     this.sprite.cacheAsBitmap = true;
   }
   
   public create(): void {
-    const backgroundData = TextureGenerator.secondBackgroundImage.baseTexture;
+    const backgroundData = this.map.world.textureGenerator.secondBackgroundImage.baseTexture;
     const ratio = backgroundData.width / backgroundData.height;
     let width = ratio === 1 ? 50000 : 40000;
     let height = width / ratio + (ratio === 1 ? 0 : 5000);
@@ -60,7 +58,7 @@ export default class GlobalBackground extends Container implements IMapObject {
       this.displacementSprite = null;
     }
 
-    this.sprite = new Sprite(TextureGenerator.secondBackgroundImage);
+    this.sprite = new Sprite(this.map.world.textureGenerator.secondBackgroundImage);
     this.sprite.width = width;
     this.sprite.height = height;
     // this.sprite.position.set(-width / 2 + this.map.size.width, -this.map.size.height / 2 + 7171);
@@ -72,7 +70,7 @@ export default class GlobalBackground extends Container implements IMapObject {
 
 
     if (!this.displacementSprite) {
-      this.displacementSprite = new Sprite(TextureGenerator.globalDisplacement);
+      this.displacementSprite = new Sprite(this.map.world.textureGenerator.globalDisplacement);
       this.displacementSprite.width = width;
       this.displacementSprite.height = height;  
       this.displacementSprite.position.set(0, 0);
@@ -89,7 +87,7 @@ export default class GlobalBackground extends Container implements IMapObject {
   }
   
   private animateDispacement(): void {
-    const { globalBackgroundImageLiveEffectStrength } = GameSettings.all.settings.theming.map;
+    const { globalBackgroundImageLiveEffectStrength } = this.map.world.settings.all.settings.theming.map;
 
     const liveEffectEnabled = globalBackgroundImageLiveEffectStrength !== 'Disabled'; 
     // temporaty
@@ -125,7 +123,7 @@ export default class GlobalBackground extends Container implements IMapObject {
   }
 
   public renderTick(): void {
-    const { backgroundImage, globalBackgroundImage } = GameSettings.all.settings.theming.map;
+    const { backgroundImage, globalBackgroundImage } = this.map.world.settings.all.settings.theming.map;
 
     this.visible = backgroundImage && globalBackgroundImage;
     

@@ -4,21 +4,16 @@ import Stage from '../Stage/Stage';
 import Food from "../objects/Food";
 import Virus from "../objects/Virus/Virus";
 import Cell from "../objects/Cell";
-import TextureGenerator from '../Textures/TexturesGenerator'
 import SettingsState from "../states/SettingsState";
 
-export default new class Settings {
-  public all: IState = Storage.init();
-  public stage: Stage;
+export default class Settings {
+  public all: IState;
 
-  
-
-  init(stage: Stage) {
-    this.stage = stage;
+  constructor(public stage: Stage) {
+    const storage = new Storage(); 
+    this.all = storage.init();
 
     this.transformProfilesState();
-
-    return this;
   }
 
   private transformProfilesState(): void {
@@ -40,25 +35,25 @@ export default new class Settings {
   updateThemingCells(type: TThemingCells): void {
     switch (type) {
       case 'Shadow':
-        TextureGenerator.generateCellShadow();
+        this.stage.textureGenerator.generateCellShadow();
         
         this.stage.world.cells.children.filter((cell: any) => cell.type === 'CELL').forEach((cell: Cell) => {
           cell.changeShadowTexture();
         });
 
+        this.stage.world.cachedObjects.getPool('CELL').forEach((cell: Cell) => cell.changeShadowTexture());
+
         this.stage.world.minimap.changeCellShadowTexture();
         break;
 
       case 'MyShadow':
-        TextureGenerator.generateMyCellShadow();
+        this.stage.textureGenerator.generateMyCellShadow();
 
-        this.stage.world.playerCells.firstTab.forEach((cell) => {
+        this.stage.world.cells.children.filter((cell: any) => cell.type === 'CELL').forEach((cell: Cell) => {
           cell.changeShadowTexture();
         });
 
-        this.stage.world.playerCells.secondTab.forEach((cell) => {
-          cell.changeShadowTexture();
-        });
+        this.stage.world.cachedObjects.getPool('CELL').forEach((cell: Cell) => cell.changeShadowTexture());
 
         this.stage.world.minimap.changeCellShadowTexture();
         break;
@@ -66,11 +61,15 @@ export default new class Settings {
   }
 
   updateThemingFood(): void {
-    TextureGenerator.generateFood();
+    this.stage.textureGenerator.generateFood();
 
-    const foodTexture = TextureGenerator.food;
+    const foodTexture = this.stage.textureGenerator.food;
 
     this.stage.world.food.children.forEach((food: Food) => {
+      food.texture = foodTexture;
+    });
+
+    this.stage.world.cachedObjects.getPool('FOOD').forEach((food: Food) => {
       food.texture = foodTexture;
     });
   }
@@ -123,7 +122,7 @@ export default new class Settings {
   updateThemingMultibox(type: TThemingMultibox): void {
     switch (type) {
       case 'LinedRing':
-        TextureGenerator.generateMultiboxLinedRing();
+        this.stage.textureGenerator.generateMultiboxLinedRing();
         break;
     }
   }
@@ -133,7 +132,7 @@ export default new class Settings {
   }
 
   updateThemingViruses(): void {
-    TextureGenerator.generateVirus();
+    this.stage.textureGenerator.generateVirus();
 
     this.stage.world.minimap.changeVirusTexture();
 

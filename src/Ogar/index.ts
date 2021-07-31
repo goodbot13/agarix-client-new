@@ -1,15 +1,15 @@
+import Master from "../Master";
+import Settings from "../Settings/Settings";
 import Socket from "./Socket";
 
-export default new class Ogar {
+export default class Ogar {
   public firstTab: Socket;
   public secondTab: Socket;
   public connected = false;
 
-  constructor() {
-    this.firstTab = new Socket(false);
-    this.secondTab = new Socket(true);
-
-    (window as any).Ogar = this;
+  constructor(public settings: Settings, public master: Master) {
+    this.firstTab = new Socket(false, settings, master);
+    this.secondTab = new Socket(true, settings, master);
   }
 
   public join(serverToken: string, partyToken: string = '') {

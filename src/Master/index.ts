@@ -3,14 +3,14 @@ import Regions from './Regions';
 import EnvConfig from './EnvConfig';
 import GameMode from './GameMode';
 import AgarSkinsList from "./Skins";
-import GameSettings from '../Settings/Settings';
+
 import FacebookLogin from "../tabs/Login/FacebookLogin";
 import GoogleLogin from "../tabs/Login/GoogleLogin";
 import UICommunicationService from '../communication/FrontAPI';
 import MasterCache from "./MasterCache";
-import Logger from "../utils/Logger";
+import Settings from "../Settings/Settings";
 
-export default new class Master {
+export default class Master {
   private readonly AGAR_CORE: string = "https://agar.io/agario.core.js";
   private readonly MC_CORE: string = "https://agar.io/mc/agario.js";
   private readonly cache: MasterCache;
@@ -27,15 +27,15 @@ export default new class Master {
   public skins: AgarSkinsList;
   public latestId: number = 0;
 
-  constructor() {
+  constructor(public settings: Settings) {
     this.envConfig = new EnvConfig();
     this.regions = new Regions();
     this.gameMode = new GameMode();
     this.skins = new AgarSkinsList();
     this.cache = new MasterCache()
 
-    this.gameMode.set(GameSettings.all.game.mode);
-    this.regions.setCurrent(GameSettings.all.game.currentServerIndex);
+    this.gameMode.set(settings.all.game.mode);
+    this.regions.setCurrent(settings.all.game.currentServerIndex);
 
     (window as any).Master = this;
   }

@@ -1,19 +1,18 @@
 import { Sprite, Container, BitmapText, Point } from "pixi.js";
-import TextureGenerator from "../../Textures/TexturesGenerator";
 import * as PIXI from 'pixi.js';
-import GameSettings from '../../Settings/Settings';
+import World from "../../render/World";
 
 export default class VirusShots extends Container {
   private shotsCircleSprite: Sprite;
   private text: BitmapText;
   private animatedRadius: number = 100;
 
-  constructor(private virusRadius: number) {
+  constructor(private virusRadius: number, private world: World) {
     super();
 
     this.animatedRadius = virusRadius;
 
-    this.shotsCircleSprite = new Sprite(TextureGenerator.virusShots);
+    this.shotsCircleSprite = new Sprite(this.world.textureGenerator.virusShots);
     this.shotsCircleSprite.anchor.set(0.5, 0.5);
     this.shotsCircleSprite.scale.set((100 - (200 - this.virusRadius)) / 50);
     this.addChild(this.shotsCircleSprite);
@@ -46,11 +45,11 @@ export default class VirusShots extends Container {
     this.shotsCircleSprite.scale.x += newScale;
     this.shotsCircleSprite.scale.y += newScale;
 
-    this.shotsCircleSprite.visible = GameSettings.all.settings.theming.viruses.massType === 'Fill circle';
+    this.shotsCircleSprite.visible = this.world.settings.all.settings.theming.viruses.massType === 'Fill circle';
   }
 
   private updateText(): void {
-    const { massType } = GameSettings.all.settings.theming.viruses;
+    const { massType } = this.world.settings.all.settings.theming.viruses;
 
     this.text.visible = true;
 
@@ -69,7 +68,7 @@ export default class VirusShots extends Container {
   }
 
   private getAnimationSpeed(): number {
-    return (GameSettings.all.settings.game.gameplay.animationSpeed / 1000) * PIXI.Ticker.shared.deltaTime;
+    return (this.world.settings.all.settings.game.gameplay.animationSpeed / 1000) * PIXI.Ticker.shared.deltaTime;
   }
 
   public update(virusRadius: number): void {

@@ -1,11 +1,9 @@
 import Socket, { ISocketData, TabType, IMapOffsets } from '../Socket/Socket';
-import GameSettings from '../../Settings/Settings';
 import World from '../../render/World';
 import UICommunicationService from '../../communication/FrontAPI';
 import FullmapController from './FullmapController';
 import Logger from '../../utils/Logger';
 import PlayerState from '../../states/PlayerState';
-import Ogar from '../../Ogar';
 import { ChatAuthor } from '../../communication/Chat';
 
 class Controller {
@@ -39,14 +37,14 @@ class Controller {
           reg = 'Private';
         }
   
-        if (!Ogar.connected) {
-          window.GameAPI.connectOgar().then(() => Ogar.join(reg, socketData.token));
+        if (!this.world.ogar.connected) {
+          window.GameAPI.connectOgar().then(() => this.world.ogar.join(reg, socketData.token));
         } else {
-          Ogar.join(reg, socketData.token);
+          this.world.ogar.join(reg, socketData.token);
         }
       }
 
-      const { spectatorMode } = GameSettings.all.settings.game.gameplay;
+      const { spectatorMode } = this.world.scene.settings.all.settings.game.gameplay;
 
       try {
         const mapOffsets = await this.connectFirstPlayerTab();
@@ -61,7 +59,7 @@ class Controller {
             break;
         }
 
-        if (GameSettings.all.settings.game.multibox.enabled) {
+        if (this.world.scene.settings.all.settings.game.multibox.enabled) {
           this.connectSecondPlayerTab();
         }
 
@@ -138,7 +136,7 @@ class Controller {
 
       this.topOneTabSocket = new Socket(this.socketData, 'TOP_ONE_TAB', this.world);
 
-      if (GameSettings.all.settings.game.gameplay.spectatorMode === 'Top one') {
+      if (this.world.scene.settings.all.settings.game.gameplay.spectatorMode === 'Top one') {
         UICommunicationService.setSpectatorTabStatus('CONNECTING');
       }
       
@@ -147,7 +145,7 @@ class Controller {
         this.topOneTabSocket.spectate();
         this.topOneViewEnabled = true;
 
-        if (GameSettings.all.settings.game.gameplay.spectatorMode === 'Top one') {
+        if (this.world.scene.settings.all.settings.game.gameplay.spectatorMode === 'Top one') {
           UICommunicationService.setSpectatorTabStatus('CONNECTED');
         }
 
@@ -155,7 +153,7 @@ class Controller {
       });
 
       this.topOneTabSocket.onDisconnect(() => {
-        if (GameSettings.all.settings.game.gameplay.spectatorMode === 'Top one') {
+        if (this.world.scene.settings.all.settings.game.gameplay.spectatorMode === 'Top one') {
           UICommunicationService.setSpectatorTabStatus('DISCONNECTED');
         }
       });
@@ -213,7 +211,7 @@ class Controller {
   }
 
   public spawnFirstTab(): Promise<boolean> {
-    this.firstTabSocket.emitter.handleSpawn(GameSettings.all.profiles.leftProfileNick);
+    this.firstTabSocket.emitter.handleSpawn(this.world.scene.settings.all.profiles.leftProfileNick);
 
     return new Promise((resolve, reject) => {
       this.firstTabSocket.onPlayerSpawn = resolve;
@@ -222,7 +220,7 @@ class Controller {
   }
 
   public spawnSecondTab(): Promise<boolean> {
-    this.secondTabSocket.emitter.handleSpawn(GameSettings.all.profiles.rightProfileNick);
+    this.secondTabSocket.emitter.handleSpawn(this.world.scene.settings.all.profiles.rightProfileNick);
 
     return new Promise((resolve, reject) => {
       this.secondTabSocket.onPlayerSpawn = resolve;

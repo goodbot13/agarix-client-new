@@ -3,7 +3,6 @@ import Reader from '../../utils/Reader'
 import { Location, RGB, CellType } from '../../objects/types';
 import Socket, { IMapOffsets, IViewport } from './Socket';
 import Logger from '../../utils/Logger';
-import GameSettings from '../../Settings/Settings';
 import GamePerformance from '../../GamePerformance';
 import PlayerState from '../../states/PlayerState';
 import UICommunicationService from '../../communication/FrontAPI';
@@ -104,9 +103,9 @@ export default class Receiver {
         isMe = true;
         
         if (this.socket.tabType === 'FIRST_TAB') {
-          nick = GameSettings.all.profiles.leftProfileNick;
+          nick = this.socket.world.scene.settings.all.profiles.leftProfileNick;
         } else if (this.socket.tabType === 'SECOND_TAB') {
-          nick = GameSettings.all.profiles.rightProfileNick;
+          nick = this.socket.world.scene.settings.all.profiles.rightProfileNick;
         }
       }
 

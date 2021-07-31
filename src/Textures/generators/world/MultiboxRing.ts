@@ -1,11 +1,11 @@
 import { SCALE_MODES, Texture } from "pixi.js";
-import GameSettings from "../../../Settings/Settings";
+import Settings from '../../../Settings/Settings';
 
-const generateMultiboxLinedRing = () => {
+const generateMultiboxLinedRing = (settings: Settings) => {
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
   const size = 512;
-  const lineWidth = GameSettings.all.settings.theming.multibox.linedRingSize;
+  const lineWidth = settings.all.settings.theming.multibox.linedRingSize;
 
   canvas.width = canvas.height = size;
 

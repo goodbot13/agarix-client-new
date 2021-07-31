@@ -1,9 +1,7 @@
-import GameSettings from "../../Settings/Settings";
 import UICommunicationService from "../../communication/FrontAPI";
 import Controller from "../Contollers/TabsController";
 import Emitter from "../Socket/Emitter";
 import PlayerState from "../../states/PlayerState";
-import Ogar from "../../Ogar";
 import SettingsState from "../../states/SettingsState";
 import { ChatAuthor } from "../../communication/Chat";
 import QuickRespawn from "./QuickRespawn";
@@ -138,7 +136,7 @@ class Hotkeys implements IGameAPIHotkeys {
   }
 
   public switchTabs(): void {
-    if (!GameSettings.all.settings.game.multibox.enabled) {
+    if (!this.controller.world.scene.settings.all.settings.game.multibox.enabled) {
       return;
     }
 
@@ -240,7 +238,7 @@ class Hotkeys implements IGameAPIHotkeys {
   }
 
   public sendCommand(text: string): void { 
-    Ogar.firstTab.sendChatCommander(text);
+    this.controller.world.ogar.firstTab.sendChatCommander(text);
   }
 }
 

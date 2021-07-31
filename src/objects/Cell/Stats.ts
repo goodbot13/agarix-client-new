@@ -1,9 +1,7 @@
-import { BitmapText, Sprite, Point, TextStyle, Texture, MIPMAP_MODES, SCALE_MODES } from "pixi.js";
+import { BitmapText, Sprite, Point } from "pixi.js";
 import Cell from ".";
-import GameSettings from "../../Settings/Settings";
 import WorldState from "../../states/WorldState";
 import * as PIXI from 'pixi.js';
-import TexturesGenerator from "../../Textures/TexturesGenerator";
 
 export default class CellStats {
   public nick: Sprite;
@@ -30,7 +28,7 @@ export default class CellStats {
   }
   
   private setMassAnchor(): void {
-    if (GameSettings.all.settings.game.cells.nicks && this.nick_text) {
+    if (this.cell.world.settings.all.settings.game.cells.nicks && this.nick_text) {
       if (this.currentAnchor.y !== -0.75) {
         this.mass.anchor.set(0.5, -0.75);
         this.currentAnchor = this.mass.anchor;
@@ -44,10 +42,10 @@ export default class CellStats {
   }
 
   public update(): void {
-    const { mass, myMass, nicks, myNick, autoHideMassAndNicks } = GameSettings.all.settings.game.cells;
+    const { mass, myMass, nicks, myNick, autoHideMassAndNicks } = this.cell.world.settings.all.settings.game.cells;
 
-    const mNicks = GameSettings.all.settings.game.minimap.nicks;
-    const mMass = GameSettings.all.settings.game.minimap.mass;
+    const mNicks = this.cell.world.settings.all.settings.game.minimap.nicks;
+    const mMass = this.cell.world.settings.all.settings.game.minimap.mass;
 
     if (this.cell.isMinimap && this.cell.isTeam) {
       this.nick.visible = this.nick.renderable = mNicks;
@@ -86,7 +84,7 @@ export default class CellStats {
   public updateNick(nick: string): void {
     this.nick_text = nick;
 
-    TexturesGenerator.cellNicksGenerator.createNick(nick, (texture) => {
+    this.cell.world.textureGenerator.cellNicksGenerator.createNick(nick, (texture) => {
       this.nick.texture = texture;
     });
   }
@@ -99,7 +97,7 @@ export default class CellStats {
   public updateMass(forced: boolean = false): void {
     const { deltaTime } = PIXI.Ticker.shared;
     const { ticks } = WorldState;
-    const { shortMass, massUpdateDelay } = GameSettings.all.settings.game.cells;
+    const { shortMass, massUpdateDelay } = this.cell.world.settings.all.settings.game.cells;
 
     if (massUpdateDelay > 1) {
       if (~~(ticks * deltaTime) % massUpdateDelay === 1) {
