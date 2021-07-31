@@ -4,6 +4,7 @@ import { TGameMode } from '../Master/GameMode';
 import WorldState from "../states/WorldState";
 import FacebookLogin from "../tabs/Login/FacebookLogin";
 import GoogleLogin from "../tabs/Login/GoogleLogin";
+import { wsToToken } from "../utils/helpers";
 
 export default class GameAPI {
 
@@ -48,16 +49,18 @@ export default class GameAPI {
       this.stage.ogar.secondTab.player.nick = this.stage.settings.all.profiles.rightProfileNick;
       this.stage.ogar.secondTab.player.skin = this.stage.settings.all.profiles.rightProfileSkinUrl;
     
-      if (WorldState.gameJoined) {
-        this.stage.ogar.firstTab.join(
-          this.stage.world.controller.socketData.https.match(/live-arena-([\w\d]+)\.agar\.io:\d+/)[1],
-          this.stage.world.controller.socketData.token
-        );
+      let token = '';
 
-        this.stage.ogar.secondTab.join(
-          this.stage.world.controller.socketData.https.match(/live-arena-([\w\d]+)\.agar\.io:\d+/)[1],
-          this.stage.world.controller.socketData.token
-        );
+      if (this.stage.world.master.gameMode.get() === ':private') {
+        token = wsToToken(this.stage.world.controller.socketData.address);
+      } else {
+        token = this.stage.world.controller.socketData.https.match(/live-arena-([\w\d]+)\.agar\.io:\d+/)[1];
+      }
+
+      if (WorldState.gameJoined) {
+        this.stage.ogar.firstTab.join(token);
+
+        this.stage.ogar.secondTab.join(token);
       }
       
       return true;
@@ -136,13 +139,19 @@ export default class GameAPI {
     const { spectatorMode } = this.stage.settings.all.settings.game.gameplay;
     const gameMode = this.stage.master.gameMode.get();
 
-    if (!this.stage.world.controller.topOneViewEnabled) {
-      this.stage.world.controller.connectTopOneTab().then(() => {
+    if (gameMode === ':party') {
+      if (!this.stage.world.controller.topOneViewEnabled) {
+        this.stage.world.controller.connectTopOneTab().then(() => {
+          this.stage.world.view.spectateTopOne(false);
+        });
+      } else {
         this.stage.world.view.spectateTopOne(false);
-      });
+      }
     } else {
-      this.stage.world.view.spectateTopOne(false);
+      this.stage.world.controller.firstTabSocket.emitter.sendSpectate();
+      this.stage.world.view.spectateTopOne(true);
     }
+
   }
 
   public spectateCenter(): void {

@@ -1,5 +1,5 @@
 import { ISocketData } from "../tabs/Socket/Socket";
-import Regions from './Regions';
+import Regions, { PrivateGameServersTypes } from './Regions';
 import EnvConfig from './EnvConfig';
 import GameMode from './GameMode';
 import AgarSkinsList from "./Skins";
@@ -29,15 +29,13 @@ export default class Master {
 
   constructor(public settings: Settings) {
     this.envConfig = new EnvConfig();
-    this.regions = new Regions();
     this.gameMode = new GameMode();
+    this.regions = new Regions(this.gameMode);
     this.skins = new AgarSkinsList();
     this.cache = new MasterCache()
 
     this.gameMode.set(settings.all.game.mode);
     this.regions.setCurrent(settings.all.game.currentServerIndex);
-
-    (window as any).Master = this;
   }
 
   private async send(url: string, payload: Uint8Array): Promise<any> {
@@ -178,17 +176,33 @@ export default class Master {
     }
   }
 
-  public async connectPrivate(config: any): Promise<ISocketData> {
+  private getPrivateServerWs(): string {
+    const wsList: { [key in PrivateGameServersTypes]: string } = {
+      'Arctida': 'wss://imsolo.pro:2109/',
+      'Dagestan': 'wss://imsolo.pro:2108/',
+      'Delta FFA': 'wss://delta-ffa.glitch.me',
+      'FeelForeverAlone': 'wss://imsolo.pro:2102',
+      'N.A. FFA': 'wss://delta-ffa-production.up.railway.app',
+      'N.A. Party': 'wss://delta-server-production.up.railway.app',
+      'Private Party': 'wss://tragedy-party.glitch.me',
+      'Rookery': 'wss://imsolo.pro:2104/',
+      'Zimbabwe': 'wss://delta-selffeed.glitch.me',
+    }
+
+    return wsList[this.regions.getCurrent()];
+  }
+
+  public async connectPrivate(token?: string, serverToken?: boolean): Promise<ISocketData> {
     this.isPrivate = true;
 
-    if (config.ws) {
-      return Promise.resolve({ 
-        address: config.ws,
-        https: config.ws,
-        protocolVersion: 22,
-        clientVersionInt: 31100
-      });
-    }
+    const ws = this.getPrivateServerWs();
+
+    return Promise.resolve({ 
+      address: ws,
+      https: ws,
+      protocolVersion: 22,
+      clientVersionInt: 31100
+    });
   }
 
   public async findServer(): Promise<any> {

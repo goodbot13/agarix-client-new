@@ -94,7 +94,13 @@ export default class Emitter {
 	}
 
 	public sendServerRegion(): void {
-		this.sendString(REGION_OPCODE, this.socket.master.regions.getCurrent().split('-')[0]);
+		const { master } = this.socket;
+
+		if (master.gameMode.get() === ':private') {
+
+		} else {
+			this.sendString(REGION_OPCODE, master.regions.getCurrent().split('-')[0]);
+		}
 	}
 
 	public sendServerGamemode(): void {

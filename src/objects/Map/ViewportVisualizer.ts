@@ -1,15 +1,15 @@
 import { Container } from "pixi.js";
-import View from "../../View";
 import ViewBox from "../ViewBox";
 import * as PIXI from 'pixi.js';
 import IMapObject from "./interfaces";
+import World from "../../render/World";
 
 export default class ViewportVisualizer extends Container implements IMapObject {
   public firstTab: ViewBox;
   public secondTab: ViewBox;
   public topOneTab: ViewBox;
 
-  constructor(private view: View) {
+  constructor(private world: World) {
     super();
     this.create();
 
@@ -45,20 +45,20 @@ export default class ViewportVisualizer extends Container implements IMapObject 
   }
 
   private create(): void {
-    this.firstTab = new ViewBox(); 
+    this.firstTab = new ViewBox(this.world); 
     this.firstTab.zIndex = 101;
 
-    this.secondTab = new ViewBox();
+    this.secondTab = new ViewBox(this.world);
     this.secondTab.zIndex = 102;
 
-    this.topOneTab = new ViewBox();
+    this.topOneTab = new ViewBox(this.world);
     this.topOneTab.zIndex = 103;
 
     this.addChild(this.firstTab, this.secondTab, this.topOneTab);
   }
 
   public renderTick(): void {
-    const { topOneTab, firstTab, secondTab } = this.view;
+    const { topOneTab, firstTab, secondTab } = this.world.view;
 
     this.firstTab.animate(
       firstTab.bounds.left - firstTab.mapOffsets.minX, 

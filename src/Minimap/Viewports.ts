@@ -17,11 +17,11 @@ export default class Viewports extends Container {
   }
 
   private create(): void {
-    this.topOneTab = new ViewBox();
+    this.topOneTab = new ViewBox(this.world);
     this.topOneTab.width = 0;
     this.topOneTab.height = 0;
 
-    this.firstTab = new ViewBox();
+    this.firstTab = new ViewBox(this.world);
     this.firstTab.width = 0;
     this.firstTab.height = 0;
 

@@ -167,13 +167,13 @@ class Stage {
       WorldState.gameJoined = false;
     }
 
-    const socketData = await this.master.connectPrivate({ ws: 'wss://imsolo.pro:2104/' });
+    const socketData = await this.master.connectPrivate(token, serverToken);
 
     return new Promise((resolve, reject) => {
       this.world.controller.init(socketData).then((mapOffsets) => {
         this.join(mapOffsets);
 
-        return resolve('connected!');
+        return resolve('%connected!');
       });
     });
   }
@@ -187,8 +187,11 @@ class Stage {
       WorldState.gameJoined = false;
     }
 
-    const socketData = await this.master.connect(token, serverToken);
+    if (this.master.gameMode.get() === ':private') {
+      return this.connectPrivate(token, serverToken);
+    }
 
+    const socketData = await this.master.connect(token, serverToken);
 
     return new Promise((
       resolve: (tokens: string) => void, 

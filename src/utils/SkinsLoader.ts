@@ -34,7 +34,7 @@ export default class SkinsLoader {
   private logger: Logger = new Logger('SkinsLoader');
 
   constructor(public world: World) {
-    (window as any).skinsLoader = this;
+    (window as any).SkinsLoader = this;
 
     setInterval(() => this.cleaner(), 60000);
   }
@@ -120,8 +120,18 @@ export default class SkinsLoader {
   }
 
   private checkUrlAndCache(url: string, onLoad: (skinTexture: SkinTexture | null) => void): boolean {
-    if (!url || this.failedToLoadUrls.has(url) || this.cache.has(url)) {
+    if (url === '') {
       onLoad(null);
+      return true;
+    }
+
+    if (this.failedToLoadUrls.has(url)) {
+      onLoad(null);
+      return true;
+    }
+
+    if (this.cache.has(url)) {
+      onLoad(this.cache.get(url));
       return true;
     }
 
@@ -205,7 +215,9 @@ export default class SkinsLoader {
       try {
         url = this.world.master.skins.get(skinName).url;
       } catch (e) {
-        console.log(skinName, this.world.master.skins);
+        if (url.includes('skin_')) {
+          url = url.split('_')[1];
+        }
       }
     }
 
@@ -214,5 +226,21 @@ export default class SkinsLoader {
     }
 
     this.startSkinGeneration(url, onLoad);
+  }
+
+  public clear(): void {
+    if (this.cache.size > 384) {
+      this.logger.warning(`Pool limit reached. Cleared ${this.cache.size} items`);
+
+      this.cache.forEach((skinTexture) => {
+        skinTexture.destroy();
+      });
+
+      this.cache.clear();
+      this.requestPool.clear();
+      this.failedToLoadUrls.clear();
+    } else {
+      this.logger.warning(`Pool size: ${this.cache.size}. In request: ${this.requestPool.size}`);
+    }
   }
 }

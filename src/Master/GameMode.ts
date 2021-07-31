@@ -23,4 +23,4 @@ export default class GameMode {
 }
 
 export type TOgarGameMode = 'FFA' | 'PTY' | 'EXP' | 'BTR' | 'TMS' | 'Private';
-export type TGameMode = ':party' | ':ffa' | ':battleroyale' | ':teams' | ':experimental';
+export type TGameMode = ':party' | ':ffa' | ':battleroyale' | ':teams' | ':experimental' | ':private';

@@ -56,10 +56,19 @@ export default class Cell extends Container implements IMainGameObject {
     this.cell.addChild(this.rings.innerRing, this.rings.outerRing);
     this.cell.addChild(this.stats.nick, this.stats.mass);
 
-    // this.interactive = true;
-    // this.on('mousedown', () => {
-    //   console.log(this);
-    // });
+    this.interactive = true;
+    this.on('mousedown', () => {
+      console.log(this);
+
+      const { skinsType } = this.world.scene.settings.all.settings.game.cells;
+
+      const teamAndCustomSkin = this.isTeam && !!this.customSkinTexture;
+      const playerAndCustomSkin = this.isPlayerCell && !!this.customSkinTexture;
+      const usesSkinByAgarName = this.usesSkinByAgarName && !!this.skinByNameTexture;
+      const allowCustomSkins = skinsType === 'Custom' || skinsType === 'All';
+
+      console.log(this.isTeam, this.customSkinTexture, this.isTeam && this.customSkinTexture, this.isTeam && !!this.customSkinTexture);
+    });
   }
 
   public reuse(subtype: Subtype, location: Location, color: RGB, nick: string, skin: string, world: World): void {
@@ -119,8 +128,8 @@ export default class Cell extends Container implements IMainGameObject {
 
     this.usesSkinByAgarName = this.world.scene.master.skins.skinsByNameHas(this.nick);
 
-    this.world.skinsLoader.getAgarSkinByPlayerNick(this.nick, (texture) => {
-      this.skinByNameTexture = texture;
+    this.world.skinsLoader.getAgarSkinByPlayerNick(this.nick, (skinTexture) => {
+      this.skinByNameTexture = skinTexture;
     });
 
     this.world.skinsLoader.getAgarSkinBySkinName(this.agarSkinName, (texture) => {
@@ -299,9 +308,9 @@ export default class Cell extends Container implements IMainGameObject {
         return;
       }
 
-      const teamAndCustomSkin = this.isTeam && this.customSkinTexture;
-      const playerAndCustomSkin = this.isPlayerCell && this.customSkinTexture;
-      const usesSkinByAgarName = this.usesSkinByAgarName && this.skinByNameTexture;
+      const teamAndCustomSkin = this.isTeam && !!this.customSkinTexture;
+      const playerAndCustomSkin = this.isPlayerCell && !!this.customSkinTexture;
+      const usesSkinByAgarName = this.usesSkinByAgarName && !!this.skinByNameTexture;
       const allowCustomSkins = skinsType === 'Custom' || skinsType === 'All';
 
       if ((teamAndCustomSkin || playerAndCustomSkin) && allowCustomSkins) {

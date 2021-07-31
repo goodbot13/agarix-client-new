@@ -13,13 +13,13 @@ export default class Background extends Container implements IMapObject {
   private gmask: Graphics;
   private viewportVisualizer: ViewportVisualizer;
 
-  constructor(view: View, private map: Map) {
+  constructor(private map: Map) {
     super();
 
     this.create();
     this.zIndex = 9;
 
-    this.viewportVisualizer = new ViewportVisualizer(view);
+    this.viewportVisualizer = new ViewportVisualizer(this.map.world);
     this.viewportVisualizer.zIndex = 100;
     this.spriteContainer.addChild(this.viewportVisualizer);
 

@@ -18,7 +18,7 @@ class GameMap extends Container {
     super();
 
     this.borders = new Borders(this);
-    this.background = new Background(world.view, this);
+    this.background = new Background(this);
     this.globalBackground = new GlobalBackground(this);
     
     this.addChild(this.globalBackground, this.background, this.borders);

@@ -5,6 +5,8 @@ import FullmapController from './FullmapController';
 import Logger from '../../utils/Logger';
 import PlayerState from '../../states/PlayerState';
 import { ChatAuthor } from '../../communication/Chat';
+import FrontAPI from '../../communication/FrontAPI';
+import { wsToToken } from '../../utils/helpers';
 
 class Controller {
   private topOneTabSocket: Socket;
@@ -28,13 +30,13 @@ class Controller {
 
       if (socketData) {
         this.socketData = socketData;
-  
+
         let reg = '';
 
-        try {
+        if (this.world.master.gameMode.get() === ':private') {
+          reg = wsToToken(socketData.address);
+        } else {
           reg = socketData.https.match(/live-arena-([\w\d]+)\.agar\.io:\d+/)[1];
-        } catch {
-          reg = 'Private';
         }
   
         if (!this.world.ogar.connected) {
@@ -42,7 +44,7 @@ class Controller {
         } else {
           this.world.ogar.join(reg, socketData.token);
         }
-      }
+      } 
 
       const { spectatorMode } = this.world.scene.settings.all.settings.game.gameplay;
 
@@ -101,6 +103,14 @@ class Controller {
       }
 
       this.disconnectSecondTab();
+
+      UICommunicationService.sendChatGameMessage('Second player tab disconnected.', ChatAuthor.Game);
+      UICommunicationService.setSecondTabStatus('DISCONNECTED');
+
+      if (this.world.master.gameMode.get() !== ':party') {
+        FrontAPI.sendChatGameMessage('Multibox is not available.', ChatAuthor.Game);
+        return reject();
+      }
       
       this.secondTabSocket = new Socket(this.socketData, 'SECOND_TAB', this.world);
 
@@ -133,6 +143,11 @@ class Controller {
       }
 
       this.disconnectTopOneTab();
+
+      if (this.world.master.gameMode.get() !== ':party') {
+        FrontAPI.sendChatGameMessage('Top one view is not available.', ChatAuthor.Spectator);
+        return reject();
+      }
 
       this.topOneTabSocket = new Socket(this.socketData, 'TOP_ONE_TAB', this.world);
 
@@ -220,6 +235,12 @@ class Controller {
   }
 
   public spawnSecondTab(): Promise<boolean> {
+    if (this.world.master.gameMode.get() !== ':party') {
+      FrontAPI.sendChatGameMessage('Mutibox is not available.', ChatAuthor.Game);
+      this.disconnectSecondTab();
+      return Promise.reject();
+    }
+
     this.secondTabSocket.emitter.handleSpawn(this.world.scene.settings.all.profiles.rightProfileNick);
 
     return new Promise((resolve, reject) => {
@@ -229,11 +250,15 @@ class Controller {
   }
 
   public enableFullMapView(): void {
-    if (this.firstTabSocket) {
-      this.disconnectFullMapView();
-      this.fullmapController.enable();
+    if (this.world.master.gameMode.get() === ':party') {
+      if (this.firstTabSocket) {
+        this.disconnectFullMapView();
+        this.fullmapController.enable();
+      } else {
+        this.logger.error('First player tab is not connected yet');
+      }
     } else {
-      this.logger.error('First player tab is not connected yet');
+      FrontAPI.sendChatGameMessage('Full map is not available.', ChatAuthor.Spectator);
     }
   }
 }

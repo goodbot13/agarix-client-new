@@ -1,4 +1,5 @@
 import UICommunicationService from "../communication/FrontAPI";
+import GameMode from "./GameMode";
 
 export default class Regions {
   private selected: number = 0;
@@ -6,7 +7,7 @@ export default class Regions {
   private readonly privateServersList: Array<IGameServer> = [];
   public updatingInterval: any = null;
 
-  constructor() {
+  constructor(private gameMode: GameMode) {
     const privateServersData: Array<PrivateGameServersTypes> = [
       'Arctida', 'Dagestan', 'Delta FFA', 'FeelForeverAlone', 'N.A. FFA', 'N.A. Party', 'Private Party', 'Rookery', 'Zimbabwe'
     ];
@@ -34,7 +35,7 @@ export default class Regions {
     }
   }
 
-  private unname(name: MixedGamesServers): GameServerOriginalLocationTypes {
+  private unname(name: MixedGamesServers): GameServerOriginalLocationTypes | PrivateGameServersTypes {
     switch (name) {
       case "Europe": return "EU-London";
       case "North America": return "US-Atlanta";
@@ -45,7 +46,7 @@ export default class Regions {
       case "China": return "CN-China";
       case "Oceania": return "SG-Singapore";
 
-      default: return 'EU-London';
+      default: return name;
     }
   }
 
@@ -72,8 +73,12 @@ export default class Regions {
     this.selected = index;
   }
 
-  public getCurrent(): GameServerOriginalLocationTypes {
-    return this.unname(this.data[this.selected].location);
+  public getCurrent(): GameServerOriginalLocationTypes | PrivateGameServersTypes {
+    if (this.gameMode.get() === ':private') {
+      return this.unname(this.privateServersList[this.selected].location);
+    } else {
+      return this.unname(this.data[this.selected].location);
+    }
   }
 
   public setUpdatingInterval(callback: () => void, time: number): void {

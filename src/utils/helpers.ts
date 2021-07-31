@@ -102,3 +102,71 @@ export const murmur2 = (e, t) => {
 export const createView = (value) => {
   return new DataView(new ArrayBuffer(value));
 }
+
+export const tokenToWs = (token) => {
+  if (!token) {
+      return null;
+  }
+  let ws = null;
+  if (!ws && /^[a-z0-9]{5,}\.tech$/ .test(token)) {
+      ws = `wss://live-arena-` + token + `.agar.io:80`;
+  }
+  if (/^[a-zA-Z0-9=+/]{12,}$/ .test(token)) {
+      const atobToken = atob(token);
+      //ccse
+      if(!ws && atobToken.search(/agar\.io/)==-1){
+          ws = 'wss://'+atobToken
+          return ws
+      }
+      if (/[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}:[0-9]{1,4}/ .test(atobToken)) {
+          ws = `wss://ip-${atobToken.replace(/./g, '-').replace(':', `.tech.agar.io:`)}`;
+      }
+  }
+  if (!ws && /^[a-z0-9]{5,}$/ .test(token)) {
+      ws = `wss://live-arena-` + token + `.agar.io:443`;
+  }
+  return ws;
+}
+
+export const wsToToken = (_ws) => {
+  let serverToken = ''
+  let serverIP = ''
+  let matchOld = _ws.match(/ip-\d+/);
+  const matchNew = _ws.match(/live-arena-([\w\d]+)/);
+  var matchNew2 = _ws.match(/live-arena-(.+\.tech)/);
+  let text = null;
+  if (matchOld) {
+      const replace = _ws.replace(`.tech.agar.io`, '').replace(/-/g, '.');
+      matchOld = replace.match(/[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}:[0-9]{1,4}/);
+      if (matchOld) {
+          serverIP = matchOld[0];
+          text = btoa(serverIP);
+      }
+  }
+  if (matchNew2 && matchNew2[1]) { //wss://live-arena-19bre41.tech.agar.io:80
+      const replace = matchNew2[1]
+      text = replace;
+  }
+  //ccse
+  if(_ws.search(/wss?:\/\//)>-1 && _ws.search(/agar\.io/)==-1){
+      text = _ws.match(/wss?:\/\/(.+)/)[1]
+      serverIP = text
+      text = btoa(text)
+  }
+  if (!text && matchNew) {
+      text = matchNew[1];
+  }
+  if (text) {
+      if (serverToken !== text) {
+          serverToken = text;
+      }
+      /*this.server.partyToken = '';
+      const matchPartyId = _ws.match(/party_id=([A-Z0-9]{6})/);
+      if (matchPartyId) {
+          this.server.partyToken = matchPartyId[1];
+          master.setURL('/#' + window.encodeURIComponent(this.server.partyToken))
+      }*/
+      return text
+  }
+  return 'EWTT'+Math.random()
+}
