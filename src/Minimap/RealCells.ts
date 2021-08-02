@@ -2,7 +2,6 @@ import { Container } from "pixi.js";
 import Cell from "../objects/Cell/index";
 import { CellType, Location, RemoveType, RGB, Subtype } from "../objects/types";
 import Virus from "../objects/Virus/Virus";
-import { getAnimationSpeed, getFadeSpeed, getSoakSpeed } from "../render/Renderer/AnimationDataProvider";
 import World from "../render/World";
 import { transformMinimapLocation } from "../utils/helpers";
 
@@ -22,9 +21,9 @@ export default class RealPlayersCells extends Container {
   private renderCells(): void {
     this.lastRenderTime = Date.now();
     
-    const animationSpeed = getAnimationSpeed();
-    const fadeSpeed = getFadeSpeed();
-    const soakSpeed = getSoakSpeed();
+    const animationSpeed = this.world.animationSettingsProvider.getAnimationSpeed();
+    const fadeSpeed = this.world.animationSettingsProvider.getFadeSpeed();
+    const soakSpeed = this.world.animationSettingsProvider.getSoakSpeed();
     
     for (let i = 0; i < this.children.length; i++) {
       const obj = this.children[i] as Cell | Virus;

@@ -223,11 +223,11 @@ export default class Receiver {
     while ((id = this.reader.getUint32()) !== 0) { 
       let cellSkin: string;
       let name: string;
-      let isVirus: number;
+      let isVirus: boolean;
       let red: number;
       let green: number;
       let blue: number;
-      let isFood: number;
+      let isFood: boolean;
       let accountId: number;
       let isEjected: boolean;
 
@@ -238,7 +238,9 @@ export default class Receiver {
       let cellFlags = this.reader.getUint8();
       let cellFlags2 = cellFlags & 128 ? this.reader.getUint8() : 0;
 
-      isVirus = cellFlags & 1;
+      if (cellFlags & 1) {
+        isVirus = true;
+      }
 
       if (cellFlags & 2) {
         red = this.reader.getUint8();
@@ -264,7 +266,9 @@ export default class Receiver {
         isEjected = true;
       }
 
-      isFood = cellFlags2 & 1;
+      if (cellFlags2 & 1) {
+        isFood = true;
+      }
 
       if (cellFlags2 & 4) {
         accountId = this.reader.getUint32();
@@ -275,16 +279,16 @@ export default class Receiver {
       x += this.socket.shiftOffsets.x * this.socket.offsetsPositionMultiplier.x;
       y += this.socket.shiftOffsets.y * this.socket.offsetsPositionMultiplier.y;
 
-      const type: CellType = isFood ? 'FOOD' : isEjected ? 'EJECTED' : isVirus ? 'VIRUS' : 'CELL';
+      let type: CellType = isFood ? 'FOOD' : isEjected ? 'EJECTED' : isVirus ? 'VIRUS' : 'CELL';
       const location: Location = { x, y, r };
       const color: RGB = { red, green, blue };
 
       if (type === 'CELL') {
-        cellUpdate = true;
-      }
+        if (name === undefined) {
+          name = '';
+        }
 
-      if (name === undefined) {
-        name = '';
+        cellUpdate = true;
       }
 
       this.socket.world.add(id, location, color, name, type, this.socket.tabType, cellSkin);

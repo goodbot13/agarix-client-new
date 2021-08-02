@@ -12,7 +12,6 @@ import UICommunicationService from "../communication/FrontAPI";
 import WorldState from "../states/WorldState";
 import PlayerState from "../states/PlayerState";
 import Ejected from '../objects/Ejected';
-import { getAnimationSpeed, getFadeSpeed, getFadeSpeedForEjected, getSoakSpeed, getSoakSpeedForEjected } from './Renderer/AnimationDataProvider';
 
 export default class WorldLoop {
   private cellsRenderer: CellsRenderer;
@@ -52,9 +51,9 @@ export default class WorldLoop {
   }
 
   private renderEjected(): void {
-    const animationSpeed = getAnimationSpeed();
-    const fadeSpeed = getFadeSpeedForEjected(this.world.ejected.children.length);
-    const soakSpeed = getSoakSpeedForEjected(this.world.ejected.children.length);
+    const animationSpeed = this.world.animationSettingsProvider.getAnimationSpeed();
+    const fadeSpeed = this.world.animationSettingsProvider.getFadeSpeedForEjected();
+    const soakSpeed = this.world.animationSettingsProvider.getSoakSpeedForEjected();
 
     for (let i = 0; i < this.world.ejected.children.length; i++) {
       const ejected = this.world.ejected.children[i] as Ejected;
@@ -75,9 +74,9 @@ export default class WorldLoop {
     // check for isTeam every 1 second. isAlive may be changed only every 2 seconds
     const canCheckForTeam = WorldState.ticks % 60 * PIXI.Ticker.shared.deltaTime === 0;
 
-    const animationSpeed = getAnimationSpeed();
-    const fadeSpeed = getFadeSpeed();
-    const soakSpeed = getSoakSpeed();
+    const animationSpeed = this.world.animationSettingsProvider.getAnimationSpeed();
+    const fadeSpeed = this.world.animationSettingsProvider.getFadeSpeed();
+    const soakSpeed = this.world.animationSettingsProvider.getSoakSpeed();
 
     for (let i = 0; i < this.world.cells.children.length; i++) {
       const object = this.world.cells.children[i] as Cell | Virus | RemoveAnimation;

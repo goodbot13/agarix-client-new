@@ -1,6 +1,5 @@
 import { Container, utils } from "pixi.js";
 import Cell from '../objects/Cell/index';
-import { getAnimationSpeed, getFadeSpeed, getSoakSpeed } from "../render/Renderer/AnimationDataProvider";
 import World from "../render/World";
 import PlayerState from "../states/PlayerState";
 import { transformMinimapLocation } from "../utils/helpers";
@@ -32,9 +31,9 @@ export default class TeamPlayers extends Container {
   public renderTick(): void {
     const { playerSize } = this.world.settings.all.settings.theming.minimap;
 
-    const animationSpeed = getAnimationSpeed();
-    const fadeSpeed = getFadeSpeed();
-    const soakSpeed = getSoakSpeed();
+    const animationSpeed = this.world.animationSettingsProvider.getAnimationSpeed();
+    const fadeSpeed = this.world.animationSettingsProvider.getFadeSpeed();
+    const soakSpeed = this.world.animationSettingsProvider.getSoakSpeed();
 
     this.world.ogar.firstTab.team.forEach((player) => {
       if (this.buffer.has(player.id)) {

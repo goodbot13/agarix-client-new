@@ -405,6 +405,11 @@ export default class Cell extends Container implements IMainGameObject {
       return;
     }
 
+    if (this.eatenBy.x === 0 && this.eatenBy.y === 0) {
+      this.isDestroyed = true;
+      return;
+    }
+
     if (soakSpeed !== 0) {
       const apf = this.isMinimap ? (animationSpeed / 5) : soakSpeed;
 
@@ -420,12 +425,12 @@ export default class Cell extends Container implements IMainGameObject {
 
           newSize /= 1.5;
 
-          if (this.calcDistBetweenEatenAndCurrent() < this.distBeforeRemove / 1.33) {
+          // if (this.calcDistBetweenEatenAndCurrent() < this.distBeforeRemove / 1.33) {
             this.cell.width += newSize;
             this.cell.height += newSize;
             this.shadow.sprite.width += newSize * this.shadow.TEXTURE_OFFSET;
             this.shadow.sprite.height += newSize * this.shadow.TEXTURE_OFFSET;
-          }
+          // }
         } else {
           this.cell.width += newSize;
           this.cell.height += newSize;

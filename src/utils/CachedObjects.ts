@@ -8,6 +8,7 @@ class FlexiblePool<T> {
   private gotFromCache: number = 0;
   private pushedToCache: number = 0;
   private actualLimit: number = 0;
+  private errored: number = 0;
   private observable: Array<T> = [];
   
   constructor(private readonly type: TPoolType, private limit: number, private world: World) { 
@@ -40,7 +41,17 @@ class FlexiblePool<T> {
   public get(): T {
     if (this.observable.length) {
       this.gotFromCache++;
-      return this.observable.pop();
+
+      const el = this.observable.pop();
+
+      if ((el as unknown as Cell).type === 'CELL') {
+        if ((el as unknown as Cell).cell._texture === null) {
+          this.errored++;
+          return this.get();
+        }
+      }
+
+      return el;
     }
 
     for (let i = 0; i < 50; i++) {

@@ -47,6 +47,7 @@ export default class CellsRenderer {
       cell.renderable = cell.visible = true;
       cell.culled = false;
     }
+
     // if cell subtype is TOP_ONE_TAB or SPEC_TABS and it is a player cell
     // its visibility should be immediately set to false 
     // (we dont have to wait until its opacity slowly goes down - it will make it look ugly)

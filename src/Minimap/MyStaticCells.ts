@@ -1,11 +1,9 @@
 import { Container } from "pixi.js";
 import Cell from "../objects/Cell/index";
-import { Location } from "../objects/types";
 import SpawnAnimation from "../objects/SpawnAnimation";
 import World from "../render/World";
 import { getColor, transformMinimapLocation } from "../utils/helpers";
 import PlayerState from "../states/PlayerState";
-import { getAnimationSpeed, getFadeSpeed, getSoakSpeed } from "../render/Renderer/AnimationDataProvider";
 
 export default class StaticPlayerCells extends Container {
   private firstTab: Cell;
@@ -119,9 +117,9 @@ export default class StaticPlayerCells extends Container {
   }
 
   private animateSpawnAnimation(): void {
-    const animationSpeed = getAnimationSpeed();
-    const fadeSpeed = getFadeSpeed();
-    const soakSpeed = getSoakSpeed();
+    const animationSpeed = this.world.animationSettingsProvider.getAnimationSpeed();
+    const fadeSpeed = this.world.animationSettingsProvider.getFadeSpeed();
+    const soakSpeed = this.world.animationSettingsProvider.getSoakSpeed();
 
     this.children.forEach((child: Cell) => {
       if (child.type === 'SPAWN_ANIMATION') {

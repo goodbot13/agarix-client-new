@@ -1,7 +1,6 @@
 import { Container, filters, Graphics, Sprite, WRAP_MODES } from "pixi.js";
 import * as PIXI from 'pixi.js';
 import ViewportVisualizer from "./ViewportVisualizer";
-import View from "../../View";
 import IMapObject from './interfaces';
 import { getColor } from "../../utils/helpers";
 import Map from "./Map";
@@ -18,6 +17,7 @@ export default class Background extends Container implements IMapObject {
 
     this.create();
     this.zIndex = 9;
+    this.sortableChildren = true;
 
     this.viewportVisualizer = new ViewportVisualizer(this.map.world);
     this.viewportVisualizer.zIndex = 100;

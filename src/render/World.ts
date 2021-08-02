@@ -24,6 +24,7 @@ import Settings from '../Settings/Settings';
 import TextureGenerator from '../Textures/TexturesGenerator';
 import Master from '../Master';
 import Ogar from '../Ogar';
+import AnimationSettingsProvider from './Renderer/AnimationSettingsProvider';
 
 export default class World {
   public cells: Container;
@@ -48,6 +49,7 @@ export default class World {
   public textureGenerator: TextureGenerator;
   public master: Master;
   public ogar: Ogar;
+  public animationSettingsProvider: AnimationSettingsProvider;
 
   private logger: Logger;
 
@@ -57,6 +59,7 @@ export default class World {
     this.ogar = scene.ogar;
     this.textureGenerator = scene.textureGenerator;
 
+    this.animationSettingsProvider = new AnimationSettingsProvider(this);
     this.skinsLoader = new SkinsLoader(this);
     this.cachedObjects = new CachedObjects(this);
 
@@ -130,6 +133,12 @@ export default class World {
     let cell: Cell;
 
     if (!this.indexedCells.has(id)) {
+
+      // idk black cell fix
+      if (color.red === undefined && color.green === undefined && color.blue === undefined) {
+        return;
+      }
+
       cell = this.cachedObjects.getCell();
       cell.reuse(subtype, location, color, name, skin, this);
 
