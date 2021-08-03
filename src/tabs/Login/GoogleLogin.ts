@@ -1,7 +1,6 @@
 import UICommunicationService from "../../communication/FrontAPI";
 import Controller from "../Contollers/TabsController";
 import Socket from "../Socket/Socket";
-import GameSettings from '../../Settings/Settings';
 import Logger from "../../utils/Logger";
 import PlayerState from "../../states/PlayerState";
 import { ChatAuthor } from "../../communication/Chat";
@@ -97,7 +96,7 @@ export default new class GoogleLogin {
   
   public logIn(socket: Socket): void {
     if (this.loggedIn && this.token && socket) {
-      const { leftProfileLoginType, rightProfileLoginType } = GameSettings.all.profiles;
+      const { leftProfileLoginType, rightProfileLoginType } = (window as any).GameSettings.all.profiles;
 
       if (PlayerState.first.loggedIn && socket.tabType === 'FIRST_TAB') {
         return;

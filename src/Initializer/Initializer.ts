@@ -2,8 +2,6 @@ import Stage from '../Stage/Stage';
 import TestCase from '../TestCase';
 import UICommunicationService from '../communication/FrontAPI';
 import Master from '../Master';
-import SocketInitializer from './SocketInitializer';
-import GameSettings from '../Settings/Settings';
 
 const stage = new Stage();
 
@@ -22,13 +20,10 @@ export const initializeGame = async () => {
   } else {
     UICommunicationService.setGameVersion();
 
-    await Master.init();
     await stage.init();
+    await stage.master.init();
     
-    SocketInitializer
-      .setStage(stage)
-      .try(1)
-      .start(GameSettings.all.game.token);
+    setTimeout(() => UICommunicationService.setGameLoaderShown(false), 0);
   }
 }
 

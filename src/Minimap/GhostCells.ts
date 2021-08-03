@@ -1,8 +1,6 @@
 import { Container } from "pixi.js";
 import Cell from '../objects/Cell/index';
-import { Location } from "../objects/types";
 import World from "../render/World";
-import GameSettings from "../Settings/Settings";
 import { IGhostCell } from "../tabs/Socket/Receiver";
 import { getColor, transformMinimapLocation } from "../utils/helpers";
 
@@ -19,13 +17,13 @@ export default class GhostCells extends Container {
   }
 
   private create(): void {
-    const { ghostCellsColor } = GameSettings.all.settings.theming.minimap;
+    const { ghostCellsColor } = this.world.settings.all.settings.theming.minimap;
 
     this.buffer = new Array(20)
       .fill({} as Cell)
       .map(() => {
-        const cell = new Cell();
-        cell.setIsMinimapCell();
+        const cell = new Cell(this.world);
+        cell.setIsMinimapCell(20);
         cell.cell.tint = getColor(ghostCellsColor);
         cell.shadow.sprite.visible = false;
         cell.shadow.sprite.renderable = false;
@@ -37,7 +35,7 @@ export default class GhostCells extends Container {
   }
 
   public update(cells: Array<IGhostCell>): void {
-    const { ghostCells, realPlayersCells } = GameSettings.all.settings.game.minimap;
+    const { ghostCells, realPlayersCells } = this.world.settings.all.settings.game.minimap;
 
     if (!ghostCells) {
       this.visible = false;
@@ -60,7 +58,8 @@ export default class GhostCells extends Container {
           y: cell.playerY, 
           r: cell.size * 2 
         },
-        this.world.view.firstTab.mapOffsets
+        this.world.view.firstTab.mapOffsets,
+        this.world.settings
       );
 
       this.buffer[i].visible = true;
@@ -84,7 +83,7 @@ export default class GhostCells extends Container {
 
   public updateColor(): void {
     this.buffer.forEach((cell) => {
-      cell.cell.tint = getColor(GameSettings.all.settings.theming.minimap.ghostCellsColor);
+      cell.cell.tint = getColor(this.world.settings.all.settings.theming.minimap.ghostCellsColor);
     });
   }
 

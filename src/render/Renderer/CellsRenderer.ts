@@ -2,7 +2,6 @@ import Cell from '../../objects/Cell/index';
 import RemoveAnimation from '../../objects/RemoveAnimation';
 import Virus from '../../objects/Virus/Virus';
 import World from '../World';
-import GameSettings from '../../Settings/Settings';
 import PlayerState from '../../states/PlayerState';
 import SettingsState from '../../states/SettingsState';
 import SpawnAnimation from '../../objects/SpawnAnimation';
@@ -48,12 +47,13 @@ export default class CellsRenderer {
       cell.renderable = cell.visible = true;
       cell.culled = false;
     }
+
     // if cell subtype is TOP_ONE_TAB or SPEC_TABS and it is a player cell
     // its visibility should be immediately set to false 
     // (we dont have to wait until its opacity slowly goes down - it will make it look ugly)
 
-    const fullMapViewEnabled = GameSettings.all.settings.game.gameplay.spectatorMode === 'Full map';
-    const topOneViewEnabled = GameSettings.all.settings.game.gameplay.spectatorMode === 'Top one';
+    const fullMapViewEnabled = this.world.settings.all.settings.game.gameplay.spectatorMode === 'Full map';
+    const topOneViewEnabled = this.world.settings.all.settings.game.gameplay.spectatorMode === 'Top one';
 
     const { subtype, type, x, y } = cell;
     const { firstTab, secondTab, topOneTab } = this.world.view;
@@ -112,7 +112,7 @@ export default class CellsRenderer {
       if (type === 'VIRUS') {
         if (fullMapViewEnabled) {
           visible = false;
-        } else if (GameSettings.all.settings.game.multibox.enabled) {
+        } else if (this.world.settings.all.settings.game.multibox.enabled) {
           if (PlayerState.first.playing && PlayerState.second.playing) {
             if (subtype === 'SECOND_TAB') {
               visible = !firstTab.hasInViewBounds(x, y);
@@ -151,7 +151,7 @@ export default class CellsRenderer {
       if (type === 'VIRUS' && subtype === 'SPEC_TABS') {
         visible = true;
       } else if (type === 'REMOVE_ANIMATION' && subtype === 'SPEC_TABS') {
-        visible = GameSettings.all.settings.game.effects.cellRemoveAnimationForHiddenSpectator;
+        visible = this.world.settings.all.settings.game.effects.cellRemoveAnimationForHiddenSpectator;
       } else if (subtype === 'TOP_ONE_TAB' || subtype === 'SPEC_TABS') {
         if (type === 'CELL') {
           visible = false;
@@ -160,7 +160,7 @@ export default class CellsRenderer {
         visible = true;
       }
 
-      if (!GameSettings.all.settings.game.multibox.enabled) {
+      if (!this.world.settings.all.settings.game.multibox.enabled) {
         if (subtype === 'FIRST_TAB') {
           visible = true;
         }

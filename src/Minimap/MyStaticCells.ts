@@ -1,12 +1,9 @@
 import { Container } from "pixi.js";
 import Cell from "../objects/Cell/index";
-import { Location } from "../objects/types";
 import SpawnAnimation from "../objects/SpawnAnimation";
 import World from "../render/World";
-import GameSettings from "../Settings/Settings";
 import { getColor, transformMinimapLocation } from "../utils/helpers";
 import PlayerState from "../states/PlayerState";
-import { getAnimationSpeed, getFadeSpeed, getSoakSpeed } from "../render/Renderer/AnimationDataProvider";
 
 export default class StaticPlayerCells extends Container {
   private firstTab: Cell;
@@ -22,23 +19,23 @@ export default class StaticPlayerCells extends Container {
   }
 
   private create(): void {
-    const { playerColor, size } = GameSettings.all.settings.theming.minimap;
+    const { playerColor, playerSize } = this.world.settings.all.settings.theming.minimap;
 
-    this.firstTab = new Cell();
-    this.firstTab.setIsMinimapCell(size);
+    this.firstTab = new Cell(this.world);
+    this.firstTab.setIsMinimapCell(playerSize);
     this.firstTab.cell.tint = getColor(playerColor);
     this.addChild(this.firstTab);
 
-    this.secondTab = new Cell(); 
-    this.secondTab.setIsMinimapCell(size);
+    this.secondTab = new Cell(this.world); 
+    this.secondTab.setIsMinimapCell(playerSize);
     this.secondTab.cell.tint = getColor(playerColor);
     this.addChild(this.secondTab);
   }
 
   private animateFirstTab(): void {
     const { firstTab } = this.world.view;
-    const { playerSize } = GameSettings.all.settings.theming.minimap;
-    const { playerPosition } = GameSettings.all.settings.game.minimap;
+    const { playerSize } = this.world.settings.all.settings.theming.minimap;
+    const { playerPosition } = this.world.settings.all.settings.game.minimap;
 
     if (PlayerState.first.playing && playerPosition) {
       const { x, y } = transformMinimapLocation({ 
@@ -46,11 +43,12 @@ export default class StaticPlayerCells extends Container {
           y: firstTab.viewport.y, 
           r: 0 
         },
-        this.world.view.firstTab.mapOffsets
+        this.world.view.firstTab.mapOffsets,
+        this.world.settings
       );
 
-      if (!this.firstTab.visible && GameSettings.all.settings.game.effects.spawnAnimation !== 'Disabled') {
-        const animation = new SpawnAnimation({ x, y, r: 0 }, this.firstTab.cell.tint);
+      if (!this.firstTab.visible && this.world.settings.all.settings.game.effects.spawnAnimation !== 'Disabled') {
+        const animation = new SpawnAnimation({ x, y, r: 0 }, this.world, this.firstTab.cell.tint);
         animation.setIsMinimap();
         this.addChild(animation);
       }
@@ -78,8 +76,8 @@ export default class StaticPlayerCells extends Container {
 
   private animateSecondTab(): void {
     const { secondTab } = this.world.view;
-    const { playerSize } = GameSettings.all.settings.theming.minimap;
-    const { playerPosition } = GameSettings.all.settings.game.minimap;
+    const { playerSize } = this.world.settings.all.settings.theming.minimap;
+    const { playerPosition } = this.world.settings.all.settings.game.minimap;
 
     if (PlayerState.second.playing && playerPosition) {
       const { x, y } = transformMinimapLocation({ 
@@ -87,11 +85,12 @@ export default class StaticPlayerCells extends Container {
           y: secondTab.viewport.y, 
           r: 0 
         },
-        this.world.view.secondTab.mapOffsets
+        this.world.view.secondTab.mapOffsets,
+        this.world.settings
       );
 
-      if (!this.secondTab.visible && GameSettings.all.settings.game.effects.spawnAnimation !== 'Disabled') {
-        const animation = new SpawnAnimation({ x, y, r: 0 }, this.secondTab.cell.tint);
+      if (!this.secondTab.visible && this.world.settings.all.settings.game.effects.spawnAnimation !== 'Disabled') {
+        const animation = new SpawnAnimation({ x, y, r: 0 }, this.world, this.secondTab.cell.tint);
         animation.setIsMinimap();
         this.addChild(animation);
       }
@@ -118,9 +117,9 @@ export default class StaticPlayerCells extends Container {
   }
 
   private animateSpawnAnimation(): void {
-    const animationSpeed = getAnimationSpeed();
-    const fadeSpeed = getFadeSpeed();
-    const soakSpeed = getSoakSpeed();
+    const animationSpeed = this.world.animationSettingsProvider.getAnimationSpeed();
+    const fadeSpeed = this.world.animationSettingsProvider.getFadeSpeed();
+    const soakSpeed = this.world.animationSettingsProvider.getSoakSpeed();
 
     this.children.forEach((child: Cell) => {
       if (child.type === 'SPAWN_ANIMATION') {
@@ -140,7 +139,7 @@ export default class StaticPlayerCells extends Container {
   }
 
   public updateColors(): void {
-    const { playerColor } = GameSettings.all.settings.theming.minimap;
+    const { playerColor } = this.world.settings.all.settings.theming.minimap;
 
     this.firstTab.cell.tint = getColor(playerColor);
     this.secondTab.cell.tint = getColor(playerColor);

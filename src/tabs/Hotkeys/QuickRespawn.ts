@@ -1,7 +1,6 @@
 import Controller from "../Contollers/TabsController";
 import UICommunicationService from "../../communication/FrontAPI";
 import { ChatAuthor } from "../../communication/Chat";
-import GameSettings from '../../Settings/Settings';
 import Logger from "../../utils/Logger";
 import { SOCKET_CONNECTION_REJECT } from "../Socket/types";
 import { TabType } from "../Socket/Socket";
@@ -18,7 +17,7 @@ export default class QuickRespawn {
   constructor(private controller: Controller) { }
 
   private spawn(tabType: TabType): void {
-    const { autoRespawnOnFail } = GameSettings.all.settings.game.gameplay;
+    const { autoRespawnOnFail } = this.controller.world.scene.settings.all.settings.game.gameplay;
 
     switch (tabType) {
       case 'FIRST_TAB':

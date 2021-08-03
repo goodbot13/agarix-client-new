@@ -1,8 +1,7 @@
 import { Container, Sprite } from "pixi.js";
-import GameSettings from "../Settings/Settings";
-import TextureGenerator from "../Textures/TexturesGenerator";
 import { CellType, Location } from "./types";
 import * as PIXI from 'pixi.js';
+import World from "../render/World";
 
 class SpawnAnimation extends Container {
   public isDestroyed: boolean;
@@ -13,26 +12,26 @@ class SpawnAnimation extends Container {
   private spriteBuffer: Array<Sprite> = [];
   private deltaStepMultiplier: number = 0.00425;
 
-  constructor(location: Location, tint?: number) {
+  constructor(location: Location, private world: World, tint?: number) {
     super();
 
-    const { spawnAnimation } = GameSettings.all.settings.game.effects;
+    const { spawnAnimation } = world.settings.all.settings.game.effects;
 
     switch (spawnAnimation) {
       case 'Default':
-        this.spriteBuffer.push(new Sprite(TextureGenerator.removeEffect));
+        this.spriteBuffer.push(new Sprite(this.world.textureGenerator.removeEffect));
         break;
 
       case '2CL':
-        this.spriteBuffer.push(new Sprite(TextureGenerator.removeAnimationHSLO3D));
+        this.spriteBuffer.push(new Sprite(this.world.textureGenerator.removeAnimationHSLO3D));
         break;
 
       case 'Acimazis':
-        TextureGenerator.removeAnimationsAcim.forEach((texture) => this.spriteBuffer.push(new Sprite(texture)));
+        this.world.textureGenerator.removeAnimationsAcim.forEach((texture) => this.spriteBuffer.push(new Sprite(texture)));
         break;
 
       case 'Yue':
-        TextureGenerator.removeAnimationYue.forEach((texture) => this.spriteBuffer.push(new Sprite(texture)));
+        this.world.textureGenerator.removeAnimationYue.forEach((texture) => this.spriteBuffer.push(new Sprite(texture)));
         break;
     }
 

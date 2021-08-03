@@ -1,10 +1,10 @@
-import GameSettings from '../../../Settings/Settings';
 import { MIPMAP_MODES, SCALE_MODES, Graphics, Container, Rectangle, Texture } from 'pixi.js';
 import { GlowFilter } from '@pixi/filter-glow';
 import { getColor, rgbToStringHex } from '../../../utils/helpers';
 import Globals from '../../../Globals';
+import Settings from '../../../Settings/Settings';
 
-const generateBorders = () => {
+const generateBorders = (settings: Settings) => {
   const {
     borderGlow,
     borderGlowColor,
@@ -13,13 +13,13 @@ const generateBorders = () => {
     borderRoundness,
     borderColor,
     borderWidth
-  } = GameSettings.all.settings.theming.map;
+  } = settings.all.settings.theming.map;
 
   const glowQuality = 0.0065;
   const bordersRenderSize = 512;
   const rounded = true;
 
-  if (GameSettings.all.settings.game.performance.glowFilterShaderType === 'GPU-1') {
+  if (settings.all.settings.game.performance.glowFilterShaderType === 'GPU-1') {
     const offset = borderGlow ? borderWidth : 0;
     const g = new Graphics();
 

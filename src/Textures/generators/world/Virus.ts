@@ -1,10 +1,10 @@
-import GameSettings from '../../../Settings/Settings';
+import Settings from '../../../Settings/Settings';
 import { MIPMAP_MODES, SCALE_MODES, Texture, Sprite, Container, Rectangle } from 'pixi.js';
 import { GlowFilter } from '@pixi/filter-glow';
 import { getColor, rgbToStringHex } from '../../../utils/helpers';
 import Globals from '../../../Globals';
 
-const generateVirus = (): Texture => {
+const generateVirus = (settings: Settings): Texture => {
   const {
     color,
     transparency,
@@ -14,7 +14,7 @@ const generateVirus = (): Texture => {
     glowColor,
     glowDistance,
     glowStrength
-  } = GameSettings.all.settings.theming.viruses;
+  } = settings.all.settings.theming.viruses;
 
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');

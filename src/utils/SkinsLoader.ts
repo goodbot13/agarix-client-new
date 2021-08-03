@@ -1,5 +1,5 @@
 import { MIPMAP_MODES, SCALE_MODES, Texture } from "pixi.js"
-import Master from "../Master";
+import World from "../render/World";
 import Logger from "./Logger";
 
 export class SkinTexture {
@@ -33,8 +33,8 @@ export default class SkinsLoader {
 
   private logger: Logger = new Logger('SkinsLoader');
 
-  constructor() {
-    (window as any).skinsLoader = this;
+  constructor(public world: World) {
+    (window as any).SkinsLoader = this;
 
     setInterval(() => this.cleaner(), 60000);
   }
@@ -120,8 +120,18 @@ export default class SkinsLoader {
   }
 
   private checkUrlAndCache(url: string, onLoad: (skinTexture: SkinTexture | null) => void): boolean {
-    if (!url || this.failedToLoadUrls.has(url) || this.cache.has(url)) {
+    if (url === '') {
       onLoad(null);
+      return true;
+    }
+
+    if (this.failedToLoadUrls.has(url)) {
+      onLoad(null);
+      return true;
+    }
+
+    if (this.cache.has(url)) {
+      onLoad(this.cache.get(url));
       return true;
     }
 
@@ -174,7 +184,7 @@ export default class SkinsLoader {
   }
 
   public getAgarSkinByPlayerNick(nick: string, onLoad: (skinTexture: SkinTexture | null) => void): void {
-    const skinData = Master.skins.get(nick);
+    const skinData = this.world.master.skins.get(nick);
 
     let url = '';
 
@@ -200,12 +210,14 @@ export default class SkinsLoader {
     }
 
     if (skinName.includes('custom')) {
-      url = `${Master.envConfig.CUSTOM_SKINS_URL}${skinName}.png`;
+      url = `${this.world.master.envConfig.CUSTOM_SKINS_URL}${skinName}.png`;
     } else {
       try {
-        url = Master.skins.get(skinName).url;
+        url = this.world.master.skins.get(skinName).url;
       } catch (e) {
-        console.log(skinName, Master.skins);
+        if (url.includes('skin_')) {
+          url = url.split('_')[1];
+        }
       }
     }
 
@@ -214,5 +226,21 @@ export default class SkinsLoader {
     }
 
     this.startSkinGeneration(url, onLoad);
+  }
+
+  public clear(): void {
+    if (this.cache.size > 384) {
+      this.logger.warning(`Pool limit reached. Cleared ${this.cache.size} items`);
+
+      this.cache.forEach((skinTexture) => {
+        skinTexture.destroy();
+      });
+
+      this.cache.clear();
+      this.requestPool.clear();
+      this.failedToLoadUrls.clear();
+    } else {
+      this.logger.warning(`Pool size: ${this.cache.size}. In request: ${this.requestPool.size}`);
+    }
   }
 }

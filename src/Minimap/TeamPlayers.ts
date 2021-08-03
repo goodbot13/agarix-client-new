@@ -1,11 +1,7 @@
 import { Container, utils } from "pixi.js";
 import Cell from '../objects/Cell/index';
-import Ogar from "../Ogar";
-import { getAnimationSpeed, getFadeSpeed, getSoakSpeed } from "../render/Renderer/AnimationDataProvider";
 import World from "../render/World";
-import GameSettings from "../Settings/Settings";
 import PlayerState from "../states/PlayerState";
-import CachedObjects from "../utils/CachedObjects";
 import { transformMinimapLocation } from "../utils/helpers";
 
 export default class TeamPlayers extends Container {
@@ -24,7 +20,7 @@ export default class TeamPlayers extends Container {
   }
 
   public reset(): void {
-    this.buffer.forEach((obj) => CachedObjects.addCell(obj));
+    this.buffer.forEach((obj) => this.world.cachedObjects.addCell(obj));
     this.buffer.clear();
 
     while (this.children.length > 0) {
@@ -33,13 +29,13 @@ export default class TeamPlayers extends Container {
   }
 
   public renderTick(): void {
-    const { playerSize } = GameSettings.all.settings.theming.minimap;
+    const { playerSize } = this.world.settings.all.settings.theming.minimap;
 
-    const animationSpeed = getAnimationSpeed();
-    const fadeSpeed = getFadeSpeed();
-    const soakSpeed = getSoakSpeed();
+    const animationSpeed = this.world.animationSettingsProvider.getAnimationSpeed();
+    const fadeSpeed = this.world.animationSettingsProvider.getFadeSpeed();
+    const soakSpeed = this.world.animationSettingsProvider.getSoakSpeed();
 
-    Ogar.firstTab.team.forEach((player) => {
+    this.world.ogar.firstTab.team.forEach((player) => {
       if (this.buffer.has(player.id)) {
 
         const cell = this.buffer.get(player.id);
@@ -50,13 +46,14 @@ export default class TeamPlayers extends Container {
             r: 0 
           }, 
           this.world.view.firstTab.getShiftedMapOffsets(),
+          this.world.settings,
           true
         );
 
         cell.update({ x: location.x, y: location.y, r: playerSize / 2 });
 
         if (!player.alive) {
-          CachedObjects.addCell(cell);
+          this.world.cachedObjects.addCell(cell);
           this.removeChild(cell);
           this.buffer.delete(player.id);
         } else {
@@ -69,7 +66,7 @@ export default class TeamPlayers extends Container {
           return;
         }
 
-        if (player.nick === GameSettings.all.profiles.rightProfileNick && PlayerState.second.playing) {
+        if (player.nick === this.world.settings.all.profiles.rightProfileNick && PlayerState.second.playing) {
           return;
         }
 
@@ -79,10 +76,11 @@ export default class TeamPlayers extends Container {
             r: 0 
           }, 
           this.world.view.firstTab.getShiftedMapOffsets(),
+          this.world.settings,
           true
         );
 
-        const cell = CachedObjects.getCell();
+        const cell = this.world.cachedObjects.getCell();
         cell.reuse('FIRST_TAB', location, { red: 0, green: 0, blue: 0 }, player.nick, '', this.world);
         cell.setIsMinimapCell(playerSize / 4);
         cell.isTeam = true;
@@ -96,8 +94,8 @@ export default class TeamPlayers extends Container {
     });
 
     this.buffer.forEach((cell, key) => {
-      if (!Ogar.firstTab.team.has(key)) {
-        CachedObjects.addCell(cell);
+      if (!this.world.ogar.firstTab.team.has(key)) {
+        this.world.cachedObjects.addCell(cell);
         this.removeChild(cell);
         this.buffer.delete(key);
       }

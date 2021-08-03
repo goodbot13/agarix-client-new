@@ -1,6 +1,4 @@
 import { Container, filters, NineSlicePlane, Sprite } from "pixi.js";
-import GameSettings from "../../Settings/Settings";
-import TextureGenerator from "../../Textures/TexturesGenerator";
 import * as PIXI from 'pixi.js';
 import IMapObject from "./interfaces";
 import Map from "./Map";
@@ -43,7 +41,7 @@ export default class Borders extends Container implements IMapObject {
 
   private animateFilter(): void {
     const { deltaTime } = PIXI.Ticker.shared;
-    const { borderType } = GameSettings.all.settings.theming.map;
+    const { borderType } = this.map.world.settings.all.settings.theming.map;
 
     const animatedBorder = borderType.includes('anim');
     const rgbBorder = borderType === 'RGB' || borderType === 'RGB (anim)';
@@ -74,12 +72,12 @@ export default class Borders extends Container implements IMapObject {
   }
 
   public create(): void {
-    const { borderGlow, borderWidth, borderGlowDistance } = GameSettings.all.settings.theming.map;
-    const { glowFilterShaderType } = GameSettings.all.settings.game.performance;
+    const { borderGlow, borderWidth, borderGlowDistance } = this.map.world.settings.all.settings.theming.map;
+    const { glowFilterShaderType } = this.map.world.settings.all.settings.game.performance;
     const MAP_RATIO = this.map.size.width / 2048;
     
     if (this.bordersSprite) {
-      // TextureGenerator.generateMapBorders();
+      // this.map.world.textureGenerator.generateMapBorders();
       this.removeChild(this.bordersSprite);
       this.bordersSprite.destroy();
     }
@@ -99,7 +97,7 @@ export default class Borders extends Container implements IMapObject {
       sideSize = borderGlow ? (borderWidth * 2 + borderGlowDistance * 2) / MAP_RATIO / 2 : borderWidth * 2 / MAP_RATIO / 2;
     }
 
-    this.bordersSprite = new NineSlicePlane(TextureGenerator.mapBorders, sideSize, sideSize, sideSize, sideSize);
+    this.bordersSprite = new NineSlicePlane(this.map.world.textureGenerator.mapBorders, sideSize, sideSize, sideSize, sideSize);
     this.bordersSprite.width = bordersSize;
     this.bordersSprite.height = bordersSize;
     this.bordersSprite.x = pos;
@@ -112,7 +110,7 @@ export default class Borders extends Container implements IMapObject {
     const size = 1100;
 
     if (this.rgbBorders || this.rgbBordersLine) {
-      TextureGenerator.generateRgbLine();
+      this.map.world.textureGenerator.generateRgbLine();
       this.removeChild(this.rgbBorders, this.rgbBordersLine);
       this.rgbBorders.destroy();
       this.rgbBordersLine.destroy();
@@ -121,13 +119,13 @@ export default class Borders extends Container implements IMapObject {
     // HARDCODED POSITION
     const borderWidth = 20;
 
-    this.rgbBorders = new Sprite(TextureGenerator.rgbBorder);
+    this.rgbBorders = new Sprite(this.map.world.textureGenerator.rgbBorder);
     this.rgbBorders.width = this.map.size.width + size;
     this.rgbBorders.height = this.map.size.height + size;
     this.rgbBorders.x = -size / 2;
     this.rgbBorders.y = -size / 2;
 
-    this.rgbBordersLine = new Sprite(TextureGenerator.mapBordersRgbLine);
+    this.rgbBordersLine = new Sprite(this.map.world.textureGenerator.mapBordersRgbLine);
     this.rgbBordersLine.width = this.map.size.width + borderWidth * 2;
     this.rgbBordersLine.height = this.map.size.height + borderWidth * 2;
     this.rgbBordersLine.x = -borderWidth;
@@ -137,7 +135,7 @@ export default class Borders extends Container implements IMapObject {
   }
 
   public renderTick(): void {
-    const { borderType } = GameSettings.all.settings.theming.map
+    const { borderType } = this.map.world.settings.all.settings.theming.map
 
     this.visible = borderType !== 'Disabled';
     this.rgbBorders.visible = borderType === 'RGB' || borderType === 'RGB (anim)';

@@ -1,9 +1,8 @@
 import { Sprite } from 'pixi.js';
-import GameSettings from '../Settings/Settings';
 import { Subtype, Location, CellType } from './types';
-import TextureGenerator from '../Textures/TexturesGenerator';
 import * as PIXI from 'pixi.js';
 import PlayerState from '../states/PlayerState';
+import World from '../render/World';
 
 class Food extends Sprite {
   public subtype: Subtype;
@@ -17,14 +16,14 @@ class Food extends Sprite {
   private SPEED: number = 0.0225;
   private realAlpha: number = 0;
 
-  constructor(/* location: Location, subtype: Subtype */) {
-    super(TextureGenerator.food);
+  constructor(private world: World) {
+    super(world.textureGenerator.food);
     // this.reuse(location, subtype);
   }
 
   public reuse(location: Location, subtype: Subtype) {
     const { x, y, r } = location;
-    const { foodPerformanceMode } = GameSettings.all.settings.game.performance;
+    const { foodPerformanceMode } = this.world.settings.all.settings.game.performance;
 
     this.type = 'FOOD';
     this.anchor.set(0.5);
@@ -66,7 +65,7 @@ class Food extends Sprite {
   public animate(): void {
     const instantAnimation = PlayerState.first.playing && 
                              PlayerState.second.playing && 
-                             GameSettings.all.settings.game.gameplay.spectatorMode !== 'Full map';
+                             this.world.settings.all.settings.game.gameplay.spectatorMode !== 'Full map';
 
     if (this.removing) {
 

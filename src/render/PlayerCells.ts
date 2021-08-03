@@ -1,8 +1,7 @@
 import Cell from "../objects/Cell/index";
 import { RGB, Subtype } from "../objects/types";
-import SkinsLoader from "../utils/SkinsLoader";
-import GameSettings from "../Settings/Settings";
 import Ogar from "../Ogar";
+import Settings from "../Settings/Settings";
 
 export default class PlayerCells {
   public firstTab: Map<number, Cell>;
@@ -10,7 +9,7 @@ export default class PlayerCells {
   public firstTabIds: Set<number>;
   public secondTabIds: Set<number>;
 
-  constructor() {
+  constructor(private settings: Settings, private ogar: Ogar) {
     this.firstTab = new Map();
     this.secondTab = new Map();
     this.firstTabIds = new Set();
@@ -29,22 +28,22 @@ export default class PlayerCells {
     this.firstTab.set(id, cell);
 
     cell.setPlayerCell(
-      GameSettings.all.profiles.leftProfileNick, 
-      GameSettings.all.profiles.leftProfileSkinUrl
+      this.settings.all.profiles.leftProfileNick, 
+      this.settings.all.profiles.leftProfileSkinUrl
     );
 
-    Ogar.firstTab.player.color.cell = cell.colorHex[1];
+    this.ogar.firstTab.player.color.cell = cell.colorHex[1];
   }
 
   public addSecondTabCell(id: number, cell: Cell): void {
     this.secondTab.set(id, cell);
 
     cell.setPlayerCell(
-      GameSettings.all.profiles.rightProfileNick, 
-      GameSettings.all.profiles.rightProfileSkinUrl
+      this.settings.all.profiles.rightProfileNick, 
+      this.settings.all.profiles.rightProfileSkinUrl
     );
     
-    Ogar.secondTab.player.color.cell = cell.colorHex[1];
+    this.ogar.secondTab.player.color.cell = cell.colorHex[1];
   }
 
   public remove(subtype: Subtype, id: number): void {

@@ -1,10 +1,10 @@
-import GameSettings from '../../../Settings/Settings';
+import Settings from '../../../Settings/Settings';
 import { SCALE_MODES, Texture, Sprite, utils, MIPMAP_MODES } from 'pixi.js';
 import { GlowFilter } from '@pixi/filter-glow';
 import { getColor, rgbToStringHex } from '../../../utils/helpers';
 import Globals from '../../../Globals';
 
-const generateFood = () => {
+const generateFood = (settings: Settings) => {
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
 
@@ -16,7 +16,7 @@ const generateFood = () => {
     glowDistance,
     glowStrength,
     crisp
-  } = GameSettings.all.settings.theming.food;
+  } = settings.all.settings.theming.food;
 
   const canvasSize = 512;
   const glowQuality = 0.13;
@@ -31,7 +31,7 @@ const generateFood = () => {
   let sprite: Sprite;
 
   if (glow) {
-    if (GameSettings.all.settings.game.performance.glowFilterShaderType === 'GPU-1') {
+    if (settings.all.settings.game.performance.glowFilterShaderType === 'GPU-1') {
 
       utils.trimCanvas(canvas);
 

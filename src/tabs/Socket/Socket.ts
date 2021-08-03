@@ -296,7 +296,7 @@ export default class Socket {
       case COMPRESSED_MESSAGE: 
       
         // no need to decompress, reveice only viewport
-        if (this.tabType === 'TOP_ONE_TAB' && Settings.all.settings.game.gameplay.spectatorMode === 'Full map' && this.mapOffsetFixed) {
+        if (this.tabType === 'TOP_ONE_TAB' && this.world.scene.settings.all.settings.game.gameplay.spectatorMode === 'Full map' && this.mapOffsetFixed) {
           return;
         }
 

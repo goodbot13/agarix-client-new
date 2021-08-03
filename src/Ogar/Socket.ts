@@ -7,6 +7,8 @@ import { SOCKET_OPENED } from '../tabs/Socket/Opcodes';
 import Logger from '../utils/Logger';
 import { ChatAuthor } from '../communication/Chat';
 import FrontAPI from '../communication/FrontAPI';
+import Settings from '../Settings/Settings';
+import Master from '../Master';
 
 export default class Socket {
 	private readonly ip: string = 'wss://snez.org:8080/ws?040';
@@ -21,16 +23,14 @@ export default class Socket {
 	public emitter: Emitter;
 	public player: Player;
 	public team: Map<number, Player>;
-	public second: boolean;
 
-  constructor(second: boolean) {
+  constructor(public second: boolean, public settings: Settings, public master: Master) {
 		this.handshakeKey = 401;
-    	this.emitter = new Emitter(this);
+    this.emitter = new Emitter(this);
 		this.receiver = new Receiver(this);
-    	this.player = new Player();
+    this.player = new Player();
 		this.team = new Map();
 		this.connected = false;
-		this.second = second;
 
 		this.logger = new Logger('Delta Socket');
 	}

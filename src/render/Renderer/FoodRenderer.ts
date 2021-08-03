@@ -1,5 +1,4 @@
 import Food from '../../objects/Food';
-import GameSettings from '../../Settings/Settings';
 import World from '../World';
 
 export default class FoodRenderer {
@@ -8,7 +7,7 @@ export default class FoodRenderer {
 
   public render(food: Food): void {
 
-    if (GameSettings.all.settings.game.performance.culling) {
+    if (this.world.settings.all.settings.game.performance.culling) {
       if (this.world.view.shouldObjectBeCulled(food.x, food.y, food.width / 2)) {
         food.culled = true;
         food.renderable = false;
@@ -19,12 +18,12 @@ export default class FoodRenderer {
       }
     }
 
-    if (GameSettings.all.settings.game.gameplay.spectatorMode === 'Full map') {
+    if (this.world.settings.all.settings.game.gameplay.spectatorMode === 'Full map') {
       food.subtype === 'SPEC_TABS' ? food.show() : food.hide();
       return;
     }
 
-    const { firstTabEnabled, secondTabEnabled, topOneTabEnabled } = GameSettings.all.settings.theming.food;
+    const { firstTabEnabled, secondTabEnabled, topOneTabEnabled } = this.world.settings.all.settings.theming.food;
     const { firstTab, secondTab, topOneTab } = this.world.view;
     const { x, y, subtype } = food;
     let visible = false;

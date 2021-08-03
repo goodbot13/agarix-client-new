@@ -8,7 +8,6 @@ import Master from '../Master';
 import { IMapOffsets } from '../tabs/Socket/Socket';
 import Hotkeys from '../tabs/Hotkeys/Hotkeys';
 import GameAPI from '../communication/GameAPI';
-import GameSettings from '../Settings/Settings';
 import FrontAPI from '../communication/FrontAPI';
 import WorldState from '../states/WorldState';
 import { createTokens, getColor } from '../utils/helpers';
@@ -17,12 +16,18 @@ import GamePerformance from '../GamePerformance';
 import { GAME_VERSION } from '../Versions';
 import Logger from '../utils/Logger';
 import { SOCKET_CONNECTION_REJECT } from '../tabs/Socket/types';
+import Settings from '../Settings/Settings';
+import Ogar from '../Ogar';
 
 class Stage {
   public app: Application;
   public stageFilter: KawaseBlurFilter; // @ts-ignore
   public colorFilter: filters.ColorMatrixFilter;
   public world: World;
+  public master: Master;
+  public ogar: Ogar
+  public textureGenerator: TextureGenerator;
+  public settings: Settings;
   public hue: number;
   public root: Container;
   public mainContainer: Container;
@@ -37,8 +42,12 @@ class Stage {
 
   constructor() {
     utils.sayHello(GAME_VERSION);
+
+    (window as any).GameSettings = this.settings = new Settings(this);
     (window as any).GameAPI = new GameAPI(this);
-    (window as any).GameSettings = GameSettings.init(this);
+    (window as any).TextureGenerator = this.textureGenerator = new TextureGenerator(this.settings);
+    (window as any).Master = this.master = new Master(this.settings);
+    (window as any).Ogar = this.ogar = new Ogar(this.settings, this.master);
 
     this.app = new Application({
       resizeTo: window,
@@ -46,8 +55,8 @@ class Stage {
       sharedLoader: true,
       sharedTicker: true,
       resolution: 1,
-      backgroundColor: getColor(GameSettings.all.settings.theming.map.backgroundTint),
-      antialias: GameSettings.all.settings.game.performance.antialiasing,
+      backgroundColor: getColor(this.settings.all.settings.theming.map.backgroundTint),
+      antialias: this.settings.all.settings.game.performance.antialiasing,
       powerPreference: 'high-performance',
       forceCanvas: false
     });
@@ -61,23 +70,24 @@ class Stage {
   }
 
   public updateRendererBackgroundColor(): void {
-    this.app.renderer.backgroundColor = getColor(GameSettings.all.settings.theming.map.backgroundTint);
+    this.app.renderer.backgroundColor = getColor(this.settings.all.settings.theming.map.backgroundTint);
   }
 
   async init() {
     document.body.appendChild(this.app.view);
     Globals.init(this.app);
 
-    await TextureGenerator.init();
+    await this.textureGenerator.init();
 
     this.world = new World(this);
+
     this.createMainScene();
 
     return true;
   }
 
   private async tryToConnectAndSpawn(): Promise<void> {
-    const { autoRespawnOnFail } = GameSettings.all.settings.game.gameplay;
+    const { autoRespawnOnFail } = this.settings.all.settings.game.gameplay;
 
     if (PlayerState.first.connected) {
       try {
@@ -157,13 +167,13 @@ class Stage {
       WorldState.gameJoined = false;
     }
 
-    const socketData = await Master.connectPrivate({ ws: 'wss://imsolo.pro:2104/' });
+    const socketData = await this.master.connectPrivate(token, serverToken);
 
     return new Promise((resolve, reject) => {
       this.world.controller.init(socketData).then((mapOffsets) => {
         this.join(mapOffsets);
 
-        return resolve('connected!');
+        return resolve('%connected!');
       });
     });
   }
@@ -177,8 +187,11 @@ class Stage {
       WorldState.gameJoined = false;
     }
 
-    const socketData = await Master.connect(token, serverToken);
+    if (this.master.gameMode.get() === ':private') {
+      return this.connectPrivate(token, serverToken);
+    }
 
+    const socketData = await this.master.connect(token, serverToken);
 
     return new Promise((
       resolve: (tokens: string) => void, 
@@ -274,7 +287,7 @@ class Stage {
   public blurGameScene() {
     this.world.view.setScrollAvailable(false);
 
-    if (GameSettings.all.settings.game.effects.wtfRgbMode) {
+    if (this.settings.all.settings.game.effects.wtfRgbMode) {
       return;
     }
 
@@ -296,7 +309,7 @@ class Stage {
         Globals.gameBluring = false;
 
         // remove FPS cap or set it to the cap level
-        const { fpsLockType } = GameSettings.all.settings.game.performance;
+        const { fpsLockType } = this.settings.all.settings.game.performance;
         this.app.ticker.maxFPS = fpsLockType !== 'Screen-hz' ? Number(fpsLockType) : 0;
       }
     }
@@ -307,7 +320,7 @@ class Stage {
   public unblurGameScene(enableScroll: boolean) {
     this.world.view.setScrollAvailable(enableScroll);
 
-    if (GameSettings.all.settings.game.effects.wtfRgbMode) {
+    if (this.settings.all.settings.game.effects.wtfRgbMode) {
       return;
     }
 
@@ -328,7 +341,7 @@ class Stage {
         Globals.gameBluring = false;
 
         // remove FPS cap or set it to the cap level
-        const { fpsLockType } = GameSettings.all.settings.game.performance;
+        const { fpsLockType } = this.settings.all.settings.game.performance;
         this.app.ticker.maxFPS = fpsLockType !== 'Screen-hz' ? Number(fpsLockType) : 0;
       }
     }
@@ -346,7 +359,7 @@ class Stage {
         this.foodVirusCellContainer.alpha = 1;
 
         // remove FPS cap or set it to the cap level
-        const { fpsLockType } = GameSettings.all.settings.game.performance;
+        const { fpsLockType } = this.settings.all.settings.game.performance;
         this.app.ticker.maxFPS = fpsLockType !== 'Screen-hz' ? Number(fpsLockType) : 0;
         return;
       }

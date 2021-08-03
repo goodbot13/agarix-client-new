@@ -10,13 +10,13 @@ import generateCellShadow from './generators/world/CellShadow';
 import generateVirusShots from './generators/world/VirusShots';
 import generateMultiboxLinedRing from './generators/world/MultiboxRing';
 import UICommunicationService from '../communication/FrontAPI';
-import GameSettings from '../Settings/Settings';
 import generateMyCellShadow from './generators/world/MyCellShadow';
 import Logger from '../utils/Logger';
 import CellNicksGenerator from './generators/fonts/CellNicksGenerator';
 import MassFontsGenerator from './generators/fonts/MassFontsGenerator';
+import Settings from '../Settings/Settings';
 
-export default new class TextureGenerator {
+export default class TextureGenerator {
   public mapBackgroundImage: Texture;
   public secondBackgroundImage: Texture;
   public backgroundDisplacement: Texture;
@@ -45,7 +45,7 @@ export default new class TextureGenerator {
 
   private logger: Logger;
 
-  constructor() {
+  constructor(private settings: Settings) {
     this.logger = new Logger('TextureGenerator');
     this.cellNicksGenerator = new CellNicksGenerator();
     this.massFontsGenerator = new MassFontsGenerator();
@@ -121,7 +121,7 @@ export default new class TextureGenerator {
   }
 
   public async updateBackground(): Promise<Texture> {
-    const mapBg = await this.loadImg(GameSettings.all.settings.theming.map.backgroundImageUrl);
+    const mapBg = await this.loadImg(this.settings.all.settings.theming.map.backgroundImageUrl);
     const texture = this.generateNewTexture(2048, 2048, mapBg);
 
     this.removeFromCache(this.mapBackgroundImage);
@@ -131,7 +131,7 @@ export default new class TextureGenerator {
   }
 
   public async updateGlobalBackground(): Promise<Texture> {
-    const sMapBg = await this.loadImg(GameSettings.all.settings.theming.map.globalBackgroundImageUrl);
+    const sMapBg = await this.loadImg(this.settings.all.settings.theming.map.globalBackgroundImageUrl);
     const texture = this.generateNewTexture(2048, 2048, sMapBg);
 
     this.removeFromCache(this.secondBackgroundImage);
@@ -143,10 +143,10 @@ export default new class TextureGenerator {
   private async load() {
     UICommunicationService.setTextureName('0%');
 
-    const mapBg = await this.loadImg(GameSettings.all.settings.theming.map.backgroundImageUrl); 
+    const mapBg = await this.loadImg(this.settings.all.settings.theming.map.backgroundImageUrl); 
     const rgbBorder = await this.loadImg('https://i.imgur.com/7eDfixc.png'); 
     const bgDispl = await this.loadImg('https://res.cloudinary.com/dvxikybyi/image/upload/v1486634113/2yYayZk_vqsyzx.png'); 
-    const sMapBg = await this.loadImg(GameSettings.all.settings.theming.map.globalBackgroundImageUrl); 
+    const sMapBg = await this.loadImg(this.settings.all.settings.theming.map.globalBackgroundImageUrl); 
     const glDispl = await this.loadImg('https://i.imgur.com/vtLSnyt.jpg'); 
     const outerRing = await this.loadImg('https://i.imgur.com/B24DABv.png'); 
     const innerRing = await this.loadImg('https://i.imgur.com/nr8ngwx.png'); 
@@ -182,7 +182,7 @@ export default new class TextureGenerator {
     await delay(); this.generateRemoveEffect();
     await delay(); this.generateViewBox();
     await delay(); this.generateMyCellShadow();
-    await delay(); this.mapBordersRgbLine = generateRgbBorderLine();
+    await delay(); this.mapBordersRgbLine = generateRgbBorderLine(this.settings);
     await delay(); this.virusShots = generateVirusShots();
     await delay(); UICommunicationService.setTextureName('Done');
   }
@@ -196,7 +196,7 @@ export default new class TextureGenerator {
 
   public generateMultiboxLinedRing() {
     this.removeFromCache(this.multiboxLinedRing);
-    this.multiboxLinedRing = generateMultiboxLinedRing();
+    this.multiboxLinedRing = generateMultiboxLinedRing(this.settings);
   }
 
   public generateCell() {
@@ -206,22 +206,22 @@ export default new class TextureGenerator {
 
   public generateFood() {
     this.removeFromCache(this.food);
-    this.food = generateFood();
+    this.food = generateFood(this.settings);
   }
 
   public generateVirus() {
     this.removeFromCache(this.virus);
-    this.virus = generateVirus();
+    this.virus = generateVirus(this.settings);
   }
 
   public generateMapBorders() {
     this.removeFromCache(this.mapBorders);
-    this.mapBorders = generateBorders();
+    this.mapBorders = generateBorders(this.settings);
   }
 
   public generateRgbLine() {
     this.removeFromCache(this.mapBordersRgbLine);
-    this.mapBordersRgbLine = generateRgbBorderLine();
+    this.mapBordersRgbLine = generateRgbBorderLine(this.settings);
   }
 
   public generateRemoveEffect() {
@@ -236,11 +236,11 @@ export default new class TextureGenerator {
 
   public generateCellShadow() {
     this.removeFromCache(this.cellShadow);
-    this.cellShadow = generateCellShadow();
+    this.cellShadow = generateCellShadow(this.settings);
   }
 
   public generateMyCellShadow() {
     this.removeFromCache(this.myCellShadow);
-    this.myCellShadow = generateMyCellShadow();
+    this.myCellShadow = generateMyCellShadow(this.settings);
   }
 }

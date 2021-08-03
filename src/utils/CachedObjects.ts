@@ -1,28 +1,30 @@
 import Cell from "../objects/Cell";
 import Ejected from "../objects/Ejected";
 import Food from "../objects/Food"
+import World from "../render/World";
 
 class FlexiblePool<T> {
   private created: number = 0;
   private gotFromCache: number = 0;
   private pushedToCache: number = 0;
   private actualLimit: number = 0;
+  private errored: number = 0;
   private observable: Array<T> = [];
   
-  constructor(private readonly type: TPoolType, private limit: number) { 
+  constructor(private readonly type: TPoolType, private limit: number, private world: World) { 
     this.actualLimit = limit;
   }
 
   private createNewElement(): T {
     switch (this.type) {
       case 'FOOD':
-        return new Food() as unknown as T;
+        return new Food(this.world) as unknown as T;
 
       case 'EJECTED':
-        return new Ejected() as unknown as T;
+        return new Ejected(this.world) as unknown as T;
 
       case 'CELL':
-        return new Cell() as unknown as T;
+        return new Cell(this.world) as unknown as T;
     }
   }
 
@@ -39,7 +41,17 @@ class FlexiblePool<T> {
   public get(): T {
     if (this.observable.length) {
       this.gotFromCache++;
-      return this.observable.pop();
+
+      const el = this.observable.pop();
+
+      if ((el as unknown as Cell).type === 'CELL') {
+        if ((el as unknown as Cell).cell._texture === null) {
+          this.errored++;
+          return this.get();
+        }
+      }
+
+      return el;
     }
 
     for (let i = 0; i < 50; i++) {
@@ -61,15 +73,36 @@ class FlexiblePool<T> {
       gotFromCache: this.gotFromCache,
     }
   }
+
+  public getPool(): Array<T> {
+    return this.observable;
+  }
 }
 
-export default new class CachedObjects {
-  private food: FlexiblePool<Food> = new FlexiblePool('FOOD', 1024);
-  private ejected: FlexiblePool<Ejected> = new FlexiblePool('EJECTED', 1024);
-  private cells: FlexiblePool<Cell> = new FlexiblePool('CELL', 1024);
+export default class CachedObjects {
+  private food: FlexiblePool<Food>;
+  private ejected: FlexiblePool<Ejected>;
+  private cells: FlexiblePool<Cell>;
 
-  constructor() {
+  constructor(private world: World) {
+    this.food = new FlexiblePool('FOOD', 1024, world);
+    this.ejected = new FlexiblePool('EJECTED', 1024, world);
+    this.cells = new FlexiblePool('CELL', 1024, world);
+
     (window as any).CachedObjects = this;
+  }
+
+  public getPool(type: TPoolType): Array<Food | Ejected | Cell> {
+    switch (type) {
+      case 'CELL':
+        return this.cells.getPool();
+      
+      case 'EJECTED':
+        return this.ejected.getPool();
+
+      case 'FOOD':
+        return this.food.getPool();
+    }
   }
 
   public getFood(): Food {

@@ -10,9 +10,9 @@ export default class TestCase {
   }
 
   private async emit() {
-    const virus = new Virus({ x: 0, y: 0, r: 100 }, 'FIRST_TAB');
-    this.stage.world.cells.addChild(virus);
+    // const virus = new Virus({ x: 0, y: 0, r: 100 }, 'FIRST_TAB');
+    // this.stage.world.cells.addChild(virus);
 
-    (window as any).virus = virus;
+    // (window as any).virus = virus;
   }
 }

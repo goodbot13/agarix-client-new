@@ -14,15 +14,17 @@ import View from '../View';
 import Hotkeys from '../tabs/Hotkeys/Hotkeys';
 import Stage from '../Stage/Stage';
 import Minimap from '../Minimap/MinimapWEBGL'
-import GameSettings from '../Settings/Settings';
 import Logger from '../utils/Logger';
 import PlayerState from '../states/PlayerState';
 import SkinsLoader from '../utils/SkinsLoader';
-import TextureGenerator from '../Textures/TexturesGenerator';
-import Master from '../Master';
 import { getColor } from '../utils/helpers';
 import Ejected from '../objects/Ejected';
 import CachedObjects from '../utils/CachedObjects';
+import Settings from '../Settings/Settings';
+import TextureGenerator from '../Textures/TexturesGenerator';
+import Master from '../Master';
+import Ogar from '../Ogar';
+import AnimationSettingsProvider from './Renderer/AnimationSettingsProvider';
 
 export default class World {
   public cells: Container;
@@ -42,11 +44,24 @@ export default class World {
   public hotkeys: Hotkeys;
   public minimap: Minimap;
   public skinsLoader: SkinsLoader;
+  public settings: Settings;
+  public cachedObjects: CachedObjects;
+  public textureGenerator: TextureGenerator;
+  public master: Master;
+  public ogar: Ogar;
+  public animationSettingsProvider: AnimationSettingsProvider;
 
   private logger: Logger;
 
   constructor(public scene: Stage) {
-    this.skinsLoader = new SkinsLoader();
+    this.settings = scene.settings;
+    this.master = scene.master;
+    this.ogar = scene.ogar;
+    this.textureGenerator = scene.textureGenerator;
+
+    this.animationSettingsProvider = new AnimationSettingsProvider(this);
+    this.skinsLoader = new SkinsLoader(this);
+    this.cachedObjects = new CachedObjects(this);
 
     this.cells = new Container();
     this.cells.sortableChildren = true;
@@ -65,9 +80,9 @@ export default class World {
     this.indexedCells = new Map();
     this.indexedFood = new Map();
     this.indexedEjected = new Map();
-    this.playerCells = new PlayerCells();
+    this.playerCells = new PlayerCells(this.settings, this.ogar);
     this.socketCells = new SocketCells();
-    this.view = new View({ playerCells: this.playerCells, socketCells: this.socketCells }, scene.app.view);
+    this.view = new View({ playerCells: this.playerCells, socketCells: this.socketCells }, scene.app.view, this.scene.settings, this.ogar);
     this.map = new WorldMap(this);
     this.minimap = new Minimap(this);
     this.controller = new Controller(this);
@@ -83,7 +98,7 @@ export default class World {
   }
 
   private cachePlayerSkins(): void {
-    const { leftProfiles, rightProfiles } = GameSettings.all.profiles;
+    const { leftProfiles, rightProfiles } = this.settings.all.profiles;
 
     leftProfiles.forEach((profile) => this.skinsLoader.getCustomSkin(profile.skinUrl, () => {}));
     rightProfiles.forEach((profile) => this.skinsLoader.getCustomSkin(profile.skinUrl, () => {}));
@@ -91,7 +106,7 @@ export default class World {
 
   private addFood(id: number, location: Location, type: CellType, subtype: Subtype): void {
     if (!this.indexedFood.has(id)) {
-      const food = CachedObjects.getFood();
+      const food = this.cachedObjects.getFood();
       food.reuse(location, subtype);
 
       this.indexedFood.set(id, food);
@@ -104,7 +119,7 @@ export default class World {
 
   private addEjected(id: number, location: Location, color: RGB, type: CellType, subtype: Subtype): void {
     if (!this.indexedEjected.has(id)) {
-      const ejected = CachedObjects.getEjected();
+      const ejected = this.cachedObjects.getEjected();
       ejected.reuse(location, color, subtype);
 
       this.indexedEjected.set(id, ejected);
@@ -118,7 +133,13 @@ export default class World {
     let cell: Cell;
 
     if (!this.indexedCells.has(id)) {
-      cell = CachedObjects.getCell();
+
+      // idk black cell fix
+      if (color.red === undefined && color.green === undefined && color.blue === undefined) {
+        return;
+      }
+
+      cell = this.cachedObjects.getCell();
       cell.reuse(subtype, location, color, name, skin, this);
 
       this.indexedCells.set(id, cell);
@@ -136,7 +157,7 @@ export default class World {
     if (subtype === 'FIRST_TAB' && this.playerCells.firstTabIds.has(id)) {
       this.playerCells.addFirstTabCell(id, cell);
 
-      if (GameSettings.all.settings.game.multibox.enabled && PlayerState.second.playing && this.controller.currentFocusedTab === 'FIRST_TAB') {
+      if (this.settings.all.settings.game.multibox.enabled && PlayerState.second.playing && this.controller.currentFocusedTab === 'FIRST_TAB') {
         cell.setIsFoucsedTab(true);
       }
     } else if (subtype === 'SECOND_TAB' && this.playerCells.secondTabIds.has(id)) {
@@ -150,7 +171,7 @@ export default class World {
 
   private addVirus(id: number, location: Location, color: RGB, name: string, type: CellType, subtype: Subtype): void {
     if (!this.indexedCells.has(id)) {
-      const virus = new Virus(location, subtype);
+      const virus = new Virus(location, subtype, this);
       this.cells.addChild(virus);
       this.indexedCells.set(id, virus);
       this.socketCells.add(subtype, virus, id);
@@ -210,7 +231,7 @@ export default class World {
       ? (object as Cell).cell.width > 150 
       : object.type === 'VIRUS' ? (object as Virus).virusSprite.width : false;
 
-    const removeAnimation = GameSettings.all.settings.game.effects.cellRemoveAnimation !== 'Disabled';
+    const removeAnimation = this.settings.all.settings.game.effects.cellRemoveAnimation !== 'Disabled';
 
     if (removeAnimation && matchSize) {
       const location: Location = {
@@ -224,10 +245,10 @@ export default class World {
       if (object.type == 'CELL') {
         tint = (object as Cell).cell.tint;
       } else if (object.type === 'VIRUS') {
-        tint = getColor(GameSettings.all.settings.theming.viruses.color);
+        tint = getColor(this.settings.all.settings.theming.viruses.color);
       }
 
-      this.cells.addChild(new RemoveAnimation(location, object.subtype, tint));
+      this.cells.addChild(new RemoveAnimation(location, object.subtype, this, tint));
     }
   }
 
@@ -237,9 +258,9 @@ export default class World {
     if (this.indexedFood.has(id)) {
       const food = this.indexedFood.get(id);
 
-      if (removeImmediatly || GameSettings.all.settings.game.performance.foodPerformanceMode) {
+      if (removeImmediatly || this.settings.all.settings.game.performance.foodPerformanceMode) {
         this.food.removeChild(food);
-        CachedObjects.addFood(food);
+        this.cachedObjects.addFood(food);
       } else {
         food.remove();
       }
@@ -254,7 +275,7 @@ export default class World {
 
       if (removeImmediatly) {
         this.ejected.removeChild(object);
-        CachedObjects.addEjected(object);
+        this.cachedObjects.addEjected(object);
       } else {
         const eatenBy = this.indexedCells.get(eaterId) as Cell;
 
@@ -279,7 +300,7 @@ export default class World {
         this.cells.removeChild(object);
         
         if (object.type === 'CELL') {
-          CachedObjects.addCell(object as Cell);
+          this.cachedObjects.addCell(object as Cell);
         }
       } else {
         const eatenBy = this.indexedCells.get(eaterId) as Cell;
@@ -312,20 +333,20 @@ export default class World {
 
   public clear(): void {
     while (this.food.children[0]) {
-      CachedObjects.addFood(this.food.children[0] as Food);
+      this.cachedObjects.addFood(this.food.children[0] as Food);
       this.food.removeChild(this.food.children[0]);
     }
 
     while (this.cells.children[0]) {
       if ((this.cells.children[0] as Cell).type === 'CELL') {
-        CachedObjects.addCell(this.cells.children[0] as Cell);
+        this.cachedObjects.addCell(this.cells.children[0] as Cell);
       }
 
       this.cells.removeChild(this.cells.children[0]);
     }
 
     while (this.ejected.children[0]) {
-      CachedObjects.addEjected(this.ejected.children[0] as Ejected);
+      this.cachedObjects.addEjected(this.ejected.children[0] as Ejected);
       this.ejected.removeChild(this.ejected.children[0]);
     }
 
@@ -337,7 +358,7 @@ export default class World {
 
     this.minimap.reset();
 
-    TextureGenerator.cellNicksGenerator.clear();
+    this.textureGenerator.cellNicksGenerator.clear();
   }
 
   public clearCellsByType(subtype: Subtype): void {
@@ -353,7 +374,7 @@ export default class World {
       if (cell.subtype === subtype) {
         
         if (cell.type === 'CELL') {
-          CachedObjects.addCell(cell as Cell);
+          this.cachedObjects.addCell(cell as Cell);
         }
 
         this.cells.removeChild(cell);
@@ -367,7 +388,7 @@ export default class World {
 
     this.indexedEjected.forEach((ejected, key) => {
       if (ejected.subtype === subtype) {
-        CachedObjects.addEjected(ejected);
+        this.cachedObjects.addEjected(ejected);
 
         this.ejected.removeChild(ejected);
         this.indexedEjected.delete(key);
@@ -380,7 +401,7 @@ export default class World {
 
     this.indexedFood.forEach((food, key) => {
       if (food.subtype === subtype) {
-        CachedObjects.addFood(food);
+        this.cachedObjects.addFood(food);
 
         this.food.removeChild(food);
         this.indexedFood.delete(key);

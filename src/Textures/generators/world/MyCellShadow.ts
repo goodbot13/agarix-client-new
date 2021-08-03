@@ -2,15 +2,15 @@ import { GlowFilter } from "@pixi/filter-glow";
 import { Sprite } from "pixi.js";
 import { MIPMAP_MODES, SCALE_MODES, Texture } from "pixi.js";
 import Globals from "../../../Globals";
-import GameSettings from "../../../Settings/Settings";
+import Settings from '../../../Settings/Settings';
 
-const generateMyCellShadow = () => {
+const generateMyCellShadow = (settings: Settings) => {
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
 
   const size = 512;
   const lineWidth = 6;
-  const { myShadowDistance, myShadowStrength } = GameSettings.all.settings.theming.cells;
+  const { myShadowDistance, myShadowStrength } = settings.all.settings.theming.cells;
 
   canvas.width = canvas.height = size + myShadowDistance * 2;
 
@@ -19,7 +19,7 @@ const generateMyCellShadow = () => {
   ctx.arc(size / 2 + myShadowDistance, size / 2 + myShadowDistance, size / 2 - lineWidth, 0, Math.PI * 2);
   ctx.stroke();
   
-  if (GameSettings.all.settings.game.performance.glowFilterShaderType === 'GPU-1') {
+  if (settings.all.settings.game.performance.glowFilterShaderType === 'GPU-1') {
     const sprite = new Sprite(Texture.from(canvas));
     // @ts-ignore
     sprite.filters = [new GlowFilter({
@@ -35,7 +35,7 @@ const generateMyCellShadow = () => {
 
     return texture;
 
-  } else if (GameSettings.all.settings.game.performance.glowFilterShaderType === 'Canvas') {
+  } else if (settings.all.settings.game.performance.glowFilterShaderType === 'Canvas') {
     ctx.shadowColor = '#FFFFFF';
     ctx.shadowBlur = myShadowDistance - lineWidth;
 

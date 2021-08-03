@@ -1,9 +1,24 @@
 import UICommunicationService from "../communication/FrontAPI";
+import GameMode from "./GameMode";
 
 export default class Regions {
   private selected: number = 0;
   private data: Array<IGameServer> = [];
+  private readonly privateServersList: Array<IGameServer> = [];
   public updatingInterval: any = null;
+
+  constructor(private gameMode: GameMode) {
+    const privateServersData: Array<PrivateGameServersTypes> = [
+      'Arctida', 'Dagestan', 'Delta FFA', 'FeelForeverAlone', 'N.A. FFA', 'N.A. Party', 'Private Party', 'Rookery', 'Zimbabwe'
+    ];
+
+    privateServersData.forEach((name, i) => {
+      this.privateServersList[i] = {
+        location: name,
+        playersAmount: -1
+      }
+    });
+  }
 
   private getName(region: string): GameServerLocationTypes {
     switch (region) {
@@ -20,7 +35,7 @@ export default class Regions {
     }
   }
 
-  private unname(name: GameServerLocationTypes): GameServerOriginalLocationTypes {
+  private unname(name: MixedGamesServers): GameServerOriginalLocationTypes | PrivateGameServersTypes {
     switch (name) {
       case "Europe": return "EU-London";
       case "North America": return "US-Atlanta";
@@ -31,7 +46,7 @@ export default class Regions {
       case "China": return "CN-China";
       case "Oceania": return "SG-Singapore";
 
-      default: return 'EU-London';
+      default: return name;
     }
   }
 
@@ -48,15 +63,22 @@ export default class Regions {
       });
     }
 
-    UICommunicationService.setRegions(this.data);
+    UICommunicationService.setRegions([
+      ...this.data,
+      ...this.privateServersList
+    ]);
   }
 
   public setCurrent(index: number): void {
     this.selected = index;
   }
 
-  public getCurrent(): GameServerOriginalLocationTypes {
-    return this.unname(this.data[this.selected].location);
+  public getCurrent(): GameServerOriginalLocationTypes | PrivateGameServersTypes {
+    if (this.gameMode.get() === ':private') {
+      return this.unname(this.privateServersList[this.selected].location);
+    } else {
+      return this.unname(this.data[this.selected].location);
+    }
   }
 
   public setUpdatingInterval(callback: () => void, time: number): void {
@@ -74,9 +96,12 @@ export default class Regions {
 }
 
 export type GameServerLocationTypes = 'South America' | 'China' | 'Europe' | 'East Asia' | 'Russia' | 'Oceania' | 'Turkey' | 'North America';
+export type PrivateGameServersTypes = 'Delta FFA' | 'Private Party' | 'N.A. FFA' | 'N.A. Party' | 'FeelForeverAlone' | 'Zimbabwe' | 'Arctida' | 'Dagestan' | 'Rookery';
+export type MixedGamesServers = GameServerLocationTypes | PrivateGameServersTypes;
 export type GameServerOriginalLocationTypes = 'EU-London' | 'US-Atlanta' | 'RU-Russia' | 'BR-Brazil' | 'TK-Turkey' | 'JP-Tokyo' | 'CN-China' | 'SG-Singapore';
 
 export interface IGameServer {
-  location: GameServerLocationTypes,
+  location: MixedGamesServers,
   playersAmount: number,
 }
+

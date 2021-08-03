@@ -1,9 +1,8 @@
 import { Sprite } from "pixi.js";
-import TexturesGenerator from "../../Textures/TexturesGenerator";
 import { getColor, getColorLighten } from "../../utils/helpers";
 import { RGB, Subtype, Location, CellType, IMainGameObject, RemoveType, Vector } from "../types";
-import GameSettings from '../../Settings/Settings';
 import Cell from "../Cell";
+import World from "../../render/World";
 
 export default class Ejected extends Sprite implements IMainGameObject {
   public type: CellType = 'EJECTED';
@@ -19,13 +18,13 @@ export default class Ejected extends Sprite implements IMainGameObject {
   private removeType: RemoveType;
   private SIZE: number;
 
-  constructor() {
-    super(TexturesGenerator.cell);
+  constructor(private world: World) {
+    super(world.textureGenerator.cell);
   }
 
   public reuse(location: Location, color: RGB, subtype: Subtype): void {
-    const { colorLighten, oneColoredColor } = GameSettings.all.settings.theming.cells;
-    const { oneColored } = GameSettings.all.settings.game.cells;
+    const { colorLighten, oneColoredColor } = this.world.settings.all.settings.theming.cells;
+    const { oneColored } = this.world.settings.all.settings.game.cells;
 
     this.subtype = subtype;
     this.x = location.x;
@@ -81,7 +80,7 @@ export default class Ejected extends Sprite implements IMainGameObject {
         this.width += newSize;
         this.height += newSize;
 
-        if (/* GameSettings.all.settings.game.cells.soakToEaten */ true) {
+        if (/* this.world.settings.all.settings.game.cells.soakToEaten */ true) {
           const x = (this.eatenBy.x - this.x) * (animationSpeed / 5);
           const y = (this.eatenBy.y - this.y) * (animationSpeed / 5);
   
@@ -108,7 +107,7 @@ export default class Ejected extends Sprite implements IMainGameObject {
   }
 
   private animateMove(animationSpeed: number, fadeSpeed: number): void { 
-    const { transparency } = GameSettings.all.settings.theming.cells;
+    const { transparency } = this.world.settings.all.settings.theming.cells;
 
     const x = (this.newLocation.x - this.x) * animationSpeed;
     const y = (this.newLocation.y - this.y) * animationSpeed;

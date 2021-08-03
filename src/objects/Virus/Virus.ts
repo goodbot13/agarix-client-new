@@ -1,10 +1,9 @@
 import { Container, Sprite } from "pixi.js";
-import GameSettings from "../../Settings/Settings";
 import { Location, Subtype, RemoveType, CellType, IMainGameObject } from "../types";
 import VirusShots from "./VirusShots";
 import * as PIXI from 'pixi.js';
 import PlayerState from "../../states/PlayerState";
-import TextureGenerator from '../../Textures/TexturesGenerator';
+import World from "../../render/World";
 
 class Virus extends Container implements IMainGameObject {
   public readonly subtype: Subtype;
@@ -24,7 +23,7 @@ class Virus extends Container implements IMainGameObject {
   private isMinimap: boolean;
   private location: Location;
 
-  constructor(location: Location, subtype: Subtype) {
+  constructor(location: Location, subtype: Subtype, private world: World) {
     super();
 
     this.type = 'VIRUS';
@@ -32,11 +31,11 @@ class Virus extends Container implements IMainGameObject {
     this.location = location;
     this.newLocation = location;
 
-    this.virusSprite = new Sprite(TextureGenerator.virus);
+    this.virusSprite = new Sprite(this.world.textureGenerator.virus);
     this.virusSprite.anchor.set(0.5);
     this.addChild(this.virusSprite);
 
-    this.shots = new VirusShots(location.r);
+    this.shots = new VirusShots(location.r, world);
     this.addChild(this.shots);
 
     const { x, y, r } = location;
@@ -53,7 +52,7 @@ class Virus extends Container implements IMainGameObject {
   }
 
   private getGlowDistance(): number {
-    const { glow, glowDistance } = GameSettings.all.settings.theming.viruses;
+    const { glow, glowDistance } = this.world.settings.all.settings.theming.viruses;
 
     if (!glow) {
       return 0;
@@ -68,7 +67,7 @@ class Virus extends Container implements IMainGameObject {
   }
 
   public updateTexture(): void {
-    this.virusSprite.texture = TextureGenerator.virus;
+    this.virusSprite.texture = this.world.textureGenerator.virus;
     this.setSize(this.location.r);
   }
 
@@ -91,7 +90,7 @@ class Virus extends Container implements IMainGameObject {
   }
 
   private animateOutOfView(speed: number) {
-    if (GameSettings.all.settings.game.multibox.enabled && PlayerState.first.playing && PlayerState.second.playing) {
+    if (this.world.settings.all.settings.game.multibox.enabled && PlayerState.first.playing && PlayerState.second.playing) {
       this.destroy({ children: true });
       this.isDestroyed = true;
     } else if (this.alpha <= 0) {
@@ -116,14 +115,14 @@ class Virus extends Container implements IMainGameObject {
   }
 
   private getAnimationSpeed(): number {
-    return (GameSettings.all.settings.game.gameplay.animationSpeed / 1000) * PIXI.Ticker.shared.deltaTime;
+    return (this.world.settings.all.settings.game.gameplay.animationSpeed / 1000) * PIXI.Ticker.shared.deltaTime;
   }
   
   private animateMove(speed: number): void {
-    const instantAnimation = GameSettings.all.settings.game.multibox.enabled && 
+    const instantAnimation = this.world.settings.all.settings.game.multibox.enabled && 
                              PlayerState.first.playing && 
                              PlayerState.second.playing && 
-                             GameSettings.all.settings.game.gameplay.spectatorMode !== 'Full map';
+                             this.world.settings.all.settings.game.gameplay.spectatorMode !== 'Full map';
 
     const glowOffset = this.isMinimap ? 4 : this.getGlowDistance();
 

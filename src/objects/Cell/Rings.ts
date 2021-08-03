@@ -1,9 +1,7 @@
 import { Sprite } from "pixi.js";
-import GameSettings from "../../Settings/Settings";
 import Cell from "./index";;
 import * as PIXI from 'pixi.js';
 import { getColor } from "../../utils/helpers";
-import TextureGenerator from '../../Textures/TexturesGenerator';
 import SettingsState from "../../states/SettingsState";
 
 export default class Rings {
@@ -25,8 +23,8 @@ export default class Rings {
 
   private updateTint(): void {
     const { isPlayerCell, multiboxFocuesTab } = this.cell;
-    const { focusedRingColor, initialRingColor } = GameSettings.all.settings.theming.multibox;
-    const { changeRingColor } = GameSettings.all.settings.game.multibox;
+    const { focusedRingColor, initialRingColor } = this.cell.world.settings.all.settings.theming.multibox;
+    const { changeRingColor } = this.cell.world.settings.all.settings.game.multibox;
 
     if (isPlayerCell) {
       if (multiboxFocuesTab && changeRingColor) {
@@ -38,7 +36,7 @@ export default class Rings {
   }
 
   private spin(): void {
-    if (GameSettings.all.settings.game.cells.ringsSpinning) {
+    if (this.cell.world.settings.all.settings.game.cells.ringsSpinning) {
       const { deltaTime } = PIXI.Ticker.shared;
       this.outerRing.rotation += this.OUTER_RING_SPEED * deltaTime;
       this.innerRing.rotation -= this.INNER_RING_SPEED * deltaTime;
@@ -46,25 +44,25 @@ export default class Rings {
   }
 
   private setAuthorRing(): void {
-    const { ringsType } = GameSettings.all.settings.game.cells;
+    const { ringsType } = this.cell.world.settings.all.settings.game.cells;
 
     switch (ringsType) {
       case 'Acimazis':
-        this.innerRing.texture = TextureGenerator.innerRing;
-        this.outerRing.texture = TextureGenerator.outerRing;
+        this.innerRing.texture = this.cell.world.textureGenerator.innerRing;
+        this.outerRing.texture = this.cell.world.textureGenerator.outerRing;
         this.outerRing.scale.set(1);
         this.innerRing.visible = this.outerRing.visible = true;
         break;
 
       case '2CL':
-        this.outerRing.texture = TextureGenerator.hsloRing;
+        this.outerRing.texture = this.cell.world.textureGenerator.hsloRing;
         this.outerRing.scale.set(1.149);
         this.innerRing.visible = false;
         this.outerRing.visible = true;
         break;
 
       case 'Yue':
-        this.outerRing.texture = TextureGenerator.removeAnimationYue[2];
+        this.outerRing.texture = this.cell.world.textureGenerator.removeAnimationYue[2];
         this.outerRing.scale.set(1.149);
         this.innerRing.visible = false;
         this.outerRing.visible = true;
@@ -79,18 +77,18 @@ export default class Rings {
       return;
     }
     
-    const { ringsType } = GameSettings.all.settings.game.cells;
+    const { ringsType } = this.cell.world.settings.all.settings.game.cells;
     const { isPlayerCell, isTeam } = this.cell;
 
     const enabledAndPlayer = ringsType !== 'Disabled' && isPlayerCell;
     const enabledForTeam = ringsType !== 'Disabled' && isTeam;
-    const multiboxEnabled = GameSettings.all.settings.game.multibox.enabled;
+    const multiboxEnabled = this.cell.world.settings.all.settings.game.multibox.enabled;
 
     if (isPlayerCell && multiboxEnabled) {
-      if (GameSettings.all.settings.game.multibox.ring) {
-        if (GameSettings.all.settings.theming.multibox.ringStyle === 'Line') {
+      if (this.cell.world.settings.all.settings.game.multibox.ring) {
+        if (this.cell.world.settings.all.settings.theming.multibox.ringStyle === 'Line') {
           this.outerRing.scale.set(1);
-          this.outerRing.texture = TextureGenerator.multiboxLinedRing;
+          this.outerRing.texture = this.cell.world.textureGenerator.multiboxLinedRing;
           this.innerRing.visible = false;
           this.outerRing.visible = true;
         } else {
