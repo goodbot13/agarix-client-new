@@ -22,15 +22,15 @@ export default class StaticPlayerCells extends Container {
   }
 
   private create(): void {
-    const { playerColor } = GameSettings.all.settings.theming.minimap;
+    const { playerColor, size } = GameSettings.all.settings.theming.minimap;
 
     this.firstTab = new Cell();
-    this.firstTab.setIsMinimapCell();
+    this.firstTab.setIsMinimapCell(size);
     this.firstTab.cell.tint = getColor(playerColor);
     this.addChild(this.firstTab);
 
     this.secondTab = new Cell(); 
-    this.secondTab.setIsMinimapCell();
+    this.secondTab.setIsMinimapCell(size);
     this.secondTab.cell.tint = getColor(playerColor);
     this.addChild(this.secondTab);
   }
