@@ -141,8 +141,6 @@ export default class TextureGenerator {
   }
 
   private async load() {
-    UICommunicationService.setTextureName('0%');
-
     const mapBg = await this.loadImg(this.settings.all.settings.theming.map.backgroundImageUrl); 
     const rgbBorder = await this.loadImg('https://i.imgur.com/7eDfixc.png'); 
     const bgDispl = await this.loadImg('https://res.cloudinary.com/dvxikybyi/image/upload/v1486634113/2yYayZk_vqsyzx.png'); 
@@ -169,7 +167,7 @@ export default class TextureGenerator {
   public async init(): Promise<any> {
     await this.load();
 
-    const delay = () => new Promise((resolve: any) => setTimeout(() => resolve(), 1));
+    const delay = () => new Promise((resolve: any) => setTimeout(() => resolve(), 1000 / 60));
 
     this.massFontsGenerator.generateLatoBitmap();
 
@@ -184,7 +182,7 @@ export default class TextureGenerator {
     await delay(); this.generateMyCellShadow();
     await delay(); this.mapBordersRgbLine = generateRgbBorderLine(this.settings);
     await delay(); this.virusShots = generateVirusShots();
-    await delay(); UICommunicationService.setTextureName('Done');
+    await delay();
   }
 
   public removeFromCache(texture: Texture): void {

@@ -64,7 +64,9 @@ export interface IGameCellsState {
   fadeSpeed: number,
   oneColored: boolean,
   shadow: ShadowType,
-  soakToEaten: boolean
+  soakToEaten: boolean,
+  nicksScale: number,
+  massScale: number
 }
 
 export interface IGameEffectsState {
@@ -123,7 +125,7 @@ export interface IThemingCellsState {
   myShadowStrength: number,
   transparency: number,
   colorLighten: number,
-  adaptiveShadow: boolean
+  adaptiveShadow: boolean,
 }
 
 export interface IThemingFoodState {

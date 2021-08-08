@@ -6,7 +6,6 @@ export default class MasterCache {
   private supportProtocolVersion: string = '';
   private protocolVersion: number = -1;
   private latestId: number = -1;
-  private lifetime: number = -1;
 
   private readonly logger: Logger;
   private readonly STORAGE_NAME: string = 'AGARIX:MASTER_CACHE';
@@ -19,10 +18,6 @@ export default class MasterCache {
 
     if (storage) {
       const difference = Date.now() - storage.savedTime;
-
-      this.lifetime = difference;
-
-      console.log(difference, storage.savedTime, this.CACHE_LIFETIME);
 
       if (difference > this.CACHE_LIFETIME) {
         return;
@@ -37,8 +32,6 @@ export default class MasterCache {
   }
 
   public get(): IMasterCacheData | null {
-    console.log(this.clientVersionInt);
-
     if (this.clientVersionInt === -1) {
       return null;
     } else {

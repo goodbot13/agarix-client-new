@@ -41,17 +41,7 @@ class FlexiblePool<T> {
   public get(): T {
     if (this.observable.length) {
       this.gotFromCache++;
-
-      const el = this.observable.pop();
-
-      if ((el as unknown as Cell).type === 'CELL') {
-        if ((el as unknown as Cell).cell._texture === null) {
-          this.errored++;
-          return this.get();
-        }
-      }
-
-      return el;
+      return this.observable.pop();
     }
 
     for (let i = 0; i < 50; i++) {

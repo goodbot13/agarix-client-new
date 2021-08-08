@@ -74,12 +74,13 @@ export default class Borders extends Container implements IMapObject {
   public create(): void {
     const { borderGlow, borderWidth, borderGlowDistance } = this.map.world.settings.all.settings.theming.map;
     const { glowFilterShaderType } = this.map.world.settings.all.settings.game.performance;
-    const MAP_RATIO = this.map.size.width / 2048;
+    const MAP_RATIO = 14142 / 2048;
     
     if (this.bordersSprite) {
       // this.map.world.textureGenerator.generateMapBorders();
       this.removeChild(this.bordersSprite);
       this.bordersSprite.destroy();
+      this.map.world.textureGenerator.generateMapBorders();
     }
 
     let bordersSize = this.map.size.width;

@@ -10,7 +10,7 @@ import Hotkeys from '../tabs/Hotkeys/Hotkeys';
 import GameAPI from '../communication/GameAPI';
 import FrontAPI from '../communication/FrontAPI';
 import WorldState from '../states/WorldState';
-import { createTokens, getColor } from '../utils/helpers';
+import { createTokens, getColor, tokenToWs, wsToToken } from '../utils/helpers';
 import PlayerState from '../states/PlayerState';
 import GamePerformance from '../GamePerformance';
 import { GAME_VERSION } from '../Versions';
@@ -158,26 +158,6 @@ class Stage {
     });
   }
 
-  public async connectPrivate(token?: string, serverToken?: boolean): Promise<string> {
-    if (WorldState.gameJoined) {
-      await this.disconnect();
-
-      this.world.view.center();
-
-      WorldState.gameJoined = false;
-    }
-
-    const socketData = await this.master.connectPrivate(token, serverToken);
-
-    return new Promise((resolve, reject) => {
-      this.world.controller.init(socketData).then((mapOffsets) => {
-        this.join(mapOffsets);
-
-        return resolve('%connected!');
-      });
-    });
-  }
-
   public async connect(token?: string, serverToken?: boolean, isInit?: boolean): Promise<string> {
     if (WorldState.gameJoined) {
       await this.disconnect();
@@ -187,11 +167,13 @@ class Stage {
       WorldState.gameJoined = false;
     }
 
-    if (this.master.gameMode.get() === ':private') {
-      return this.connectPrivate(token, serverToken);
-    }
+    let socketData = null;
 
-    const socketData = await this.master.connect(token, serverToken);
+    if (this.master.gameMode.get() === ':private') {
+      socketData = await this.master.connectPrivate(tokenToWs(serverToken));
+    } else {
+      socketData = await this.master.connect(token, serverToken);
+    }
 
     return new Promise((
       resolve: (tokens: string) => void, 
@@ -200,11 +182,18 @@ class Stage {
       this.world.controller.init(socketData)
         .then((mapOffsets) => {
           this.join(mapOffsets);
-        
-          return resolve(createTokens(
-            this.world.controller.firstTabSocket.socketData.token, 
-            this.world.controller.firstTabSocket.socketData.serverToken
-          ));
+
+          if (this.master.gameMode.get() === ':private') {
+            return resolve(createTokens(
+              '[private]', 
+              wsToToken(this.world.controller.firstTabSocket.socketData.address)
+            ));
+          } else {
+            return resolve(createTokens(
+              this.world.controller.firstTabSocket.socketData.token, 
+              this.world.controller.firstTabSocket.socketData.serverToken
+            ));
+          }
         }).catch((reason) => {
           if (!token && !serverToken) {
 

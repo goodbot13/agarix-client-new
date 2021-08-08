@@ -1,5 +1,4 @@
 import { Sprite } from "pixi.js";
-import Cell from ".";
 import World from "../../render/World";
 
 export default class CellSprite extends Sprite {

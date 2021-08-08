@@ -72,6 +72,7 @@ export default class World {
       rotation: false,
       uvs: false,
       tint: true,
+      alpha: true
     };
 
     this.food = new ParticleContainer(3072, PARTICLE_CONFIG, 3072, false);

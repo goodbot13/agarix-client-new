@@ -74,22 +74,22 @@ export default class Ejected extends Sprite implements IMainGameObject {
     }
 
     if (soakSpeed !== 0) {
-      if (this.width > 1) {
-        const newSize = -(this.width * soakSpeed);
+      const newSize = -(this.width * soakSpeed);
 
-        this.width += newSize;
-        this.height += newSize;
+      this.width += newSize;
+      this.height += newSize;
 
-        if (/* this.world.settings.all.settings.game.cells.soakToEaten */ true) {
-          const x = (this.eatenBy.x - this.x) * (animationSpeed / 5);
-          const y = (this.eatenBy.y - this.y) * (animationSpeed / 5);
-  
-          this.x += x;
-          this.y += y;
-        }
+      if (this.world.settings.all.settings.game.cells.soakToEaten) {
+        const x = (this.eatenBy.x - this.x) * (animationSpeed / 5);
+        const y = (this.eatenBy.y - this.y) * (animationSpeed / 5);
 
-        this.alpha += (this.width / this.SIZE);
-      } else {
+        this.x += x;
+        this.y += y;
+      }
+
+      this.alpha += (this.width / this.SIZE);
+
+      if (this.width <= 5) {
         this.isDestroyed = true;
       }
     } else {
@@ -98,9 +98,9 @@ export default class Ejected extends Sprite implements IMainGameObject {
         return;
       } 
 
-      if (this.alpha > 0) {
-        this.alpha += -fadeSpeed;
-      } else {
+      this.alpha += -fadeSpeed;
+
+      if (this.alpha <= 0) {
         this.isDestroyed = true;
       }
     }

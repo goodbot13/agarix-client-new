@@ -192,10 +192,14 @@ export default class Master {
     return wsList[this.regions.getCurrent()];
   }
 
-  public async connectPrivate(token?: string, serverToken?: boolean): Promise<ISocketData> {
+  public async connectPrivate(serverToken?: string): Promise<ISocketData> {
     this.isPrivate = true;
+    
+    let ws = this.getPrivateServerWs();
 
-    const ws = this.getPrivateServerWs();
+    if (serverToken) {
+      ws = serverToken;
+    }
 
     return Promise.resolve({ 
       address: ws,
@@ -278,16 +282,12 @@ export default class Master {
         + parseInt(this.clientVersionString.split(".")[2]);
 
       this.supportProtocolVersion = data.match(/x-support-proto-version","(\d+\.\d+\.\d+)"/)[1]; // 15.0.3 
-
-      setTimeout(() => UICommunicationService.setClientVersion(this.clientVersionInt), 0);
-      setTimeout(() => UICommunicationService.setSupportProtoVersion(this.supportProtocolVersion), 100);
     });
   }
 
   public async setProtocolVersion(): Promise<any> {
     return this.fetch(this.AGAR_CORE).then((data: any) => data.text()).then((data) => {
       this.protocolVersion = Number(data.match(/\w\[\w\+\d+>>\d\]=\w;\w+\(\w,(\d+)\);/)[1]); // 22
-      setTimeout(() => UICommunicationService.setProtocolVersion(this.protocolVersion), 200);
     });
   }
 

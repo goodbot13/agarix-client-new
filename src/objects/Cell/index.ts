@@ -56,19 +56,10 @@ export default class Cell extends Container implements IMainGameObject {
     this.cell.addChild(this.rings.innerRing, this.rings.outerRing);
     this.cell.addChild(this.stats.nick, this.stats.mass);
 
-    this.interactive = true;
-    this.on('mousedown', () => {
-      console.log(this);
-
-      const { skinsType } = this.world.scene.settings.all.settings.game.cells;
-
-      const teamAndCustomSkin = this.isTeam && !!this.customSkinTexture;
-      const playerAndCustomSkin = this.isPlayerCell && !!this.customSkinTexture;
-      const usesSkinByAgarName = this.usesSkinByAgarName && !!this.skinByNameTexture;
-      const allowCustomSkins = skinsType === 'Custom' || skinsType === 'All';
-
-      console.log(this.isTeam, this.customSkinTexture, this.isTeam && this.customSkinTexture, this.isTeam && !!this.customSkinTexture);
-    });
+    // this.interactive = true;
+    // this.on('mousedown', () => {
+    //   console.log(this);
+    // });
   }
 
   public reuse(subtype: Subtype, location: Location, color: RGB, nick: string, skin: string, world: World): void {
@@ -405,46 +396,34 @@ export default class Cell extends Container implements IMainGameObject {
       return;
     }
 
-    if (this.eatenBy.x === 0 && this.eatenBy.y === 0) {
-      this.isDestroyed = true;
-      return;
-    }
-
     if (soakSpeed !== 0) {
       const apf = this.isMinimap ? (animationSpeed / 5) : soakSpeed;
 
-      if (this.cell.width > 1) {
-        let newSize =  -(this.cell.width * apf);
+      let newSize = -(this.width * apf);
 
-        if (this.world.scene.settings.all.settings.game.cells.soakToEaten) {
-          const x = (this.eatenBy.x - this.x) * (animationSpeed / 5);
-          const y = (this.eatenBy.y - this.y) * (animationSpeed / 5);
+      if (this.world.scene.settings.all.settings.game.cells.soakToEaten) {
+        const x = (this.eatenBy.x - this.x) * (animationSpeed / 5);
+        const y = (this.eatenBy.y - this.y) * (animationSpeed / 5);
 
-          this.x += x;
-          this.y += y;
+        this.x += x;
+        this.y += y;
 
-          newSize /= 1.5;
+        newSize /= 1.5;
+      }
 
-          // if (this.calcDistBetweenEatenAndCurrent() < this.distBeforeRemove / 1.33) {
-            this.cell.width += newSize;
-            this.cell.height += newSize;
-            this.shadow.sprite.width += newSize * this.shadow.TEXTURE_OFFSET;
-            this.shadow.sprite.height += newSize * this.shadow.TEXTURE_OFFSET;
-          // }
-        } else {
-          this.cell.width += newSize;
-          this.cell.height += newSize;
-          this.shadow.sprite.width += newSize * this.shadow.TEXTURE_OFFSET;
-          this.shadow.sprite.height += newSize * this.shadow.TEXTURE_OFFSET;
-        }
+      this.cell.width += newSize;
+      this.cell.height += newSize;
+      this.shadow.sprite.width += newSize * this.shadow.TEXTURE_OFFSET;
+      this.shadow.sprite.height += newSize * this.shadow.TEXTURE_OFFSET;
 
-        const { transparency } = this.world.scene.settings.all.settings.theming.cells;
-        const newTransparency = this.cell.width / this.sizeBeforeRemove;
+      const { transparency } = this.world.scene.settings.all.settings.theming.cells;
+      const newTransparency = this.cell.width / this.sizeBeforeRemove;
 
-        if (transparency > newTransparency) {
-          this.updateAlpha(this.cell.width / this.sizeBeforeRemove);
-        }
-      } else {
+      if (transparency > newTransparency) {
+        this.updateAlpha(this.cell.width / this.sizeBeforeRemove);
+      }
+      
+      if (this.width <= 20) {
         this.isDestroyed = true;
       }
     } else {
@@ -516,7 +495,16 @@ export default class Cell extends Container implements IMainGameObject {
     this.originalSize += (this.newOriginalSize - this.originalSize) * animationSpeed;
     this.updateInfo();
 
+    if (!(window as any).zzz) {
+      (window as any).zzz = this.width;
+    }
+    if ((window as any).zzz < this.width) {
+      (window as any).zzz = this.width;
+    }
+
     if (this.removing) {
+      // fix
+
       if (this.culled) {
         this.isDestroyed = true;
         return;

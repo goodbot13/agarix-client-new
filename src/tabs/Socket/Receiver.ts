@@ -161,11 +161,6 @@ export default class Receiver {
     const seed = 255;
 
     this.socket.clientKey = murmur2(hashBuffer, seed);
-
-    if (this.socket.tabType === 'FIRST_TAB') {
-      setTimeout(() => UICommunicationService.setServerStatus('Healthy'), 0);
-      setTimeout(() => UICommunicationService.setServerVersion(serverVersion), 100);
-    }
   }
 
   public handleServerTime() {

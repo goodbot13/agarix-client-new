@@ -40,9 +40,9 @@ export default class AnimationSettingsProvider {
     }
 
     // speed up animation if container contains a lot of sprites to remove faster and decrease lag spikes
-    if (this.world.ejected.children.length > 256) {
-      speedIncreaseMultiplier = this.world.ejected.children.length / 128;
-    }
+    // if (this.world.ejected.children.length > 256) {
+    //   speedIncreaseMultiplier = this.world.ejected.children.length / 128;
+    // }
 
     return (((250 - fadeSpeed) / 1000) * speedIncreaseMultiplier) * PIXI.Ticker.shared.deltaTime;
   }
@@ -56,9 +56,9 @@ export default class AnimationSettingsProvider {
     }
     
     // speed up animation if container contains a lot of sprites to remove faster and decrease lag spikes
-    if (this.world.ejected.children.length > 256) {
-      speedIncreaseMultiplier = this.world.ejected.children.length / 128;
-    }
+    // if (this.world.ejected.children.length > 256) {
+    //   speedIncreaseMultiplier = this.world.ejected.children.length / 128;
+    // }
   
     return (((250 - soakSpeed) / 1000) * speedIncreaseMultiplier) * PIXI.Ticker.shared.deltaTime;
   }

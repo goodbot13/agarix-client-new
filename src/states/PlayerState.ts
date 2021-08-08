@@ -1,4 +1,5 @@
 export default new class PlayerState {
+  constructor() { (window as any).xxx = this }
   public first: IPlayerState = {
     spawning: false,
     playing: false,

@@ -97,22 +97,30 @@ export default class Socket {
     }
 
     return new Promise((resolve: () => void, reject: (reason: string) => void) => {
+      let timeout = setTimeout(() => {
+        if (!this.connectionOpened) {
+          this.disconnectHandler.execute();
+          reject(SOCKET_CONNECTION_REJECT.NO_RESPONSE_FROM_SERVER);
+        }
+      }, 3000);
+
       this.socket = new WebSocket(this.socketData.address);
       this.socket.binaryType = 'arraybuffer';
 
       this.socket.onopen = () => this.receiver.handleHandshake();
       this.socket.onmessage = (msg) => this.handleMessage(msg.data);
       this.socket.onclose = () => this.disconnect();
-      this.socket.onerror = () => this.disconnect();
+      this.socket.onerror = () => {
+        if (!this.connectionOpened) {
+          clearTimeout(timeout);
+          this.disconnectHandler.execute();
+          reject(SOCKET_CONNECTION_REJECT.NO_HANDSHAKE);
+        } else {
+          this.disconnect();
+        }
+      }
       
       this.socketInitCallback = resolve;
-
-      setTimeout(() => {
-        if (!this.connectionOpened) {
-          this.disconnectHandler.execute();
-          reject(SOCKET_CONNECTION_REJECT.NO_RESPONSE_FROM_SERVER);
-        }
-      }, 5000);
     }); 
   }
 
@@ -234,7 +242,10 @@ export default class Socket {
 
       case GHOST_CELLS: 
         if (this.tabType === 'FIRST_TAB') {
-          this.world.minimap.updateGhostCells(this.receiver.handleGhostCells());
+          const ghostCells = this.receiver.handleGhostCells();
+          
+          UICommunicationService.updateGhostCells(ghostCells);
+          this.world.minimap.updateGhostCells(ghostCells);
         }
         break;
 

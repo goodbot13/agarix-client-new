@@ -21,12 +21,14 @@ export default class Shadow {
   public update(): void {
     const { shadow } = this.cell.world.settings.all.settings.game.cells;
 
-    if (shadow === 'All') {
-      this.sprite.visible = true;
+    if (this.cell.isMinimap || this.cell.width <= 70) {
+      this.sprite.visible = this.sprite.renderable = false;
+    } else if (shadow === 'All') {
+      this.sprite.visible = this.sprite.renderable = true;
     } else if (shadow === 'Disabled') {
-      this.sprite.visible = false;
+      this.sprite.visible = this.sprite.renderable = false;
     } else if (shadow === 'Only me') {
-      this.sprite.visible = this.cell.isPlayerCell;
+      this.sprite.visible = this.sprite.renderable = this.cell.isPlayerCell;
     }
   }
 

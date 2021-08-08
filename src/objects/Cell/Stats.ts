@@ -7,42 +7,29 @@ export default class CellStats {
   public nick: Sprite;
   public mass: BitmapText;
 
-  private nick_text: string = '';
   private massValue: number = 0;
   private shortMassValue: string = '0';
-  private currentAnchor: Point = new Point(0, 0);
 
   constructor(private cell: Cell) {
+    const { massScale, nicksScale } = cell.world.settings.all.settings.game.cells;
+
     this.mass = new BitmapText('0', { 
       fontName: 'MassLato' 
     });
 
-    this.mass.scale.set(0.625);
+    this.mass.scale.set(massScale);
     this.mass.zIndex = 5;
-    this.setMassAnchor();
-
+    this.mass.anchor.x = 0.5;
+    this.mass.y = 64;
+    
     this.nick = new Sprite();
     this.nick.anchor.set(0.45);
-    this.nick.scale.set(0.85);
+    this.nick.scale.set(nicksScale);
     this.nick.zIndex = 5;
   }
   
-  private setMassAnchor(): void {
-    if (this.cell.world.settings.all.settings.game.cells.nicks && this.nick_text) {
-      if (this.currentAnchor.y !== -0.75) {
-        this.mass.anchor.set(0.5, -0.75);
-        this.currentAnchor = this.mass.anchor;
-      }
-    } else {
-      if (this.currentAnchor.y !== 0.5) { 
-        this.mass.anchor.set(0.5, 0.5);
-        this.currentAnchor = this.mass.anchor;
-      }
-    }
-  }
-
   public update(): void {
-    const { mass, myMass, nicks, myNick, autoHideMassAndNicks } = this.cell.world.settings.all.settings.game.cells;
+    const { mass, myMass, nicks, myNick, autoHideMassAndNicks, massScale, nicksScale } = this.cell.world.settings.all.settings.game.cells;
 
     const mNicks = this.cell.world.settings.all.settings.game.minimap.nicks;
     const mMass = this.cell.world.settings.all.settings.game.minimap.mass;
@@ -59,6 +46,8 @@ export default class CellStats {
     if (this.cell.isPlayerCell) {
       this.mass.visible = this.mass.renderable = myMass;
       this.nick.visible = this.nick.renderable = myNick;
+      this.mass.scale.set(massScale);
+      this.nick.scale.set(nicksScale);
     } else {
       if (this.cell.isMinimap && this.cell.originalSize >= 15) {
         this.nick.visible = this.nick.renderable = mNicks;
@@ -71,7 +60,8 @@ export default class CellStats {
         const visible = autoHideMassAndNicks ? this.cell.originalSize > (27 / this.cell.world.view.camera.scale) : true;
         this.mass.visible = this.mass.renderable = visible && mass;
         this.nick.visible = this.nick.renderable = visible && nicks;
-        this.nick.scale.set(0.85);
+        this.nick.scale.set(nicksScale);
+        this.mass.scale.set(massScale);
       }
     }
   }
@@ -82,8 +72,6 @@ export default class CellStats {
   }
 
   public updateNick(nick: string): void {
-    this.nick_text = nick;
-
     this.cell.world.textureGenerator.cellNicksGenerator.createNick(nick, (texture) => {
       this.nick.texture = texture;
     });
@@ -116,7 +104,5 @@ export default class CellStats {
     } else {
       this.mass.text = this.massValue.toString();
     }
-
-    this.setMassAnchor();
   }
 }

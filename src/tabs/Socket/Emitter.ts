@@ -114,12 +114,13 @@ export default class Emitter {
         break;
     }
 
-    const view = this.socket.world.master.isPrivate ? createView(9) : createView(13);
+    const view = createView(13);
+      
     view.setUint8(0, 16);
     view.setInt32(1, posX, true);
     view.setInt32(5, posY, true);
 
-    !this.socket.world.master && view.setUint32(9, this.socket.protocolKey, true);
+    !this.socket.world.master.isPrivate && view.setUint32(9, this.socket.protocolKey, true);
 
     this.socket.sendMessage(view); 
   }

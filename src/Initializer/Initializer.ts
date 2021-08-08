@@ -7,7 +7,6 @@ const stage = new Stage();
 
 export const initializeGame = async () => {
   window.Game = stage;
-  window.Master = Master;
 
   if (window.location.hostname.includes('localhost')) {
     await stage.init();
@@ -21,9 +20,10 @@ export const initializeGame = async () => {
     UICommunicationService.setGameVersion();
 
     await stage.init();
-    await stage.master.init();
     
     setTimeout(() => UICommunicationService.setGameLoaderShown(false), 0);
+
+    await stage.master.init();
   }
 }
 

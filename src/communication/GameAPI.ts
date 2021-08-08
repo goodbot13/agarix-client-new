@@ -139,18 +139,21 @@ export default class GameAPI {
     const { spectatorMode } = this.stage.settings.all.settings.game.gameplay;
     const gameMode = this.stage.master.gameMode.get();
 
-    if (gameMode === ':party') {
-      if (!this.stage.world.controller.topOneViewEnabled) {
-        this.stage.world.controller.connectTopOneTab().then(() => {
-          this.stage.world.view.spectateTopOne(false);
-        });
-      } else {
-        this.stage.world.view.spectateTopOne(false);
-      }
-    } else {
-      this.stage.world.controller.firstTabSocket.emitter.sendSpectate();
-      this.stage.world.view.spectateTopOne(true);
-    }
+    this.stage.world.controller.firstTabSocket.emitter.sendSpectate();
+    this.stage.world.view.spectateTopOne(true);
+
+    // if (gameMode === ':party') {
+    //   if (!this.stage.world.controller.topOneViewEnabled) {
+    //     this.stage.world.controller.connectTopOneTab().then(() => {
+    //       this.stage.world.view.spectateTopOne(false);
+    //     });
+    //   } else {
+    //     this.stage.world.view.spectateTopOne(false);
+    //   }
+    // } else {
+    //   this.stage.world.controller.firstTabSocket.emitter.sendSpectate();
+    //   this.stage.world.view.spectateTopOne(true);
+    // }
 
   }
 

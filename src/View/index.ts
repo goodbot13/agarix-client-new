@@ -7,6 +7,7 @@ import WorldState from "../states/WorldState";
 import Ogar from "../Ogar";
 import * as PIXI from 'pixi.js';
 import Settings from "../Settings/Settings";
+import FrontAPI from "../communication/FrontAPI";
 
 class View {
   public mouse: View.IWindowMouse = { x: 0,  y: 0, zoomValue: 0.0375 };
@@ -93,6 +94,15 @@ class View {
   private updateSecondTab(): void {
     this.secondTab.calcPlayingStats();
     this.secondTab.cursor = this.calcCursorPosition(this.secondTab.viewport);
+  }
+
+  private updatePlayerMass(): void {
+    // 10 times per second
+    const canUpdateMass = WorldState.ticks % 6 * PIXI.Ticker.shared.deltaTime === 0;
+
+    if (canUpdateMass) {
+      FrontAPI.setMyMass(this.firstTab.playerBox.mass);
+    }
   }
 
   private updateOgar() {
@@ -217,6 +227,7 @@ class View {
     this.updateSecondTab();
     this.updateCamera();
     this.updateOgar();
+    this.updatePlayerMass();
 
     return this.camera;
   }
