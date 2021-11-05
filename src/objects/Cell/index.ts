@@ -43,7 +43,7 @@ export default class Cell extends Container implements IMainGameObject {
   private usingSkin: boolean;
   private distBeforeRemove: number = -1;
 
-  constructor(public world: World) {
+  constructor(subtype: Subtype, location: Location, color: RGB, nick: string, skin: string, public world: World) {
     super();
 
     this.cell = new CellSprite(world);
@@ -56,13 +56,6 @@ export default class Cell extends Container implements IMainGameObject {
     this.cell.addChild(this.rings.innerRing, this.rings.outerRing);
     this.cell.addChild(this.stats.nick, this.stats.mass);
 
-    // this.interactive = true;
-    // this.on('mousedown', () => {
-    //   console.log(this);
-    // });
-  }
-
-  public reuse(subtype: Subtype, location: Location, color: RGB, nick: string, skin: string, world: World): void {
     const { x, y, r } = location;
 
     this.zIndex = r * 2;
@@ -158,7 +151,7 @@ export default class Cell extends Container implements IMainGameObject {
     this.stats.mass.renderable = false;
     this.customSkinTexture = null;
     this.agarSkinTexture = null;
-    this.cell.setSize(size * 2);
+    // this.cell.setSize(size);
   }
 
   public setIsFoucsedTab(value: boolean): void {
@@ -494,13 +487,6 @@ export default class Cell extends Container implements IMainGameObject {
   public animate(animationSpeed: number, fadeSpeed: number, soakSpeed: number): void {
     this.originalSize += (this.newOriginalSize - this.originalSize) * animationSpeed;
     this.updateInfo();
-
-    if (!(window as any).zzz) {
-      (window as any).zzz = this.width;
-    }
-    if ((window as any).zzz < this.width) {
-      (window as any).zzz = this.width;
-    }
 
     if (this.removing) {
       // fix

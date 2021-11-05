@@ -19,7 +19,6 @@ import PlayerState from '../states/PlayerState';
 import SkinsLoader from '../utils/SkinsLoader';
 import { getColor } from '../utils/helpers';
 import Ejected from '../objects/Ejected';
-import CachedObjects from '../utils/CachedObjects';
 import Settings from '../Settings/Settings';
 import TextureGenerator from '../Textures/TexturesGenerator';
 import Master from '../Master';
@@ -45,7 +44,6 @@ export default class World {
   public minimap: Minimap;
   public skinsLoader: SkinsLoader;
   public settings: Settings;
-  public cachedObjects: CachedObjects;
   public textureGenerator: TextureGenerator;
   public master: Master;
   public ogar: Ogar;
@@ -61,7 +59,6 @@ export default class World {
 
     this.animationSettingsProvider = new AnimationSettingsProvider(this);
     this.skinsLoader = new SkinsLoader(this);
-    this.cachedObjects = new CachedObjects(this);
 
     this.cells = new Container();
     this.cells.sortableChildren = true;
@@ -107,9 +104,7 @@ export default class World {
 
   private addFood(id: number, location: Location, type: CellType, subtype: Subtype): void {
     if (!this.indexedFood.has(id)) {
-      const food = this.cachedObjects.getFood();
-      food.reuse(location, subtype);
-
+      const food = new Food(this, location, subtype);
       this.indexedFood.set(id, food);
       this.food.addChild(food);
       /* this.socketCells.add(subtype, food, id); */
@@ -120,8 +115,7 @@ export default class World {
 
   private addEjected(id: number, location: Location, color: RGB, type: CellType, subtype: Subtype): void {
     if (!this.indexedEjected.has(id)) {
-      const ejected = this.cachedObjects.getEjected();
-      ejected.reuse(location, color, subtype);
+      const ejected = new Ejected(this, location, color, subtype);
 
       this.indexedEjected.set(id, ejected);
       this.ejected.addChild(ejected);
@@ -140,8 +134,7 @@ export default class World {
         return;
       }
 
-      cell = this.cachedObjects.getCell();
-      cell.reuse(subtype, location, color, name, skin, this);
+      cell = new Cell(subtype, location, color, name, skin, this);
 
       this.indexedCells.set(id, cell);
       this.cells.addChild(cell);
@@ -261,7 +254,6 @@ export default class World {
 
       if (removeImmediatly || this.settings.all.settings.game.performance.foodPerformanceMode) {
         this.food.removeChild(food);
-        this.cachedObjects.addFood(food);
       } else {
         food.remove();
       }
@@ -276,7 +268,6 @@ export default class World {
 
       if (removeImmediatly) {
         this.ejected.removeChild(object);
-        this.cachedObjects.addEjected(object);
       } else {
         const eatenBy = this.indexedCells.get(eaterId) as Cell;
 
@@ -299,10 +290,7 @@ export default class World {
 
       if (removeImmediatly) {
         this.cells.removeChild(object);
-        
-        if (object.type === 'CELL') {
-          this.cachedObjects.addCell(object as Cell);
-        }
+
       } else {
         const eatenBy = this.indexedCells.get(eaterId) as Cell;
 
@@ -334,20 +322,14 @@ export default class World {
 
   public clear(): void {
     while (this.food.children[0]) {
-      this.cachedObjects.addFood(this.food.children[0] as Food);
       this.food.removeChild(this.food.children[0]);
     }
 
     while (this.cells.children[0]) {
-      if ((this.cells.children[0] as Cell).type === 'CELL') {
-        this.cachedObjects.addCell(this.cells.children[0] as Cell);
-      }
-
       this.cells.removeChild(this.cells.children[0]);
     }
 
     while (this.ejected.children[0]) {
-      this.cachedObjects.addEjected(this.ejected.children[0] as Ejected);
       this.ejected.removeChild(this.ejected.children[0]);
     }
 
@@ -373,11 +355,6 @@ export default class World {
 
     this.indexedCells.forEach((cell, key) => {
       if (cell.subtype === subtype) {
-        
-        if (cell.type === 'CELL') {
-          this.cachedObjects.addCell(cell as Cell);
-        }
-
         this.cells.removeChild(cell);
         this.indexedCells.delete(key);
         this.socketCells.remove(subtype, key);
@@ -389,8 +366,6 @@ export default class World {
 
     this.indexedEjected.forEach((ejected, key) => {
       if (ejected.subtype === subtype) {
-        this.cachedObjects.addEjected(ejected);
-
         this.ejected.removeChild(ejected);
         this.indexedEjected.delete(key);
         this.socketCells.remove(subtype, key);
@@ -401,9 +376,7 @@ export default class World {
     });
 
     this.indexedFood.forEach((food, key) => {
-      if (food.subtype === subtype) {
-        this.cachedObjects.addFood(food);
-
+      if (food.subtype === subtype) { 
         this.food.removeChild(food);
         this.indexedFood.delete(key);
         this.socketCells.remove(subtype, key);

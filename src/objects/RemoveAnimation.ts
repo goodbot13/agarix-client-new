@@ -42,9 +42,9 @@ class RemoveAnimation extends Container {
       sprite.anchor.set(0.5);
       sprite.tint = tint;
       sprite.width = sprite.height = 0;
-    });
 
-    this.addChild(...this.spriteBuffer);  
+      this.addChild(sprite);
+    });
 
     this.x = x; 
     this.y = y;

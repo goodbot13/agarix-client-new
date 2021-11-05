@@ -30,7 +30,7 @@ export default class Settings {
 
 
 
-  
+
 
   updateThemingCells(type: TThemingCells): void {
     switch (type) {
@@ -41,8 +41,6 @@ export default class Settings {
           cell.changeShadowTexture();
         });
 
-        this.stage.world.cachedObjects.getPool('CELL').forEach((cell: Cell) => cell.changeShadowTexture());
-
         this.stage.world.minimap.changeCellShadowTexture();
         break;
 
@@ -52,8 +50,6 @@ export default class Settings {
         this.stage.world.cells.children.filter((cell: any) => cell.type === 'CELL').forEach((cell: Cell) => {
           cell.changeShadowTexture();
         });
-
-        this.stage.world.cachedObjects.getPool('CELL').forEach((cell: Cell) => cell.changeShadowTexture());
 
         this.stage.world.minimap.changeCellShadowTexture();
         break;
@@ -66,10 +62,6 @@ export default class Settings {
     const foodTexture = this.stage.textureGenerator.food;
 
     this.stage.world.food.children.forEach((food: Food) => {
-      food.texture = foodTexture;
-    });
-
-    this.stage.world.cachedObjects.getPool('FOOD').forEach((food: Food) => {
       food.texture = foodTexture;
     });
   }

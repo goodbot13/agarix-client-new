@@ -16,12 +16,9 @@ class Food extends Sprite {
   private SPEED: number = 0.0225;
   private realAlpha: number = 0;
 
-  constructor(private world: World) {
+  constructor(private world: World, location: Location, subtype: Subtype) {
     super(world.textureGenerator.food);
-    // this.reuse(location, subtype);
-  }
 
-  public reuse(location: Location, subtype: Subtype) {
     const { x, y, r } = location;
     const { foodPerformanceMode } = this.world.settings.all.settings.game.performance;
 

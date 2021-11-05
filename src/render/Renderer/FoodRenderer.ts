@@ -7,6 +7,13 @@ export default class FoodRenderer {
 
   public render(food: Food): void {
 
+    const isPrivateServer = this.world.master.gameMode.get() === ':private';
+
+    if (isPrivateServer) {
+      food.show();
+      return;
+    }
+
     if (this.world.settings.all.settings.game.performance.culling) {
       if (this.world.view.shouldObjectBeCulled(food.x, food.y, food.width / 2)) {
         food.culled = true;

@@ -29,7 +29,7 @@ class View {
       this.mouse.y = e.clientY;
     });
 
-    window.addEventListener('wheel', (e: MouseWheelEvent) => {
+    window.addEventListener('wheel', (e: WheelEvent) => {
       if (!this.scrollAvailable) {
         return;
       }

@@ -20,7 +20,6 @@ export default class TeamPlayers extends Container {
   }
 
   public reset(): void {
-    this.buffer.forEach((obj) => this.world.cachedObjects.addCell(obj));
     this.buffer.clear();
 
     while (this.children.length > 0) {
@@ -53,7 +52,6 @@ export default class TeamPlayers extends Container {
         cell.update({ x: location.x, y: location.y, r: playerSize / 2 });
 
         if (!player.alive) {
-          this.world.cachedObjects.addCell(cell);
           this.removeChild(cell);
           this.buffer.delete(player.id);
         } else {
@@ -80,8 +78,7 @@ export default class TeamPlayers extends Container {
           true
         );
 
-        const cell = this.world.cachedObjects.getCell();
-        cell.reuse('FIRST_TAB', location, { red: 0, green: 0, blue: 0 }, player.nick, '', this.world);
+        const cell = new Cell('FIRST_TAB', location, { red: 0, green: 0, blue: 0 }, player.nick, '', this.world)
         cell.setIsMinimapCell(playerSize / 4);
         cell.isTeam = true;
         cell.update({ x: location.x, y: location.y, r: playerSize / 2 });
@@ -95,7 +92,6 @@ export default class TeamPlayers extends Container {
 
     this.buffer.forEach((cell, key) => {
       if (!this.world.ogar.firstTab.team.has(key)) {
-        this.world.cachedObjects.addCell(cell);
         this.removeChild(cell);
         this.buffer.delete(key);
       }

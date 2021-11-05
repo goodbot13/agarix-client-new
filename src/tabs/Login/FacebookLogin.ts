@@ -15,7 +15,7 @@ export default new class FacebookLogin {
   private logger: Logger;
   private initTries: number = 0;
   private MAX_INIT_TRIES: number = 5;
-  private INIT_TIMEOUT: number = 1000;
+  private INIT_TIMEOUT: number = 4000;
 
   constructor() {
     this.logger = new Logger('FacebookLogin');

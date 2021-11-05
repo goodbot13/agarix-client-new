@@ -17,6 +17,10 @@ export const transformMinimapLocation = (location: Location, mapOffsets: IMapOff
 }
 
 export const createTokens = (party: string, server: string): string => {
+  if (!party && !server) {
+    return '';
+  }
+  
   if (party) {
     return `${party}%${server}`;
   } else {

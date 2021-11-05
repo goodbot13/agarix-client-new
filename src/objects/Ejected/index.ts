@@ -18,11 +18,10 @@ export default class Ejected extends Sprite implements IMainGameObject {
   private removeType: RemoveType;
   private SIZE: number;
 
-  constructor(private world: World) {
+  constructor(private world: World, location: Location, color: RGB, subtype: Subtype) {
     super(world.textureGenerator.cell);
-  }
+    this.anchor.set(0.5);
 
-  public reuse(location: Location, color: RGB, subtype: Subtype): void {
     const { colorLighten, oneColoredColor } = this.world.settings.all.settings.theming.cells;
     const { oneColored } = this.world.settings.all.settings.game.cells;
 

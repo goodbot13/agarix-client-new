@@ -67,11 +67,15 @@ export default class RealPlayersCells extends Container {
         this.world.view.firstTab.getShiftedMapOffsets(),
         this.world.settings
       );
-      const cell = new Cell(this.world);
-      cell.reuse(subtype, loc, color, name, skin, this.world);
+      
+      const cell = new Cell(subtype, {
+        x: loc.x,
+        y: loc.y,
+        r: loc.r / 14142
+      }, color, name, skin, this.world);
 
       cell.setIsVisible(true);
-      cell.setIsMinimapCell(location.r);
+      cell.setIsMinimapCell(loc.r);
 
       this.buffer.set(id, cell);
       this.addChild(cell);
@@ -104,10 +108,6 @@ export default class RealPlayersCells extends Container {
       if (removeImmediately) {
         this.buffer.delete(id);
         this.removeChild(obj);
-        
-        if (obj.type === 'CELL') {
-          this.world.cachedObjects.addCell(obj as Cell);
-        }
       } else {
         obj.remove(removeType);
       }
@@ -143,11 +143,7 @@ export default class RealPlayersCells extends Container {
 
   public reset(): void {
     this.buffer.forEach((obj) => {
-      if (obj.type === 'CELL') {
-        this.world.cachedObjects.addCell(obj as Cell);
-      } else {
-        obj.destroy({ children: true })
-      }
+      obj.destroy({ children: true })
     });
 
     this.buffer.clear();

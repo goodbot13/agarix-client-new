@@ -22,7 +22,7 @@ export default class GhostCells extends Container {
     this.buffer = new Array(20)
       .fill({} as Cell)
       .map(() => {
-        const cell = new Cell(this.world);
+        const cell = new Cell('FIRST_TAB', { x: 9999, y: 9999, r: 0 }, { red: 0, green: 0, blue: 0 }, '', '', this.world);
         cell.setIsMinimapCell(20);
         cell.cell.tint = getColor(ghostCellsColor);
         cell.shadow.sprite.visible = false;
@@ -31,7 +31,7 @@ export default class GhostCells extends Container {
         return cell;
     });
 
-    this.addChild(...this.buffer);
+    this.buffer.forEach((cell) => this.addChild(cell));
   }
 
   public update(cells: Array<IGhostCell>): void {

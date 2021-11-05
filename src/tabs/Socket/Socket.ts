@@ -321,6 +321,10 @@ export default class Socket {
   }
 
   public tryLogin(): void {
+    if (this.world.master.gameMode.get() === ':private') {
+      return;
+    }
+    
     if (this.tabType === 'FIRST_TAB' || this.tabType === 'SECOND_TAB') {
       FacebookLogin.logIn(this);
       GoogleLogin.logIn(this);

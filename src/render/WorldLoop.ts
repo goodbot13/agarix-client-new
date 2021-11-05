@@ -61,8 +61,6 @@ export default class WorldLoop {
 
       if (ejected.isDestroyed) {
         this.world.ejected.removeChild(ejected);
-        this.world.cachedObjects.addEjected(ejected);
-
         continue;
       }
 
@@ -84,11 +82,6 @@ export default class WorldLoop {
 
       if (object.isDestroyed) {
         this.world.cells.removeChild(object);
-        
-        if (object.type === 'CELL') {
-          this.world.cachedObjects.addCell(object as Cell);
-        }
-        
         continue;
       }
 
@@ -132,8 +125,6 @@ export default class WorldLoop {
 
       if (food.isDestroyed) {
         this.world.food.removeChild(food);
-        this.world.cachedObjects.addFood(food);
-
         continue;
       }
 

@@ -21,12 +21,12 @@ export default class StaticPlayerCells extends Container {
   private create(): void {
     const { playerColor, playerSize } = this.world.settings.all.settings.theming.minimap;
 
-    this.firstTab = new Cell(this.world);
+    this.firstTab = new Cell('FIRST_TAB', { x: 9999, y: 9999, r: 0 }, { red: 0, green: 0, blue: 0 }, '', '', this.world);
     this.firstTab.setIsMinimapCell(playerSize);
     this.firstTab.cell.tint = getColor(playerColor);
     this.addChild(this.firstTab);
 
-    this.secondTab = new Cell(this.world); 
+    this.secondTab = new Cell('FIRST_TAB', { x: 9999, y: 9999, r: 0 }, { red: 0, green: 0, blue: 0 }, '', '', this.world); 
     this.secondTab.setIsMinimapCell(playerSize);
     this.secondTab.cell.tint = getColor(playerColor);
     this.addChild(this.secondTab);

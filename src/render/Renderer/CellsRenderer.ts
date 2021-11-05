@@ -52,6 +52,7 @@ export default class CellsRenderer {
     // its visibility should be immediately set to false 
     // (we dont have to wait until its opacity slowly goes down - it will make it look ugly)
 
+    const isPrivateServer = this.world.master.gameMode.get() === ':private';
     const fullMapViewEnabled = this.world.settings.all.settings.game.gameplay.spectatorMode === 'Full map';
     const topOneViewEnabled = this.world.settings.all.settings.game.gameplay.spectatorMode === 'Top one';
 
@@ -110,7 +111,7 @@ export default class CellsRenderer {
       }
 
       if (type === 'VIRUS') {
-        if (fullMapViewEnabled) {
+        if (fullMapViewEnabled && !isPrivateServer) {
           visible = false;
         } else if (this.world.settings.all.settings.game.multibox.enabled) {
           if (PlayerState.first.playing && PlayerState.second.playing) {
@@ -130,7 +131,7 @@ export default class CellsRenderer {
               visible = PlayerState.second.playing;
             }
           }
-        } else if (topOneViewEnabled) {
+        } else if (topOneViewEnabled && !isPrivateServer) {
           visible = !topOneTab.hasInViewBounds(x, y);
         } else {
           visible = true;
@@ -146,6 +147,10 @@ export default class CellsRenderer {
     }
 
     if (fullMapViewEnabled && !SettingsState.fullMapViewRender) {
+      if (isPrivateServer) {
+        return;
+      }
+      
       let visible = cell.isVisible;
 
       if (type === 'VIRUS' && subtype === 'SPEC_TABS') {

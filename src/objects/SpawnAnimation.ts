@@ -9,7 +9,7 @@ class SpawnAnimation extends Container {
   public culled: boolean = false;
 
   private r: number;
-  private spriteBuffer: Array<Sprite> = [];
+  private spriteBuffer: Sprite[] = [];
   private deltaStepMultiplier: number = 0.00425;
 
   constructor(location: Location, private world: World, tint?: number) {
@@ -41,9 +41,9 @@ class SpawnAnimation extends Container {
       sprite.width = 0;
       sprite.height = 0;
       sprite.alpha = 0;
+      
+      this.addChild(sprite);
     });
-
-    this.addChild(...this.spriteBuffer);
     
     this.type = 'SPAWN_ANIMATION';
     this.zIndex = 0;

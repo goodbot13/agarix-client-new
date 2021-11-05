@@ -41,7 +41,12 @@ class Stage {
   private logger: Logger = new Logger('Stage');
 
   constructor() {
-    utils.sayHello(GAME_VERSION);
+    utils.skipHello();
+
+    console.log(
+      `%c PIXI v${PIXI.VERSION} | AGARIX ${GAME_VERSION} `,
+      'color: #7dffe7; background: #0f0f0f',
+    );  
 
     (window as any).GameSettings = this.settings = new Settings(this);
     (window as any).GameAPI = new GameAPI(this);
@@ -127,8 +132,8 @@ class Stage {
   public async play(): Promise<string | null> {
     return new Promise(async (resolve: any, reject: any) => {
       const tokens = createTokens(
-        this.world.controller.firstTabSocket.socketData.token,
-        this.world.controller.firstTabSocket.socketData.serverToken
+        this.world.controller.firstTabSocket?.socketData?.token,
+        this.world.controller.firstTabSocket?.socketData?.serverToken
       );
 
       if (PlayerState.first.connected) {
